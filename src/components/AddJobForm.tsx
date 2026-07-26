@@ -13,6 +13,11 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [parsedSkills, setParsedSkills] = useState<string[]>([]);
+  const [extractedValues, setExtractedValues] = useState<{
+    title: string;
+    company: string;
+    location: string;
+  } | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     company: "",
@@ -42,6 +47,11 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
         location: parsed.location || "",
         description: rawText,
       });
+      setExtractedValues({
+        title: parsed.title || "",
+        company: parsed.company || "",
+        location: parsed.location || "",
+      });
       setParsedSkills(parsed.skills || []);
       setStep("review");
     }
@@ -59,6 +69,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
       body: JSON.stringify({
         ...formData,
         skills: parsedSkills,
+        extracted: extractedValues,
       }),
     });
 
@@ -74,6 +85,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
       });
       setRawText("");
       setParsedSkills([]);
+      setExtractedValues(null);
       setStep("paste");
       setIsOpen(false);
       onJobAdded();
@@ -86,6 +98,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
     setStep("paste");
     setRawText("");
     setParsedSkills([]);
+    setExtractedValues(null);
     setFormData({
       title: "",
       company: "",

@@ -10,17 +10,48 @@ export async function GET() {
   return NextResponse.json(jobs);
 }
 
-// POST /api/jobs - Create a new job
+// POST /api/jobs - Create a new job and store any corrections
 export async function POST(request: NextRequest) {
   const body = await request.json();
 
-  const { title, company, location, url, description, status, source, notes, skills } = body;
+  const {
+    title, company, location, url, description,
+    status, source, notes, skills,
+    // Original extracted values (sent from the form for correction tracking)
+    extracted,
+  } = body;
 
   if (!title || !company || !description) {
     return NextResponse.json(
       { error: "Title, company, and description are required" },
       { status: 400 }
     );
+  }
+
+  // Store corrections where extracted value differs from what user saved
+  if (extracted) {
+    const rawContext = (description || "").slice(0, 500);
+    const corrections: { field: string; extractedValue: string; correctedValue: string }[] = [];
+
+    if (extracted.title && extracted.title !== title) {
+      corrections.push({ field: "title", extractedValue: extracted.title, correctedValue: title });
+    }
+    if (extracted.company && extracted.company !== company) {
+      corrections.push({ field: "company", extractedValue: extracted.company, correctedValue: company });
+    }
+    if ((extracted.location || "") !== (location || "")) {
+      corrections.push({ field: "location", extractedValue: extracted.location || "", correctedValue: location || "" });
+    }
+
+    if (corrections.length > 0) {
+      await prisma.correction.createMany({
+        data: corrections.map((c) => ({
+          ...c,
+          rawContext,
+          source: source || null,
+        })),
+      });
+    }
   }
 
   const job = await prisma.job.create({
