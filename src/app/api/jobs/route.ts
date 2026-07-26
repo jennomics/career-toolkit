@@ -77,9 +77,9 @@ export async function POST(request: NextRequest) {
           : undefined,
         responsibilities: responsibilities?.length
           ? {
-              create: responsibilities.map((text: string) => ({
-                text,
-                category: "responsibility",
+              create: responsibilities.map((r: { text: string; category?: string }) => ({
+                text: r.text,
+                category: r.category || "responsibility",
               })),
             }
           : undefined,
