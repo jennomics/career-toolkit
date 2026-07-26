@@ -143,7 +143,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
           placeholder={`Paste the full job posting here...\n\nExample:\nSenior Product Manager\nAcme Corp · San Francisco, CA · 2 days ago\n\nAbout the role:\nWe're looking for a Senior Product Manager to lead...\n\nRequirements:\n- 5+ years of product management experience\n- Experience with agile methodologies...`}
           className="w-full px-3 py-2 border border-gray-300 rounded-md
             focus:outline-none focus:ring-2 focus:ring-blue-500
-            font-mono text-sm"
+            font-mono text-sm text-gray-900"
         />
         <div className="flex gap-3 mt-4">
           <button
