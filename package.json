@@ -9,7 +9,8 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "watch-remote": "bash scripts/watch-and-update.sh"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",
