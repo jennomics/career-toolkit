@@ -280,7 +280,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
       {parsedSkills.length > 0 && (
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Detected Skills
+            Detected Keywords
           </label>
           <div className="flex flex-wrap gap-2">
             {parsedSkills.map((skill) => (
