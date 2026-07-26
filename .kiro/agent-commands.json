@@ -1,11 +1,11 @@
 {
   "commands": [
     {
-      "id": "del-fix-1",
-      "command": "npx prisma generate && npx prisma db push && mv dev.db prisma/dev.db 2>/dev/null; true",
-      "description": "Sync database schema (ensure JobResponsibility table exists)"
+      "id": "llm-1",
+      "command": "npm install && npx prisma generate && npx prisma db push && mv dev.db prisma/dev.db 2>/dev/null; true",
+      "description": "Install openai package, regenerate Prisma, sync database"
     }
   ],
-  "createdAt": "2026-07-26T23:00:00Z",
+  "createdAt": "2026-07-26T23:15:00Z",
   "source": "kiro"
 }
