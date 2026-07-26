@@ -1,11 +1,11 @@
 {
   "commands": [
     {
-      "id": "resp-1",
-      "command": "git stash && git pull origin feat/job-library && npx prisma generate && npx prisma db push",
-      "description": "Pull resume-ready phrases feature + update database"
+      "id": "kw-1",
+      "command": "npx prisma generate && npx prisma db push && mv dev.db prisma/dev.db 2>/dev/null; true",
+      "description": "Regenerate Prisma client and sync database"
     }
   ],
-  "createdAt": "2026-07-26T22:00:00Z",
+  "createdAt": "2026-07-26T22:30:00Z",
   "source": "kiro"
 }
