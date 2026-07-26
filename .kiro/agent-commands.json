@@ -1,9 +1,9 @@
 {
   "commands": [
     {
-      "id": "fix-1",
-      "command": "git pull origin feat/job-library",
-      "description": "Pull Save Job fix"
+      "id": "resp-1",
+      "command": "git stash && git pull origin feat/job-library && npx prisma generate && npx prisma db push",
+      "description": "Pull resume-ready phrases feature + update database"
     }
   ],
   "createdAt": "2026-07-26T22:00:00Z",

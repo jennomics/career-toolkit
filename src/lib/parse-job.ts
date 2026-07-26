@@ -1,4 +1,5 @@
 import { parseSkills } from "./parse-skills";
+import { parseResponsibilities, Responsibility } from "./parse-responsibilities";
 import { prisma } from "./db";
 
 export interface ParsedJob {
@@ -6,6 +7,7 @@ export interface ParsedJob {
   company: string;
   location: string;
   skills: string[];
+  responsibilities: Responsibility[];
 }
 
 interface Correction {
@@ -42,8 +44,9 @@ export async function parseJob(rawText: string): Promise<ParsedJob> {
   location = applyCorrections(location, rawText, "location", corrections);
 
   const skills = parseSkills(rawText);
+  const responsibilities = parseResponsibilities(rawText);
 
-  return { title, company, location, skills };
+  return { title, company, location, skills, responsibilities };
 }
 
 /**

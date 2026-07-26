@@ -14,6 +14,9 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [parsedSkills, setParsedSkills] = useState<string[]>([]);
+  const [parsedResponsibilities, setParsedResponsibilities] = useState<
+    { text: string; category: string }[]
+  >([]);
   const [extractedValues, setExtractedValues] = useState<{
     title: string;
     company: string;
@@ -54,6 +57,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
         location: parsed.location || "",
       });
       setParsedSkills(parsed.skills || []);
+      setParsedResponsibilities(parsed.responsibilities || []);
       setStep("review");
     }
 
@@ -72,6 +76,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
         body: JSON.stringify({
           ...formData,
           skills: parsedSkills,
+          responsibilities: parsedResponsibilities.map((r) => r.text),
           extracted: extractedValues,
         }),
       });
@@ -88,6 +93,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
         });
         setRawText("");
         setParsedSkills([]);
+        setParsedResponsibilities([]);
         setExtractedValues(null);
         setStep("paste");
         setIsOpen(false);
@@ -287,6 +293,33 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
               </span>
             ))}
           </div>
+        </div>
+      )}
+
+      {parsedResponsibilities.length > 0 && (
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Resume-Ready Phrases
+          </label>
+          <p className="text-xs text-gray-500 mb-2">
+            Action-driven statements extracted from the description. Use these as starting points for resume bullets.
+          </p>
+          <ul className="space-y-1.5">
+            {parsedResponsibilities.map((r, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm text-gray-800">
+                <span className={`mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase ${
+                  r.category === "responsibility"
+                    ? "bg-green-100 text-green-700"
+                    : r.category === "requirement"
+                    ? "bg-purple-100 text-purple-700"
+                    : "bg-gray-100 text-gray-600"
+                }`}>
+                  {r.category === "responsibility" ? "DO" : r.category === "requirement" ? "NEED" : "NICE"}
+                </span>
+                <span>{r.text}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

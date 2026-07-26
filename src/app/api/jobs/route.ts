@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 export async function GET() {
   try {
     const jobs = await prisma.job.findMany({
-      include: { skills: true },
+      include: { skills: true, responsibilities: true },
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(jobs);
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     const {
       title, company, location, url, description,
-      status, source, notes, skills,
+      status, source, notes, skills, responsibilities,
       extracted,
     } = body;
 
@@ -75,8 +75,16 @@ export async function POST(request: NextRequest) {
               create: skills.map((skill: string) => ({ name: skill })),
             }
           : undefined,
+        responsibilities: responsibilities?.length
+          ? {
+              create: responsibilities.map((text: string) => ({
+                text,
+                category: "responsibility",
+              })),
+            }
+          : undefined,
       },
-      include: { skills: true },
+      include: { skills: true, responsibilities: true },
     });
 
     return NextResponse.json(job, { status: 201 });
