@@ -1,11 +1,11 @@
 {
   "commands": [
     {
-      "id": "1",
+      "id": "fix-1",
       "command": "git pull origin feat/job-library",
-      "description": "Pull fix for Save Job button"
+      "description": "Pull Save Job fix"
     }
   ],
-  "createdAt": "2026-07-26T21:45:00Z",
+  "createdAt": "2026-07-26T22:00:00Z",
   "source": "kiro"
 }
