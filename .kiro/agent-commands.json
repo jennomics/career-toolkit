@@ -3,14 +3,9 @@
     {
       "id": "1",
       "command": "git pull origin feat/job-library",
-      "description": "Pull latest changes"
-    },
-    {
-      "id": "2",
-      "command": "npx prisma migrate dev",
-      "description": "Run database migrations (adds Correction table)"
+      "description": "Pull fix for Save Job button"
     }
   ],
-  "createdAt": "2026-07-26T21:30:00Z",
+  "createdAt": "2026-07-26T21:45:00Z",
   "source": "kiro"
 }
