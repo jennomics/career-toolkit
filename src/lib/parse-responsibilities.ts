@@ -56,11 +56,14 @@ const STRIP_PREFIXES = [
 export interface Responsibility {
   text: string;
   category: "responsibility" | "requirement" | "qualification";
+  keywords: string[]; // associated keywords found in this phrase
 }
+
+import { parseSkills } from "./parse-skills";
 
 /**
  * Extracts action-verb-driven phrases from a job description.
- * Returns cleaned, resume-ready bullet points.
+ * Returns cleaned, resume-ready bullet points with associated keywords.
  */
 export function parseResponsibilities(description: string): Responsibility[] {
   const lines = description
@@ -108,7 +111,9 @@ export function parseResponsibilities(description: string): Responsibility[] {
       const key = cleaned.toLowerCase();
       if (!seen.has(key)) {
         seen.add(key);
-        results.push({ text: cleaned, category: currentSection });
+        // Find which keywords appear in this specific phrase
+        const phraseKeywords = parseSkills(cleaned);
+        results.push({ text: cleaned, category: currentSection, keywords: phraseKeywords });
       }
     }
   }
