@@ -20,7 +20,8 @@ model Job {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  skills JobSkill[]
+  skills           JobSkill[]
+  responsibilities JobResponsibility[]
 }
 
 model JobSkill {
@@ -31,6 +32,16 @@ model JobSkill {
 
   @@index([jobId])
   @@index([name])
+}
+
+model JobResponsibility {
+  id       String @id @default(cuid())
+  text     String
+  category String // responsibility, requirement, qualification
+  jobId    String
+  job      Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
 }
 
 model Correction {
