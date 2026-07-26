@@ -13,6 +13,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const parsed = parseJob(text);
+  const parsed = await parseJob(text);
   return NextResponse.json(parsed);
 }
