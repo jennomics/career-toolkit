@@ -1,11 +1,11 @@
 {
   "commands": [
     {
-      "id": "kw-1",
+      "id": "del-fix-1",
       "command": "npx prisma generate && npx prisma db push && mv dev.db prisma/dev.db 2>/dev/null; true",
-      "description": "Regenerate Prisma client and sync database"
+      "description": "Sync database schema (ensure JobResponsibility table exists)"
     }
   ],
-  "createdAt": "2026-07-26T22:30:00Z",
+  "createdAt": "2026-07-26T23:00:00Z",
   "source": "kiro"
 }
