@@ -1,0 +1,16 @@
+{
+  "commands": [
+    {
+      "id": "1",
+      "command": "git pull origin feat/job-library",
+      "description": "Pull latest changes"
+    },
+    {
+      "id": "2",
+      "command": "npx prisma migrate dev",
+      "description": "Run database migrations (adds Correction table)"
+    }
+  ],
+  "createdAt": "2026-07-26T21:30:00Z",
+  "source": "kiro"
+}
