@@ -15,7 +15,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [parsedSkills, setParsedSkills] = useState<string[]>([]);
   const [parsedResponsibilities, setParsedResponsibilities] = useState<
-    { text: string; category: string }[]
+    { text: string; category: string; keywords: string[] }[]
   >([]);
   const [extractedValues, setExtractedValues] = useState<{
     title: string;
@@ -76,7 +76,10 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
         body: JSON.stringify({
           ...formData,
           skills: parsedSkills,
-          responsibilities: parsedResponsibilities.map((r) => r.text),
+          responsibilities: parsedResponsibilities.map((r) => ({
+            text: r.text,
+            category: r.category,
+          })),
           extracted: extractedValues,
         }),
       });
@@ -304,19 +307,30 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
           <p className="text-xs text-gray-500 mb-2">
             Action-driven statements extracted from the description. Use these as starting points for resume bullets.
           </p>
-          <ul className="space-y-1.5">
+          <ul className="space-y-2">
             {parsedResponsibilities.map((r, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-gray-800">
-                <span className={`mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase ${
-                  r.category === "responsibility"
-                    ? "bg-green-100 text-green-700"
-                    : r.category === "requirement"
-                    ? "bg-purple-100 text-purple-700"
-                    : "bg-gray-100 text-gray-600"
-                }`}>
-                  {r.category === "responsibility" ? "DO" : r.category === "requirement" ? "NEED" : "NICE"}
-                </span>
-                <span>{r.text}</span>
+              <li key={i} className="text-sm text-gray-800">
+                <div className="flex items-start gap-2">
+                  <span className={`mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase shrink-0 ${
+                    r.category === "responsibility"
+                      ? "bg-green-100 text-green-700"
+                      : r.category === "requirement"
+                      ? "bg-purple-100 text-purple-700"
+                      : "bg-gray-100 text-gray-600"
+                  }`}>
+                    {r.category === "responsibility" ? "DO" : r.category === "requirement" ? "NEED" : "NICE"}
+                  </span>
+                  <span>{r.text}</span>
+                </div>
+                {r.keywords && r.keywords.length > 0 && (
+                  <div className="flex flex-wrap gap-1 ml-8 mt-1">
+                    {r.keywords.map((kw) => (
+                      <span key={kw} className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px]">
+                        {kw}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </li>
             ))}
           </ul>
