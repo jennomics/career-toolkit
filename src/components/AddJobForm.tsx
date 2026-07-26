@@ -12,6 +12,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
   const [isParsing, setIsParsing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [parsedSkills, setParsedSkills] = useState<string[]>([]);
   const [extractedValues, setExtractedValues] = useState<{
     title: string;
@@ -62,33 +63,41 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
-    const res = await fetch("/api/jobs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...formData,
-        skills: parsedSkills,
-        extracted: extractedValues,
-      }),
-    });
-
-    if (res.ok) {
-      setFormData({
-        title: "",
-        company: "",
-        location: "",
-        url: "",
-        description: "",
-        source: "linkedin",
-        notes: "",
+    try {
+      const res = await fetch("/api/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          skills: parsedSkills,
+          extracted: extractedValues,
+        }),
       });
-      setRawText("");
-      setParsedSkills([]);
-      setExtractedValues(null);
-      setStep("paste");
-      setIsOpen(false);
-      onJobAdded();
+
+      if (res.ok) {
+        setFormData({
+          title: "",
+          company: "",
+          location: "",
+          url: "",
+          description: "",
+          source: "linkedin",
+          notes: "",
+        });
+        setRawText("");
+        setParsedSkills([]);
+        setExtractedValues(null);
+        setStep("paste");
+        setIsOpen(false);
+        onJobAdded();
+      } else {
+        const data = await res.json().catch(() => null);
+        setError(data?.error || `Save failed (${res.status})`);
+      }
+    } catch (err) {
+      setError(`Network error: ${err instanceof Error ? err.message : "unknown"}`);
     }
 
     setIsSubmitting(false);
@@ -296,6 +305,12 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
             focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
+
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       <div className="flex gap-3">
         <button
