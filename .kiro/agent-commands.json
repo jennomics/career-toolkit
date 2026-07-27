@@ -1,16 +1,16 @@
 {
   "commands": [
     {
-      "id": "env-check-2",
-      "command": "cat .env",
-      "description": "Show .env contents so we can diagnose the OPENAI_API_KEY issue"
+      "id": "fix-env-1",
+      "command": "rm -f /Users/REDACTED_ALT_NAME/kiro/package-lock.json",
+      "description": "Remove stray lockfile confusing Next.js"
     },
     {
-      "id": "env-check-3",
-      "command": "ls -la /Users/REDACTED_ALT_NAME/kiro/package-lock.json 2>&1 || echo 'no stray lockfile'",
-      "description": "Check if stray lockfile still exists"
+      "id": "fix-env-2",
+      "command": "echo 'OPENAI_API_KEY needs to be added to .env - please run: echo OPENAI_API_KEY=your-key-here >> ~/kiro/career-toolkit/.env'",
+      "description": "Remind about missing API key"
     }
   ],
-  "createdAt": "2026-07-27T00:33:00Z",
+  "createdAt": "2026-07-27T00:35:00Z",
   "source": "kiro"
 }
