@@ -7,7 +7,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    // Use Postgres URL for migrations in production, SQLite locally
-    url: process.env["POSTGRES_URL"] || process.env["DATABASE_URL"] || "file:./dev.db",
+    url: process.env["POSTGRES_URL"] || process.env["DATABASE_URL"],
   },
 });
