@@ -1,69 +1,109 @@
 # Career Toolkit
 
-A job search management app that helps users save job descriptions, analyze skill patterns, and build targeted resumes.
+A job search app that helps users save job descriptions, extract keywords and resume-ready phrases via LLM, track skill patterns, and build targeted resumes.
 
 ## Development Setup
 
 ```bash
+# First time:
 npm install
-npx prisma migrate dev    # Set up/update database
-npm run dev               # Start dev server
-npm run build             # Production build
-npm run lint              # Run ESLint
+npx prisma generate
+npx prisma db push
+chmod 666 dev.db
+npm run dev
+
+# Or just run groundcrew (handles everything):
+groundcrew start .
 ```
 
 ## Tech Stack
 
-- **Framework**: Next.js 16 (App Router)
+- **Framework**: Next.js 16 (App Router, Turbopack)
 - **Language**: TypeScript (strict mode)
 - **Styling**: Tailwind CSS v4
-- **Database**: SQLite via Prisma ORM
+- **Database**: SQLite via Prisma 7 + @prisma/adapter-libsql
+- **LLM**: OpenAI GPT-4o-mini (for job description parsing)
 - **Runtime**: Node.js 22
+- **Local Agent**: Groundcrew (auto-pulls, manages dev server, runs commands)
 
 ## Project Structure
 
 ```
 src/
 ├── app/              # Next.js App Router pages and API routes
-│   ├── api/          # REST API endpoints
+│   ├── api/
 │   │   ├── jobs/     # CRUD for job descriptions
-│   │   └── parse-skills/  # Skill extraction endpoint
-│   ├── layout.tsx    # Root layout
+│   │   ├── jobs/[id] # Single job operations (get, update, delete)
+│   │   ├── parse-job/     # LLM-powered extraction (falls back to regex)
+│   │   └── parse-skills/  # Keyword extraction endpoint
+│   ├── layout.tsx
 │   └── page.tsx      # Main dashboard
-├── components/       # React UI components
+├── components/
+│   ├── AddJobForm.tsx      # Paste-first form with LLM extraction
+│   ├── JobCard.tsx         # Job display with expandable phrases
+│   └── KeywordsSummary.tsx # Clickable keywords → associated phrases
 ├── generated/prisma/ # Auto-generated Prisma client (do not edit)
-└── lib/              # Utilities and services
-    ├── db.ts         # Prisma client singleton
-    └── parse-skills.ts  # Skill extraction logic
+└── lib/
+    ├── db.ts              # Prisma client singleton (libsql adapter)
+    ├── llm-parse-job.ts   # OpenAI GPT-4o-mini integration
+    ├── parse-job.ts       # Regex fallback parser + correction learning
+    ├── parse-responsibilities.ts  # Action-verb phrase extraction
+    └── parse-skills.ts    # Keyword pattern matching
 prisma/
-├── schema.prisma     # Database schema
-└── migrations/       # Migration history
+├── schema.prisma     # Database schema (Job, JobSkill, JobResponsibility, Correction)
+└── migrations/
+.kiro/
+├── steering/         # This file + project conventions
+├── agent-commands.json  # Commands from Kiro for Groundcrew to execute
+└── agent-results.json   # Results pushed back by Groundcrew
 ```
+
+## Critical: Database Path
+
+The database lives at `./dev.db` (project root). Both:
+- `.env` → `DATABASE_URL="file:./dev.db"`
+- `src/lib/db.ts` → `url: "file:dev.db"`
+
+Must point to the same location. After `prisma db push`, always `chmod 666 dev.db`.
 
 ## Code Standards
 
-- Use functional components with hooks
-- Keep components in `src/components/`, one per file
-- API routes go in `src/app/api/[resource]/route.ts`
+- All API routes wrapped in try/catch with error messages in response body
+- Correction/learning features wrapped in separate try/catch (never block primary flow)
+- LLM operations always have a regex fallback
+- Errors must be shown in the UI, not just logged
 - Use `@/` import alias for `src/` paths
-- Prisma client is accessed via `import { prisma } from "@/lib/db"`
-
-## Database
-
-- SQLite for local development (file: `prisma/dev.db`)
-- Run `npx prisma migrate dev --name <name>` after schema changes
-- Run `npx prisma generate` if client types are stale
+- Prisma client: `import { prisma } from "@/lib/db"`
 
 ## Key Patterns
 
-- Jobs are the core entity: title, company, full description, auto-extracted skills
-- Skills are parsed via regex pattern matching (see `src/lib/parse-skills.ts`)
-- SkillsSummary component shows skill frequency to guide resume writing
-- Status tracking: saved -> applied -> interviewing -> offer/rejected/closed
+- **Paste-first flow**: User pastes raw JD → LLM extracts title, company, location, keywords, and resume phrases → user reviews/edits → save
+- **Correction learning**: When user edits auto-extracted fields, differences are stored and consulted for future extractions
+- **Keywords**: Technology skills, tools, methodologies, competencies extracted from JDs
+- **Resume-ready phrases**: Action-verb-driven statements categorized as DO (responsibility), NEED (requirement), NICE (qualification), each associated with keywords
+- **Keyword drill-down**: Clicking a keyword in the summary shows all associated phrases across jobs
 
-## Future Plans
+## Environment Variables
 
-- Resume builder that uses skill frequency data
-- Company tracker with career page links
-- Network map for contacts at target companies
-- AI-powered skill extraction (replace regex with LLM)
+```
+DATABASE_URL="file:./dev.db"
+OPENAI_API_KEY=sk-...  # Required for LLM extraction, falls back to regex without it
+```
+
+## Agent Fleet (planned)
+
+- **Groundcrew** (local): auto-pulls, manages dev server, runs commands, pushes results
+- **Preflight** (server): validates code before push (build, env, schema)
+- **Doctor** (local): diagnoses and fixes env/runtime errors autonomously
+- **Sentinel** (local): health-checks the app after restarts
+- **UX Guardian** (server): reviews UI for accessibility
+- **Demo Producer** (server): generates demo recordings at milestones
+- **Scribe** (server): captures decisions and patterns for future sessions
+
+## Known Gotchas
+
+- Prisma 7: createMany doesn't work reliably with libsql → use individual creates
+- Prisma 7: PrismaClient requires adapter in constructor (PrismaLibSql)
+- Next.js Turbopack: stray package-lock.json in parent dirs confuses root detection → .env not loaded
+- After schema changes: must run `prisma generate` AND restart dev server (hot reload doesn't catch it)
+- SQLite on macOS: db files may be created read-only → chmod 666 after creation
