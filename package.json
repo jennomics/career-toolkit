@@ -10,7 +10,8 @@
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
-    "watch-remote": "bash scripts/watch-and-update.sh"
+    "watch-remote": "bash scripts/watch-and-update.sh",
+    "migrate:neon": "node scripts/migrate-to-neon.mjs"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
@@ -23,6 +24,8 @@
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "better-sqlite3": "^11.0.0",
+    "dotenv": "^16.4.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
