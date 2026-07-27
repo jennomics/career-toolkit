@@ -43,6 +43,8 @@ next-env.d.ts
 /src/generated/prisma
 
 
-# SQLite database
+# SQLite database (legacy, no longer used)
+dev.db
+dev.db-journal
 prisma/dev.db
 prisma/dev.db-journal
