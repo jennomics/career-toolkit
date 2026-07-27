@@ -1,16 +1,11 @@
 {
   "commands": [
     {
-      "id": "fix-env-1",
-      "command": "rm -f /Users/REDACTED_ALT_NAME/kiro/package-lock.json",
-      "description": "Remove stray lockfile confusing Next.js"
-    },
-    {
-      "id": "fix-env-2",
-      "command": "echo 'OPENAI_API_KEY needs to be added to .env - please run: echo OPENAI_API_KEY=your-key-here >> ~/kiro/career-toolkit/.env'",
-      "description": "Remind about missing API key"
+      "id": "cache-fix-1",
+      "command": "rm -rf .next",
+      "description": "Clear stale Next.js cache"
     }
   ],
-  "createdAt": "2026-07-27T00:35:00Z",
+  "createdAt": "2026-07-27T00:48:00Z",
   "source": "kiro"
 }
