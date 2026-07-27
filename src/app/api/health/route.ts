@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -15,12 +14,13 @@ export async function GET() {
   const timestamp = new Date().toISOString();
   const version = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || "local";
 
-  // Check database connectivity
+  // Check database connectivity (dynamic import to avoid module-level failures)
   let dbStatus: "connected" | "disconnected" = "disconnected";
   let dbLatencyMs: number | null = null;
   let jobCount: number | null = null;
 
   try {
+    const { prisma } = await import("@/lib/db");
     const start = Date.now();
     const result = await prisma.job.count();
     dbLatencyMs = Date.now() - start;
