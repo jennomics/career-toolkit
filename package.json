@@ -13,10 +13,9 @@
     "watch-remote": "bash scripts/watch-and-update.sh"
   },
   "dependencies": {
-    "@libsql/client": "^0.17.4",
-    "@prisma/adapter-libsql": "^7.9.0",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.0",
+    "@types/pg": "^8.20.0",
     "next": "16.2.11",
     "openai": "^6.49.0",
     "pg": "^8.22.0",
