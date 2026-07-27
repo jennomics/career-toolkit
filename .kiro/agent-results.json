@@ -1,23 +1,14 @@
 {
   "results": [
     {
-      "id": "fix-env-1",
-      "command": "rm -f /Users/REDACTED_ALT_NAME/kiro/package-lock.json",
+      "id": "cache-fix-1",
+      "command": "rm -rf .next",
       "status": "success",
       "stdout": "",
       "stderr": "",
       "exitCode": 0,
-      "duration": 11
-    },
-    {
-      "id": "fix-env-2",
-      "command": "echo 'OPENAI_API_KEY needs to be added to .env - please run: echo OPENAI_API_KEY=your-key-here >> ~/kiro/career-toolkit/.env'",
-      "status": "success",
-      "stdout": "OPENAI_API_KEY needs to be added to .env - please run: echo OPENAI_API_KEY=your-key-here >> ~/kiro/career-toolkit/.env\n",
-      "stderr": "",
-      "exitCode": 0,
-      "duration": 6
+      "duration": 647
     }
   ],
-  "processedAt": "2026-07-27T02:36:59.438Z"
+  "processedAt": "2026-07-27T02:49:01.789Z"
 }
