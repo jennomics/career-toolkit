@@ -6,11 +6,14 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+  const connectionString =
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.DATABASE_URL;
 
   if (!connectionString) {
     throw new Error(
-      "No database URL found. Set POSTGRES_URL or DATABASE_URL in .env"
+      "No database URL found. Set POSTGRES_URL, POSTGRES_PRISMA_URL, or DATABASE_URL in .env"
     );
   }
 
@@ -18,6 +21,26 @@ function createPrismaClient() {
   return new PrismaClient({ adapter });
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+/**
+ * Lazy-initialized Prisma client.
+ * Uses a getter so the client is only created when first accessed at runtime,
+ * not during Next.js build-time static page generation.
+ */
+export const db = {
+  get client(): PrismaClient {
+    if (!globalForPrisma.prisma) {
+      globalForPrisma.prisma = createPrismaClient();
+    }
+    return globalForPrisma.prisma;
+  },
+};
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+/**
+ * Default export for convenience — use `prisma.job.findMany()` etc.
+ * This is a Proxy that lazily initializes on first property access.
+ */
+export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    return db.client[prop as keyof PrismaClient];
+  },
+});
