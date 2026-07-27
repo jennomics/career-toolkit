@@ -2,6 +2,12 @@
 
 import { useState } from "react";
 
+interface Responsibility {
+  id: string;
+  text: string;
+  category: string;
+}
+
 interface Job {
   id: string;
   title: string;
@@ -14,12 +20,14 @@ interface Job {
   notes: string | null;
   createdAt: string;
   skills: { id: string; name: string }[];
+  responsibilities: Responsibility[];
 }
 
 interface JobCardProps {
   job: Job;
   onUpdate: () => void;
   onDelete: () => void;
+  onKeywordClick?: (keyword: string) => void;
 }
 
 const STATUS_OPTIONS = [
@@ -31,7 +39,7 @@ const STATUS_OPTIONS = [
   { value: "closed", label: "Closed", color: "bg-gray-100 text-gray-500" },
 ];
 
-export default function JobCard({ job, onUpdate, onDelete }: JobCardProps) {
+export default function JobCard({ job, onUpdate, onDelete, onKeywordClick }: JobCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -117,21 +125,54 @@ export default function JobCard({ job, onUpdate, onDelete }: JobCardProps) {
       {job.skills.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-3">
           {job.skills.map((skill) => (
-            <span
+            <button
               key={skill.id}
-              className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs"
+              onClick={() => onKeywordClick?.(skill.name)}
+              className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs hover:bg-blue-100 cursor-pointer transition-colors"
             >
               {skill.name}
-            </span>
+            </button>
           ))}
         </div>
       )}
 
       {expanded && (
         <div className="mt-4 pt-3 border-t border-gray-100">
-          <div className="text-sm text-gray-700 whitespace-pre-wrap max-h-64 overflow-y-auto">
-            {job.description}
-          </div>
+          {/* Resume-Ready Phrases */}
+          {job.responsibilities && job.responsibilities.length > 0 && (
+            <div className="mb-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">
+                Resume-Ready Phrases
+              </h4>
+              <ul className="space-y-1.5">
+                {job.responsibilities.map((r) => (
+                  <li key={r.id} className="flex items-start gap-2 text-sm text-gray-800">
+                    <span className={`mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase shrink-0 ${
+                      r.category === "responsibility"
+                        ? "bg-green-100 text-green-700"
+                        : r.category === "requirement"
+                        ? "bg-purple-100 text-purple-700"
+                        : "bg-gray-100 text-gray-600"
+                    }`}>
+                      {r.category === "responsibility" ? "DO" : r.category === "requirement" ? "NEED" : "NICE"}
+                    </span>
+                    <span>{r.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Full Description */}
+          <details className="group">
+            <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 mb-2">
+              Show full description
+            </summary>
+            <div className="text-sm text-gray-700 whitespace-pre-wrap max-h-64 overflow-y-auto">
+              {job.description}
+            </div>
+          </details>
+
           {job.notes && (
             <div className="mt-3 p-2 bg-yellow-50 rounded text-sm text-gray-600">
               <strong className="text-gray-700">Notes:</strong> {job.notes}

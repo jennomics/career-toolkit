@@ -1,0 +1,11 @@
+{
+  "commands": [
+    {
+      "id": "cache-fix-1",
+      "command": "rm -rf .next",
+      "description": "Clear stale Next.js cache"
+    }
+  ],
+  "createdAt": "2026-07-27T00:48:00Z",
+  "source": "kiro"
+}
