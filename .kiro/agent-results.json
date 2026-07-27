@@ -1,0 +1,14 @@
+{
+  "results": [
+    {
+      "id": "env-fix-1",
+      "command": "rm -f /Users/REDACTED_ALT_NAME/kiro/package-lock.json && cat .env | grep -c OPENAI && echo 'Key found in .env' || echo 'KEY MISSING from .env'",
+      "status": "skipped",
+      "stdout": "",
+      "stderr": "BLOCKED: destructive command: rm -f /Users/REDACTED_ALT_NAME/kiro/package-lock.json && cat .env | grep -c OPENAI && echo 'Key found in .env' || echo 'KEY MISSING from .env'",
+      "exitCode": null,
+      "duration": 0
+    }
+  ],
+  "processedAt": "2026-07-27T02:32:11.636Z"
+}
