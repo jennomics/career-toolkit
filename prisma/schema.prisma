@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model Job {
@@ -20,7 +20,8 @@ model Job {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  skills JobSkill[]
+  skills           JobSkill[]
+  responsibilities JobResponsibility[]
 }
 
 model JobSkill {
@@ -31,4 +32,26 @@ model JobSkill {
 
   @@index([jobId])
   @@index([name])
+}
+
+model JobResponsibility {
+  id       String @id @default(cuid())
+  text     String
+  category String // responsibility, requirement, qualification
+  jobId    String
+  job      Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+}
+
+model Correction {
+  id             String   @id @default(cuid())
+  field          String   // "title", "company", "location"
+  extractedValue String   // what the parser guessed
+  correctedValue String   // what the user actually saved
+  rawContext     String   // first ~500 chars of the raw text for pattern learning
+  source         String?  // linkedin, company-site, etc.
+  createdAt      DateTime @default(now())
+
+  @@index([field])
 }
