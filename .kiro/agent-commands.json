@@ -1,11 +1,11 @@
 {
   "commands": [
     {
-      "id": "migrate-neon-1",
-      "command": "node scripts/migrate-to-neon.mjs",
-      "description": "Migrate 116 jobs from local SQLite to Neon PostgreSQL"
+      "id": "restart-dev-2",
+      "command": "kill $(lsof -t -i:3000) 2>/dev/null; sleep 1; npm run dev",
+      "description": "Restart dev server to pick up new routes"
     }
   ],
-  "createdAt": "2026-07-27T23:35:00Z",
+  "createdAt": "2026-07-27T23:45:00Z",
   "source": "kiro"
 }
