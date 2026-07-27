@@ -1,11 +1,11 @@
 {
   "commands": [
     {
-      "id": "cache-fix-1",
-      "command": "rm -rf .next",
-      "description": "Clear stale Next.js cache"
+      "id": "migrate-neon-1",
+      "command": "node scripts/migrate-to-neon.mjs",
+      "description": "Migrate 116 jobs from local SQLite to Neon PostgreSQL"
     }
   ],
-  "createdAt": "2026-07-27T00:48:00Z",
+  "createdAt": "2026-07-27T23:35:00Z",
   "source": "kiro"
 }
