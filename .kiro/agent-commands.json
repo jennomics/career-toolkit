@@ -1,11 +1,11 @@
 {
   "commands": [
     {
-      "id": "env-1",
-      "command": "cat .env | grep OPENAI_API_KEY || echo 'MISSING: OPENAI_API_KEY not found in .env'",
-      "description": "Check if OPENAI_API_KEY is in .env"
+      "id": "fix-root-1",
+      "command": "rm -f /Users/jennalang/kiro/package-lock.json",
+      "description": "Remove stray lockfile confusing Next.js root detection"
     }
   ],
-  "createdAt": "2026-07-26T23:40:00Z",
+  "createdAt": "2026-07-26T23:42:00Z",
   "source": "kiro"
 }
