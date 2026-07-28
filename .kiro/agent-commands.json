@@ -1,11 +1,11 @@
 {
   "commands": [
     {
-      "id": "restart-dev-2",
-      "command": "kill $(lsof -t -i:3000) 2>/dev/null; sleep 1; npm run dev",
-      "description": "Restart dev server to pick up new routes"
+      "id": "restart-dev-3",
+      "command": "rm -rf .next && kill $(lsof -t -i:3000) 2>/dev/null; sleep 2; npm run dev",
+      "description": "Clear cache and restart dev server to pick up new migrate code"
     }
   ],
-  "createdAt": "2026-07-27T23:45:00Z",
+  "createdAt": "2026-07-28T00:12:00Z",
   "source": "kiro"
 }
