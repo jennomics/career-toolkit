@@ -1,26 +1,53 @@
 import { NextResponse } from "next/server";
+import { existsSync } from "fs";
+import { resolve } from "path";
 
 export const dynamic = "force-dynamic";
 
 /**
  * GET /api/migrate/export
  *
- * Exports all data from the LOCAL database as JSON.
- * Hit this on localhost:3000 to get your SQLite data,
- * then POST it to the production /api/migrate endpoint.
+ * Reads directly from the LOCAL SQLite dev.db file (NOT from Prisma/Neon).
+ * This ensures we get the original 116 jobs even when POSTGRES_PRISMA_URL is set.
  *
- * Only works in development for safety.
+ * Only works locally where dev.db exists.
  */
 export async function GET() {
   try {
-    const { prisma } = await import("@/lib/db");
+    // Find the SQLite database
+    const dbPath = resolve(process.cwd(), "dev.db");
 
-    const jobs = await prisma.job.findMany({
-      orderBy: { createdAt: "asc" },
-    });
-    const skills = await prisma.jobSkill.findMany();
-    const responsibilities = await prisma.jobResponsibility.findMany();
-    const corrections = await prisma.correction.findMany();
+    if (!existsSync(dbPath)) {
+      return NextResponse.json(
+        {
+          error: "SQLite database not found at " + dbPath,
+          hint: "This endpoint only works locally where dev.db exists.",
+        },
+        { status: 404 }
+      );
+    }
+
+    // Dynamic import to avoid build-time issues (better-sqlite3 is optional)
+    let Database;
+    try {
+      Database = (await import("better-sqlite3")).default;
+    } catch {
+      return NextResponse.json(
+        {
+          error: "better-sqlite3 not installed. Run: npm install better-sqlite3",
+        },
+        { status: 500 }
+      );
+    }
+
+    const db = new Database(dbPath, { readonly: true });
+
+    const jobs = db.prepare("SELECT * FROM Job").all();
+    const skills = db.prepare("SELECT * FROM JobSkill").all();
+    const responsibilities = db.prepare("SELECT * FROM JobResponsibility").all();
+    const corrections = db.prepare("SELECT * FROM Correction").all();
+
+    db.close();
 
     return NextResponse.json({
       exportedAt: new Date().toISOString(),

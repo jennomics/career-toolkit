@@ -25,13 +25,12 @@ export default function MigratePage() {
     setResults(null);
 
     try {
-      // Step 1: Export from local
-      setLog((l) => [...l, "Exporting data from local database..."]);
+      // Step 1: Export from local SQLite
+      setLog((l) => [...l, "Reading from local SQLite dev.db..."]);
       const exportRes = await fetch("/api/migrate/export");
       if (!exportRes.ok) {
-        throw new Error(
-          `Export failed: ${exportRes.status} ${await exportRes.text()}`
-        );
+        const errBody = await exportRes.text();
+        throw new Error(`Export failed (${exportRes.status}): ${errBody}`);
       }
       const data = await exportRes.json();
       setLog((l) => [

@@ -3,6 +3,27 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+// CORS headers for cross-origin requests from localhost
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+function jsonWithCors(data: unknown, init?: { status?: number }) {
+  return NextResponse.json(data, {
+    ...init,
+    headers: corsHeaders,
+  });
+}
+
+/**
+ * OPTIONS /api/migrate — CORS preflight
+ */
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders });
+}
+
 /**
  * POST /api/migrate
  *
@@ -20,7 +41,7 @@ export async function POST(request: Request) {
       data;
 
     if (!jobs.length) {
-      return NextResponse.json(
+      return jsonWithCors(
         { error: "No jobs provided in request body" },
         { status: 400 }
       );
@@ -139,14 +160,14 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({
+    return jsonWithCors({
       status: "complete",
       results,
       totalJobsInDb: await prisma.job.count(),
     });
   } catch (error) {
     console.error("[migrate] Failed:", error);
-    return NextResponse.json(
+    return jsonWithCors(
       {
         error: "Migration failed",
         details: error instanceof Error ? error.message : String(error),
@@ -160,7 +181,7 @@ export async function POST(request: Request) {
  * GET /api/migrate — shows instructions
  */
 export async function GET() {
-  return NextResponse.json({
+  return jsonWithCors({
     message:
       "POST your SQLite data here as JSON to migrate to Neon. See /api/migrate/export on your local dev server to get the data.",
   });
