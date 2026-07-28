@@ -3,12 +3,12 @@
     {
       "id": "restart-dev-2",
       "command": "kill $(lsof -t -i:3000) 2>/dev/null; sleep 1; npm run dev",
-      "status": "success",
-      "stdout": "\n> career-toolkit@0.1.0 dev\n> next dev\n\n▲ Next.js 16.2.11 (Turbopack)\n- Local:         http://localhost:3000\n- Network:       http://10.0.0.128:3000\n- Environments: .env\n✓ Ready in 693ms\n\n",
-      "stderr": "",
-      "exitCode": 0,
-      "duration": 49908
+      "status": "timeout",
+      "stdout": "",
+      "stderr": "Command timeout after 120000ms: kill $(lsof -t -i:3000) 2>/dev/null; sleep 1; npm run dev",
+      "exitCode": null,
+      "duration": 537378
     }
   ],
-  "processedAt": "2026-07-27T23:57:49.996Z"
+  "processedAt": "2026-07-28T00:06:53.053Z"
 }
