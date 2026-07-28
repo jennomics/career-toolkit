@@ -73,3 +73,49 @@ model AgentCommand {
   @@index([status])
   @@index([createdAt])
 }
+
+// ─── My Experience ───────────────────────────────────────────────────────────
+
+model Experience {
+  id             String   @id @default(cuid())
+  title          String   // Job title / role
+  company        String
+  location       String?
+  employmentType String   @default("full-time") // full-time, part-time, contract, freelance, internship
+  industry       String?  // e.g. "Technology", "Healthcare"
+  department     String?  // e.g. "Engineering", "Product"
+  startDate      DateTime
+  endDate        DateTime? // null = current role
+  isCurrent      Boolean  @default(false)
+  description    String?  // Summary / overview of the role
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  skills     ExperienceSkill[]
+  highlights ExperienceHighlight[]
+
+  @@index([company])
+  @@index([isCurrent])
+}
+
+model ExperienceSkill {
+  id           String     @id @default(cuid())
+  name         String     // Skill name — same conventions as JobSkill for cross-referencing
+  experienceId String
+  experience   Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+
+  @@index([experienceId])
+  @@index([name])
+}
+
+model ExperienceHighlight {
+  id           String     @id @default(cuid())
+  text         String     // Achievement / bullet point (resume-ready)
+  category     String     @default("achievement") // achievement, responsibility, project, award
+  metrics      String?    // Quantified impact (e.g. "increased revenue 40%")
+  keywords     String[]   // Related skills/keywords for matching
+  experienceId String
+  experience   Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+
+  @@index([experienceId])
+}
