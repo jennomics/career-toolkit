@@ -3,7 +3,151 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import Link from "next/link";
 
+/** Inline editable phrase component */
+function EditablePhrase({
+  phrase,
+  onSave,
+  onDelete,
+}: {
+  phrase: Phrase;
+  onSave: (updated: { text: string }) => void;
+  onDelete: () => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(phrase.text);
+  const [isSaving, setIsSaving] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleSave = async () => {
+    if (!editText.trim() || editText === phrase.text) {
+      setIsEditing(false);
+      setEditText(phrase.text);
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/phrases/${phrase.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: editText.trim() }),
+      });
+      if (res.ok) {
+        onSave({ text: editText.trim() });
+        setIsEditing(false);
+      }
+    } catch {
+      // Silent fail — phrase stays unchanged
+    }
+    setIsSaving(false);
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Delete this phrase?")) return;
+    try {
+      const res = await fetch(`/api/phrases/${phrase.id}`, { method: "DELETE" });
+      if (res.ok) onDelete();
+    } catch {
+      // Silent fail
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSave();
+    }
+    if (e.key === "Escape") {
+      setIsEditing(false);
+      setEditText(phrase.text);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <div className="flex items-start gap-2 text-sm">
+        <span
+          className={`mt-1.5 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase shrink-0 ${
+            phrase.category === "responsibility"
+              ? "bg-green-100 text-green-700"
+              : phrase.category === "requirement"
+              ? "bg-purple-100 text-purple-700"
+              : "bg-gray-100 text-gray-600"
+          }`}
+        >
+          {phrase.category === "responsibility" ? "DO" : phrase.category === "requirement" ? "NEED" : "NICE"}
+        </span>
+        <div className="flex-1">
+          <textarea
+            ref={textareaRef}
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            rows={2}
+            className="w-full px-2 py-1 border border-blue-300 rounded text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            autoFocus
+            aria-label="Edit phrase text"
+          />
+          <div className="flex gap-2 mt-1">
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="text-xs text-blue-600 hover:text-blue-800 font-medium cursor-pointer disabled:opacity-50"
+            >
+              {isSaving ? "Saving..." : "Save"}
+            </button>
+            <button
+              onClick={() => { setIsEditing(false); setEditText(phrase.text); }}
+              className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="group flex items-start gap-2 text-sm">
+      <span
+        className={`mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase shrink-0 ${
+          phrase.category === "responsibility"
+            ? "bg-green-100 text-green-700"
+            : phrase.category === "requirement"
+            ? "bg-purple-100 text-purple-700"
+            : "bg-gray-100 text-gray-600"
+        }`}
+      >
+        {phrase.category === "responsibility" ? "DO" : phrase.category === "requirement" ? "NEED" : "NICE"}
+      </span>
+      <div className="flex-1">
+        <p className="text-gray-800">{phrase.text}</p>
+        <div className="flex items-center gap-2 mt-0.5">
+          <p className="text-xs text-gray-400">
+            {phrase.jobTitle} at {phrase.company}
+          </p>
+          <button
+            onClick={() => setIsEditing(true)}
+            className="text-xs text-blue-500 hover:text-blue-700 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            aria-label={`Edit phrase: ${phrase.text.slice(0, 30)}`}
+          >
+            Edit
+          </button>
+          <button
+            onClick={handleDelete}
+            className="text-xs text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            aria-label={`Delete phrase: ${phrase.text.slice(0, 30)}`}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface Phrase {
+  id: string;
   text: string;
   category: string;
   jobTitle: string;
@@ -337,32 +481,43 @@ export default function PhrasesPage() {
                 {expandedKeyword === kw.keyword && kw.phrases.length > 0 && (
                   <div className="border-t border-gray-100 px-4 py-3 space-y-2">
                     {kw.phrases.map((phrase, i) => (
-                      <div
-                        key={`${phrase.jobId}-${i}`}
-                        className="flex items-start gap-2 text-sm"
-                      >
-                        <span
-                          className={`mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase shrink-0 ${
-                            phrase.category === "responsibility"
-                              ? "bg-green-100 text-green-700"
-                              : phrase.category === "requirement"
-                              ? "bg-purple-100 text-purple-700"
-                              : "bg-gray-100 text-gray-600"
-                          }`}
-                        >
-                          {phrase.category === "responsibility"
-                            ? "DO"
-                            : phrase.category === "requirement"
-                            ? "NEED"
-                            : "NICE"}
-                        </span>
-                        <div className="flex-1">
-                          <p className="text-gray-800">{phrase.text}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">
-                            {phrase.jobTitle} at {phrase.company}
-                          </p>
-                        </div>
-                      </div>
+                      <EditablePhrase
+                        key={`${phrase.id || phrase.jobId}-${i}`}
+                        phrase={phrase}
+                        onSave={(updated) => {
+                          // Update local state optimistically
+                          setData((prev) => {
+                            if (!prev) return prev;
+                            return {
+                              ...prev,
+                              keywords: prev.keywords.map((k) => ({
+                                ...k,
+                                phrases: k.phrases.map((p) =>
+                                  p.id === phrase.id ? { ...p, ...updated } : p
+                                ),
+                              })),
+                            };
+                          });
+                        }}
+                        onDelete={() => {
+                          // Remove from local state
+                          setData((prev) => {
+                            if (!prev) return prev;
+                            return {
+                              ...prev,
+                              keywords: prev.keywords.map((k) => ({
+                                ...k,
+                                phrases: k.phrases.filter((p) => p.id !== phrase.id),
+                                phraseCount: k.phrases.filter((p) => p.id !== phrase.id).length,
+                              })),
+                              summary: {
+                                ...prev.summary,
+                                totalPhrases: prev.summary.totalPhrases - 1,
+                              },
+                            };
+                          });
+                        }}
+                      />
                     ))}
                   </div>
                 )}
