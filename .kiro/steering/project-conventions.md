@@ -8,8 +8,6 @@ A job search app that helps users save job descriptions, extract keywords and re
 # First time:
 npm install
 npx prisma generate
-npx prisma db push
-chmod 666 dev.db
 npm run dev
 
 # Or just run groundcrew (handles everything):
@@ -21,9 +19,10 @@ groundcrew start .
 - **Framework**: Next.js 16 (App Router, Turbopack)
 - **Language**: TypeScript (strict mode)
 - **Styling**: Tailwind CSS v4
-- **Database**: SQLite via Prisma 7 + @prisma/adapter-libsql
+- **Database**: Neon PostgreSQL via Prisma 7 + @prisma/adapter-pg
 - **LLM**: OpenAI GPT-4o-mini (for job description parsing)
 - **Runtime**: Node.js 22
+- **Deployment**: Vercel (career-toolkit-gilt.vercel.app)
 - **Local Agent**: Groundcrew (auto-pulls, manages dev server, runs commands)
 
 ## Project Structure
@@ -34,37 +33,38 @@ src/
 │   ├── api/
 │   │   ├── jobs/     # CRUD for job descriptions
 │   │   ├── jobs/[id] # Single job operations (get, update, delete)
+│   │   ├── jobs/check-duplicate/ # Duplicate detection endpoint
+│   │   ├── health/   # Health check endpoint
 │   │   ├── parse-job/     # LLM-powered extraction (falls back to regex)
-│   │   └── parse-skills/  # Keyword extraction endpoint
+│   │   ├── parse-skills/  # Keyword extraction endpoint
+│   │   └── phrases/       # Resume phrases API + backfill
+│   ├── phrases/      # Resume phrases dashboard
 │   ├── layout.tsx
 │   └── page.tsx      # Main dashboard
 ├── components/
-│   ├── AddJobForm.tsx      # Paste-first form with LLM extraction
-│   ├── JobCard.tsx         # Job display with expandable phrases
-│   └── KeywordsSummary.tsx # Clickable keywords → associated phrases
+│   ├── AddJobForm.tsx      # Paste-first form with LLM extraction + duplicate detection
+│   ├── JobCard.tsx         # Job display with expandable phrases + archive/restore
+│   ├── KeywordsSummary.tsx # Clickable keywords → associated phrases
+│   └── SearchFilter.tsx    # Search + company/source filters
 ├── generated/prisma/ # Auto-generated Prisma client (do not edit)
 └── lib/
-    ├── db.ts              # Prisma client singleton (libsql adapter)
+    ├── db.ts              # Prisma client singleton (pg adapter, lazy-init)
     ├── llm-parse-job.ts   # OpenAI GPT-4o-mini integration
     ├── parse-job.ts       # Regex fallback parser + correction learning
     ├── parse-responsibilities.ts  # Action-verb phrase extraction
     └── parse-skills.ts    # Keyword pattern matching
 prisma/
 ├── schema.prisma     # Database schema (Job, JobSkill, JobResponsibility, Correction)
-└── migrations/
 .kiro/
-├── steering/         # This file + project conventions
-├── agent-commands.json  # Commands from Kiro for Groundcrew to execute
-└── agent-results.json   # Results pushed back by Groundcrew
+├── steering/         # This file + groundcrew-communication design
 ```
 
-## Critical: Database Path
+## Critical: Database
 
-The database lives at `./dev.db` (project root). Both:
-- `.env` → `DATABASE_URL="file:./dev.db"`
-- `src/lib/db.ts` → `url: "file:dev.db"`
-
-Must point to the same location. After `prisma db push`, always `chmod 666 dev.db`.
+The app connects to Neon PostgreSQL via `@prisma/adapter-pg`.
+- `.env` → `POSTGRES_URL` or `POSTGRES_PRISMA_URL` (connection string)
+- `src/lib/db.ts` → lazy-init Prisma client (connects at first use, not build time)
+- `prisma.config.ts` → checks `POSTGRES_URL`, `POSTGRES_PRISMA_URL`, `DATABASE_URL` in order
 
 ## Code Standards
 
@@ -78,6 +78,8 @@ Must point to the same location. After `prisma db push`, always `chmod 666 dev.d
 ## Key Patterns
 
 - **Paste-first flow**: User pastes raw JD → LLM extracts title, company, location, keywords, and resume phrases → user reviews/edits → save
+- **Duplicate detection**: After parsing, checks for existing jobs with same title+company or similar description content. Shows warning but doesn't block.
+- **Archive vs. active**: Jobs with status "rejected" or "closed" are considered archived. View toggle (Active/All/Archived) separates pipeline from history.
 - **Correction learning**: When user edits auto-extracted fields, differences are stored and consulted for future extractions
 - **Keywords**: Technology skills, tools, methodologies, competencies extracted from JDs
 - **Resume-ready phrases**: Action-verb-driven statements categorized as DO (responsibility), NEED (requirement), NICE (qualification), each associated with keywords
@@ -86,8 +88,8 @@ Must point to the same location. After `prisma db push`, always `chmod 666 dev.d
 ## Environment Variables
 
 ```
-DATABASE_URL="file:./dev.db"
-OPENAI_API_KEY=sk-...  # Required for LLM extraction, falls back to regex without it
+POSTGRES_URL="postgresql://..."       # or POSTGRES_PRISMA_URL — Neon connection string
+OPENAI_API_KEY=sk-...                  # Required for LLM extraction, falls back to regex without it
 ```
 
 ## Agent Fleet (planned)
@@ -102,8 +104,10 @@ OPENAI_API_KEY=sk-...  # Required for LLM extraction, falls back to regex withou
 
 ## Known Gotchas
 
-- Prisma 7: createMany doesn't work reliably with libsql → use individual creates
-- Prisma 7: PrismaClient requires adapter in constructor (PrismaLibSql)
+- Prisma 7: createMany doesn't work reliably with all adapters → use individual creates
+- Prisma 7: PrismaClient requires adapter in constructor (uses pg adapter now)
+- Prisma 7: datasource url goes in prisma.config.ts, not schema.prisma
 - Next.js Turbopack: stray package-lock.json in parent dirs confuses root detection → .env not loaded
 - After schema changes: must run `prisma generate` AND restart dev server (hot reload doesn't catch it)
-- SQLite on macOS: db files may be created read-only → chmod 666 after creation
+- Vercel: do NOT use output: "standalone" — breaks API routes
+- Vercel: do NOT put `prisma db push` in the build command — use the manual schema-push workflow
