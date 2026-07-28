@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+/**
+ * Check if a Prisma error is a "table does not exist" error.
+ * Returns true if the Experience table hasn't been created yet.
+ */
+function isTableMissingError(err: unknown): boolean {
+  if (err instanceof Error) {
+    return err.message.includes("does not exist in the current database") ||
+           err.message.includes("relation") && err.message.includes("does not exist");
+  }
+  return false;
+}
+
 // GET /api/experience - List all experience entries
 export async function GET(request: NextRequest) {
   try {
@@ -47,6 +59,12 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(experiences);
   } catch (err) {
+    // If the table doesn't exist yet, return empty array with a setup flag
+    if (isTableMissingError(err)) {
+      return NextResponse.json([], {
+        headers: { "X-Setup-Required": "prisma-db-push" },
+      });
+    }
     console.error("GET /api/experience error:", err);
     const message = err instanceof Error ? err.message : "Failed to fetch experience";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -139,6 +157,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(experience, { status: 201 });
   } catch (err) {
+    // Table doesn't exist — tell user to run prisma db push
+    if (isTableMissingError(err)) {
+      return NextResponse.json(
+        { error: "Database setup required. Run: npx prisma db push" },
+        { status: 503 }
+      );
+    }
     console.error("POST /api/experience error:", err);
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

@@ -61,6 +61,8 @@ export default function ExperiencePage() {
   const [editingData, setEditingData] = useState<FormData | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [needsSetup, setNeedsSetup] = useState(false);
+
   const fetchExperiences = useCallback(async () => {
     try {
       setError(null);
@@ -68,6 +70,14 @@ export default function ExperiencePage() {
       if (res.ok) {
         const data = await res.json();
         setExperiences(data);
+        // Check if the API signaled that the table doesn't exist
+        if (res.headers.get("X-Setup-Required") === "prisma-db-push") {
+          setNeedsSetup(true);
+        }
+      } else if (res.status === 503) {
+        // Table doesn't exist yet
+        setNeedsSetup(true);
+        setExperiences([]);
       } else {
         const errData = await res.json().catch(() => ({}));
         setError(errData.error || `Failed to load experience (${res.status})`);
@@ -193,6 +203,22 @@ export default function ExperiencePage() {
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm" role="alert">
             <strong>Error:</strong> {error}
+          </div>
+        )}
+
+        {/* Database setup needed */}
+        {needsSetup && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-5" role="alert">
+            <h3 className="text-sm font-semibold text-amber-800 mb-1">Database Setup Required</h3>
+            <p className="text-sm text-amber-700 mb-3">
+              The Experience tables haven&apos;t been created in your database yet. Run this command in your career-toolkit directory:
+            </p>
+            <code className="block bg-amber-100 text-amber-900 px-3 py-2 rounded text-sm font-mono">
+              npx prisma db push
+            </code>
+            <p className="text-xs text-amber-600 mt-2">
+              This only needs to be done once. After that, this page will work normally.
+            </p>
           </div>
         )}
 
