@@ -22,6 +22,10 @@ interface Job {
   responsibilities: { id: string; text: string; category: string }[];
 }
 
+type ViewMode = "active" | "all" | "archived";
+
+const ARCHIVED_STATUSES = ["rejected", "closed"];
+
 export default function Home() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,6 +34,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [companyFilter, setCompanyFilter] = useState("");
   const [sourceFilter, setSourceFilter] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>("active");
 
   const fetchJobs = useCallback(async () => {
     try {
@@ -69,11 +74,22 @@ export default function Home() {
     return Array.from(set).sort();
   }, [jobs]);
 
-  // Client-side filtering (status + search + company + source)
-  const filteredJobs = useMemo(() => {
-    let result = jobs;
+  // Apply view mode filter first (active/archived/all)
+  const viewFilteredJobs = useMemo(() => {
+    if (viewMode === "active") {
+      return jobs.filter((j) => !ARCHIVED_STATUSES.includes(j.status));
+    }
+    if (viewMode === "archived") {
+      return jobs.filter((j) => ARCHIVED_STATUSES.includes(j.status));
+    }
+    return jobs;
+  }, [jobs, viewMode]);
 
-    // Status filter
+  // Client-side filtering (status + search + company + source) on top of view mode
+  const filteredJobs = useMemo(() => {
+    let result = viewFilteredJobs;
+
+    // Status filter (within the current view)
     if (filter !== "all") {
       result = result.filter((j) => j.status === filter);
     }
@@ -103,15 +119,18 @@ export default function Home() {
     }
 
     return result;
-  }, [jobs, filter, searchQuery, companyFilter, sourceFilter]);
+  }, [viewFilteredJobs, filter, searchQuery, companyFilter, sourceFilter]);
 
-  const statusCounts = jobs.reduce(
+  const statusCounts = viewFilteredJobs.reduce(
     (acc, job) => {
       acc[job.status] = (acc[job.status] || 0) + 1;
       return acc;
     },
     {} as Record<string, number>
   );
+
+  const activeCount = jobs.filter((j) => !ARCHIVED_STATUSES.includes(j.status)).length;
+  const archivedCount = jobs.filter((j) => ARCHIVED_STATUSES.includes(j.status)).length;
 
   const handleKeywordClick = (keyword: string) => {
     // Set keyword as search query and scroll to results
@@ -149,6 +168,48 @@ export default function Home() {
           </div>
         )}
 
+        {/* View Mode Toggle: Active / All / Archived */}
+        {jobs.length > 0 && (
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 w-fit" role="tablist" aria-label="View mode">
+            <button
+              role="tab"
+              aria-selected={viewMode === "active"}
+              onClick={() => { setViewMode("active"); setFilter("all"); }}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                viewMode === "active"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Active ({activeCount})
+            </button>
+            <button
+              role="tab"
+              aria-selected={viewMode === "all"}
+              onClick={() => { setViewMode("all"); setFilter("all"); }}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                viewMode === "all"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              All ({jobs.length})
+            </button>
+            <button
+              role="tab"
+              aria-selected={viewMode === "archived"}
+              onClick={() => { setViewMode("archived"); setFilter("all"); }}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                viewMode === "archived"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Archived ({archivedCount})
+            </button>
+          </div>
+        )}
+
         {/* Search & Filter */}
         {jobs.length > 0 && (
           <SearchFilter
@@ -160,12 +221,12 @@ export default function Home() {
             onCompanyChange={setCompanyFilter}
             onSourceChange={setSourceFilter}
             resultCount={filteredJobs.length}
-            totalCount={jobs.length}
+            totalCount={viewFilteredJobs.length}
           />
         )}
 
         {/* Status filter pills */}
-        {jobs.length > 0 && (
+        {viewFilteredJobs.length > 0 && (
           <div className="flex flex-wrap gap-3" role="group" aria-label="Filter by status">
             <button
               onClick={() => setFilter("all")}
@@ -175,7 +236,7 @@ export default function Home() {
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
-              All ({jobs.length})
+              All ({viewFilteredJobs.length})
             </button>
             {Object.entries(statusCounts).map(([status, count]) => (
               <button
@@ -215,7 +276,9 @@ export default function Home() {
         ) : filteredJobs.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-400">
-              No jobs match your search
+              No jobs match your{" "}
+              {viewMode === "archived" ? "archived " : viewMode === "active" ? "active " : ""}
+              filters
               {searchQuery && <> for &ldquo;{searchQuery}&rdquo;</>}
             </p>
             <button
