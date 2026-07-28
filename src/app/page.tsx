@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import Link from "next/link";
 import AddJobForm from "@/components/AddJobForm";
 import JobCard from "@/components/JobCard";
 import KeywordsSummary from "@/components/KeywordsSummary";
@@ -124,11 +125,19 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-2xl font-bold text-gray-900">Career Toolkit</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Save job descriptions, track keywords, build your resume
-          </p>
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Career Toolkit</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Save job descriptions, track keywords, build your resume
+            </p>
+          </div>
+          <Link
+            href="/phrases"
+            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+          >
+            Resume Phrases &rarr;
+          </Link>
         </div>
       </header>
 
