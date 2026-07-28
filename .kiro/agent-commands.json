@@ -1,11 +1,11 @@
 {
   "commands": [
     {
-      "id": "schema-push-13",
-      "command": "npx prisma generate && npx prisma db push --accept-data-loss && echo 'Schema push complete - keywords column added'",
-      "description": "Generate client with keywords field and push to Neon"
+      "id": "schema-push-14",
+      "command": "npx prisma generate && npx prisma db push && echo 'Schema push complete - Experience tables created'",
+      "description": "Create Experience, ExperienceSkill, ExperienceHighlight tables in the database"
     }
   ],
-  "createdAt": "2026-07-28T03:42:00Z",
+  "createdAt": "2026-07-28T21:15:00Z",
   "source": "kiro"
 }
