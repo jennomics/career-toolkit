@@ -187,7 +187,7 @@ export default function PhrasesPage() {
         )}
 
         {/* Backfill button */}
-        {data && data.summary.totalPhrases > 0 && (
+        {data && (
           <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-700">
