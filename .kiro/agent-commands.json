@@ -1,11 +1,11 @@
 {
   "commands": [
     {
-      "id": "kill-old-dev-4",
-      "command": "kill 41544; sleep 2; kill $(lsof -t -i:3001) 2>/dev/null; sleep 1; rm -rf .next && npm run dev",
-      "description": "Kill stale dev server on port 3000, clear cache, restart fresh"
+      "id": "investigate-db-5",
+      "command": "echo '=== dev.db investigation ===' && ls -la dev.db 2>/dev/null && echo '---' && ls -la prisma/dev.db 2>/dev/null && echo '---' && file dev.db 2>/dev/null && echo '---' && echo 'Checking git stash:' && git stash list 2>/dev/null && echo '---' && echo 'Searching for .db files:' && find /Users/jennalang -name 'dev.db' -size +100k 2>/dev/null | head -10 && echo '---' && echo 'SQLite tables in dev.db:' && sqlite3 dev.db '.tables' 2>/dev/null && echo '---' && echo 'Row counts:' && sqlite3 dev.db 'SELECT count(*) FROM Job;' 2>/dev/null && echo '---' && echo 'Time Machine check:' && ls /Volumes/*/Backups.backupdb 2>/dev/null | head -3",
+      "description": "Investigate dev.db - check file size, contents, stashes, backups, alternate locations"
     }
   ],
-  "createdAt": "2026-07-28T00:16:00Z",
+  "createdAt": "2026-07-28T00:22:00Z",
   "source": "kiro"
 }
