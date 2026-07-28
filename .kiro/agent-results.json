@@ -3,12 +3,12 @@
     {
       "id": "restart-dev-3",
       "command": "rm -rf .next && kill $(lsof -t -i:3000) 2>/dev/null; sleep 2; npm run dev",
-      "status": "error",
-      "stdout": "\n> career-toolkit@0.1.0 dev\n> next dev\n\n▲ Next.js 16.2.11 (Turbopack)\n- Local:         http://localhost:3001\n- Network:       http://10.0.0.128:3001\n- Environments: .env\n✓ Ready in 605ms\n\u001b[?25h\n",
-      "stderr": "⚠ Port 3000 is in use by process 41544, using available port 3001 instead.\n⨯ Another next dev server is already running.\n\n- Local:        http://localhost:3000\n- PID:          41544\n- Dir:          /Users/REDACTED_ALT_NAME/kiro/career-toolkit\n- Log:          .next/dev/logs/next-development.log\n\nRun kill 41544 to stop it.\n",
-      "exitCode": 1,
-      "duration": 4450
+      "status": "timeout",
+      "stdout": "",
+      "stderr": "Command timeout after 120000ms: rm -rf .next && kill $(lsof -t -i:3000) 2>/dev/null; sleep 2; npm run dev",
+      "exitCode": null,
+      "duration": 153933
     }
   ],
-  "processedAt": "2026-07-28T00:14:55.227Z"
+  "processedAt": "2026-07-28T00:17:23.494Z"
 }
