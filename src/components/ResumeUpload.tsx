@@ -383,9 +383,9 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
                 className="hidden"
                 onChange={(e) => {
                   const selectedFiles = Array.from(e.target.files || []);
-                  const oversized = selectedFiles.filter((f) => f.size > 5 * 1024 * 1024);
+                  const oversized = selectedFiles.filter((f) => f.size > 20 * 1024 * 1024);
                   if (oversized.length > 0) {
-                    setError(`${oversized.length} file(s) too large (max 5MB each): ${oversized.map((f) => f.name).join(", ")}`);
+                    setError(`${oversized.length} file(s) too large (max 20MB each): ${oversized.map((f) => f.name).join(", ")}`);
                     return;
                   }
                   setFiles(selectedFiles);
