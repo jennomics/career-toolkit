@@ -1,11 +1,11 @@
 {
   "commands": [
     {
-      "id": "migrate-neon-10",
-      "command": "node scripts/migrate-to-neon.mjs",
-      "description": "Migrate recovered 116 jobs from local SQLite to Neon PostgreSQL"
+      "id": "schema-push-13",
+      "command": "npx prisma generate && npx prisma db push --accept-data-loss && echo 'Schema push complete - keywords column added'",
+      "description": "Generate client with keywords field and push to Neon"
     }
   ],
-  "createdAt": "2026-07-28T02:43:00Z",
+  "createdAt": "2026-07-28T03:42:00Z",
   "source": "kiro"
 }
