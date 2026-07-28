@@ -1,14 +1,14 @@
 {
   "results": [
     {
-      "id": "migrate-neon-10",
-      "command": "node scripts/migrate-to-neon.mjs",
-      "status": "timeout",
-      "stdout": "",
-      "stderr": "Command timeout after 120000ms: node scripts/migrate-to-neon.mjs",
-      "exitCode": null,
-      "duration": 120011
+      "id": "schema-push-11",
+      "command": "npx prisma db push --accept-data-loss && echo 'Schema push complete'",
+      "status": "success",
+      "stdout": "Datasource \"db\": PostgreSQL database \"neondb\", schema \"public\" at \"ep-tiny-brook-au73axd4-pooler.c-10.us-east-1.aws.neon.tech\"\n\nThe database is already in sync with the Prisma schema.\n\nSchema push complete\n",
+      "stderr": "Loaded Prisma config from prisma.config.ts.\n\nPrisma schema loaded from prisma/schema.prisma.\n",
+      "exitCode": 0,
+      "duration": 8806
     }
   ],
-  "processedAt": "2026-07-28T02:48:51.073Z"
+  "processedAt": "2026-07-28T03:36:20.419Z"
 }
