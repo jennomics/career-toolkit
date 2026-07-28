@@ -1,10 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-// GET /api/jobs - List all jobs
-export async function GET() {
+// GET /api/jobs - List all jobs with optional search/filter
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get("q")?.trim() || "";
+    const status = searchParams.get("status") || "";
+    const company = searchParams.get("company") || "";
+    const source = searchParams.get("source") || "";
+    const skill = searchParams.get("skill") || "";
+
+    // Build where clause
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = {};
+
+    // Status filter
+    if (status && status !== "all") {
+      where.status = status;
+    }
+
+    // Company filter
+    if (company) {
+      where.company = { contains: company, mode: "insensitive" };
+    }
+
+    // Source filter
+    if (source) {
+      where.source = source;
+    }
+
+    // Skill filter — jobs that have this skill
+    if (skill) {
+      where.skills = {
+        some: { name: { contains: skill, mode: "insensitive" } },
+      };
+    }
+
+    // Full-text search across title, company, description, location
+    if (query) {
+      where.OR = [
+        { title: { contains: query, mode: "insensitive" } },
+        { company: { contains: query, mode: "insensitive" } },
+        { description: { contains: query, mode: "insensitive" } },
+        { location: { contains: query, mode: "insensitive" } },
+        { skills: { some: { name: { contains: query, mode: "insensitive" } } } },
+      ];
+    }
+
     const jobs = await prisma.job.findMany({
+      where,
       include: { skills: true, responsibilities: true },
       orderBy: { createdAt: "desc" },
     });
