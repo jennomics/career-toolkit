@@ -35,11 +35,12 @@ model JobSkill {
 }
 
 model JobResponsibility {
-  id       String @id @default(cuid())
+  id       String   @id @default(cuid())
   text     String
-  category String // responsibility, requirement, qualification
+  category String   // responsibility, requirement, qualification
+  keywords String[] // which skills/keywords this phrase relates to
   jobId    String
-  job      Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  job      Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@index([jobId])
 }
