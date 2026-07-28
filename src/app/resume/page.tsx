@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 interface ResumeData {
@@ -57,28 +57,29 @@ export default function ResumePage() {
 
   // Fetch saved jobs when gap tab is selected
   const hasFetchedJobs = useRef(false);
-  const fetchSavedJobs = useCallback(async () => {
-    if (hasFetchedJobs.current) return;
-    hasFetchedJobs.current = true;
-    setJobsLoading(true);
-    try {
-      const res = await fetch("/api/jobs");
-      if (res.ok) {
-        const data = await res.json();
-        setSavedJobs(data);
-      }
-    } catch {
-      // Non-critical — user can still paste
-    } finally {
-      setJobsLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
-    if (tab === "gap") {
-      fetchSavedJobs();
-    }
-  }, [tab, fetchSavedJobs]);
+    if (tab !== "gap") return;
+    if (hasFetchedJobs.current) return;
+    hasFetchedJobs.current = true;
+
+    let cancelled = false;
+    setJobsLoading(true);
+
+    fetch("/api/jobs")
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        if (!cancelled) setSavedJobs(data);
+      })
+      .catch(() => {
+        // Non-critical — user can still paste
+      })
+      .finally(() => {
+        if (!cancelled) setJobsLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [tab]);
 
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
