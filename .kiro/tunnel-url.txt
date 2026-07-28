@@ -1,5 +1,4 @@
 {
-  "url": "https://provides-exchange-placed-thousand.trycloudflare.com",
-  "startedAt": "2026-07-28T22:20:00.801Z",
-  "host": "LANGs-MacBook-Pro.local"
+  "url": null,
+  "stoppedAt": "2026-07-28T22:30:28.439Z"
 }
