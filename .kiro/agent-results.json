@@ -7,8 +7,8 @@
       "stdout": "=== Checking prisma/dev.db ===\nCorrection          JobResponsibility   _prisma_migrations\nJob                 JobSkill          \n0\n---\n=== Checking current dev.db tables ===\nCorrection          JobResponsibility   _prisma_migrations\nJob                 JobSkill          \nCREATE TABLE IF NOT EXISTS \"Job\" (\n    \"id\" TEXT NOT NULL PRIMARY KEY,\n    \"title\" TEXT NOT NULL,\n    \"company\" TEXT NOT NULL,\n    \"location\" TEXT,\n    \"url\" TEXT,\n    \"description\" TEXT NOT NULL,\n    \"status\" TEXT NOT NULL DEFAULT 'saved',\n    \"source\" TEXT,\n    \"notes\" TEXT,\n    \"createdAt\" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n    \"updatedAt\" DATETIME NOT NULL\n);\n---\n=== Try stash 7 (before postgres switch) ===\n",
       "stderr": "",
       "exitCode": 1,
-      "duration": 68
+      "duration": 76
     }
   ],
-  "processedAt": "2026-07-28T02:25:27.064Z"
+  "processedAt": "2026-07-28T02:25:27.308Z"
 }
