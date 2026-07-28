@@ -151,12 +151,20 @@ export default function Home() {
               Save job descriptions, track keywords, build your resume
             </p>
           </div>
-          <Link
-            href="/phrases"
-            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-          >
-            Resume Phrases &rarr;
-          </Link>
+          <div className="flex gap-4">
+            <Link
+              href="/phrases"
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Resume Phrases &rarr;
+            </Link>
+            <Link
+              href="/resume"
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Resume Builder &rarr;
+            </Link>
+          </div>
         </div>
       </header>
 
