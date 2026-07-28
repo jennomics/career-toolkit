@@ -7,8 +7,8 @@
       "stdout": "Datasource \"db\": PostgreSQL database \"neondb\", schema \"public\" at \"ep-tiny-brook-au73axd4-pooler.c-10.us-east-1.aws.neon.tech\"\n\nThe database is already in sync with the Prisma schema.\n\nDONE: Experience tables created\n",
       "stderr": "Loaded Prisma config from prisma.config.ts.\n\nPrisma schema loaded from prisma/schema.prisma.\n",
       "exitCode": 0,
-      "duration": 5902
+      "duration": 5627
     }
   ],
-  "processedAt": "2026-07-28T22:32:10.620Z"
+  "processedAt": "2026-07-28T22:32:15.579Z"
 }
