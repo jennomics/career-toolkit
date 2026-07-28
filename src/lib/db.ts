@@ -6,14 +6,22 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  const connectionString =
-    process.env.POSTGRES_URL ||
-    process.env.POSTGRES_PRISMA_URL ||
-    process.env.DATABASE_URL;
+  // Check all possible env vars for a PostgreSQL connection string.
+  // Explicitly skip any SQLite/file-based URLs — this app uses PostgreSQL only.
+  const candidates = [
+    process.env.POSTGRES_URL,
+    process.env.POSTGRES_PRISMA_URL,
+    process.env.DATABASE_URL,
+  ];
+
+  const connectionString = candidates.find(
+    (url) => url && url.startsWith("postgres")
+  );
 
   if (!connectionString) {
     throw new Error(
-      "No database URL found. Set POSTGRES_URL, POSTGRES_PRISMA_URL, or DATABASE_URL in .env"
+      "No PostgreSQL connection URL found. Set POSTGRES_URL or POSTGRES_PRISMA_URL in .env. " +
+      "(DATABASE_URL is set to a SQLite path which is not supported — remove or replace it.)"
     );
   }
 
