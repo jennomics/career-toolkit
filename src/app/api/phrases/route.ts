@@ -6,7 +6,8 @@ export const dynamic = "force-dynamic";
  * GET /api/phrases
  *
  * Returns all resume-ready phrases grouped by keyword, sorted by frequency.
- * Each keyword shows how many jobs mention it and all associated phrases.
+ * Uses the LLM-assigned keywords on each phrase for accurate grouping.
+ * Falls back to job-level skill association for phrases without keyword tags.
  */
 export async function GET() {
   try {
@@ -29,6 +30,7 @@ export async function GET() {
         phrases: {
           text: string;
           category: string;
+          keywords: string[];
           jobTitle: string;
           company: string;
           jobId: string;
@@ -37,47 +39,45 @@ export async function GET() {
     >();
 
     for (const job of jobs) {
+      // Track which keywords this job has
       for (const skill of job.skills) {
         const keyword = skill.name;
         if (!keywordMap.has(keyword)) {
           keywordMap.set(keyword, { count: 0, phrases: [] });
         }
-        const entry = keywordMap.get(keyword)!;
-        entry.count++;
+        keywordMap.get(keyword)!.count++;
+      }
 
-        // Associate phrases from this job with this keyword
-        // Prioritize phrases that mention the keyword directly
-        const keywordLower = keyword.toLowerCase();
-        for (const resp of job.responsibilities) {
-          const alreadyAdded = entry.phrases.some(
-            (p) => p.text === resp.text && p.jobId === job.id
-          );
-          if (!alreadyAdded) {
-            // Check if phrase relates to this keyword (contains it, or is from same job)
-            const isDirectMatch = resp.text
-              .toLowerCase()
-              .includes(keywordLower);
-            if (isDirectMatch) {
+      // Associate phrases with keywords
+      for (const resp of job.responsibilities) {
+        const phraseKeywords = (resp.keywords as string[]) || [];
+
+        if (phraseKeywords.length > 0) {
+          // Phrase has LLM-assigned keywords — use them
+          for (const kw of phraseKeywords) {
+            if (!keywordMap.has(kw)) {
+              keywordMap.set(kw, { count: 0, phrases: [] });
+            }
+            const entry = keywordMap.get(kw)!;
+            const alreadyAdded = entry.phrases.some(
+              (p) => p.text === resp.text && p.jobId === job.id
+            );
+            if (!alreadyAdded) {
               entry.phrases.push({
                 text: resp.text,
                 category: resp.category,
+                keywords: phraseKeywords,
                 jobTitle: job.title,
                 company: job.company,
                 jobId: job.id,
               });
             }
           }
-        }
-      }
-    }
-
-    // For keywords with no direct phrase matches, include all phrases from jobs with that keyword
-    for (const [keyword, entry] of keywordMap) {
-      if (entry.phrases.length === 0) {
-        for (const job of jobs) {
-          const hasKeyword = job.skills.some((s) => s.name === keyword);
-          if (hasKeyword) {
-            for (const resp of job.responsibilities) {
+        } else {
+          // No per-phrase keywords — fall back to all job-level skills
+          for (const skill of job.skills) {
+            const entry = keywordMap.get(skill.name);
+            if (entry) {
               const alreadyAdded = entry.phrases.some(
                 (p) => p.text === resp.text && p.jobId === job.id
               );
@@ -85,6 +85,7 @@ export async function GET() {
                 entry.phrases.push({
                   text: resp.text,
                   category: resp.category,
+                  keywords: job.skills.map((s) => s.name),
                   jobTitle: job.title,
                   company: job.company,
                   jobId: job.id,
@@ -104,7 +105,8 @@ export async function GET() {
         phraseCount: data.phrases.length,
         phrases: data.phrases,
       }))
-      .sort((a, b) => b.jobCount - a.jobCount);
+      .filter((kw) => kw.phraseCount > 0)
+      .sort((a, b) => b.jobCount - a.jobCount || b.phraseCount - a.phraseCount);
 
     // Summary stats
     const totalPhrases = jobs.reduce(
