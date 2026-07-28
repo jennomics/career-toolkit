@@ -1,11 +1,11 @@
 {
   "commands": [
     {
-      "id": "backup-db-9",
-      "command": "cp dev.db dev.db.backup-$(date +%Y%m%d-%H%M%S) && cp dev.db ~/Desktop/career-toolkit-dev.db.backup && echo 'Backed up to:' && ls -la dev.db.backup-* && ls -la ~/Desktop/career-toolkit-dev.db.backup",
-      "description": "Backup recovered dev.db to project root and Desktop"
+      "id": "migrate-neon-10",
+      "command": "node scripts/migrate-to-neon.mjs",
+      "description": "Migrate recovered 116 jobs from local SQLite to Neon PostgreSQL"
     }
   ],
-  "createdAt": "2026-07-28T02:30:00Z",
+  "createdAt": "2026-07-28T02:43:00Z",
   "source": "kiro"
 }
