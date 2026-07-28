@@ -13,6 +13,9 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [duplicateWarning, setDuplicateWarning] = useState<{
+    matches: { id: string; title: string; company: string; reason: string; createdAt: string }[];
+  } | null>(null);
   const [parsedSkills, setParsedSkills] = useState<string[]>([]);
   const [parsedResponsibilities, setParsedResponsibilities] = useState<
     { text: string; category: string; keywords: string[] }[]
@@ -35,6 +38,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
   const handlePaste = async () => {
     if (rawText.length < 20) return;
     setIsParsing(true);
+    setDuplicateWarning(null);
 
     const res = await fetch("/api/parse-job", {
       method: "POST",
@@ -58,6 +62,28 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
       });
       setParsedSkills(parsed.skills || []);
       setParsedResponsibilities(parsed.responsibilities || []);
+
+      // Check for duplicates (non-blocking — wrapped in try/catch)
+      try {
+        const dupRes = await fetch("/api/jobs/check-duplicate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: parsed.title || "",
+            company: parsed.company || "",
+            description: rawText,
+          }),
+        });
+        if (dupRes.ok) {
+          const dupData = await dupRes.json();
+          if (dupData.isDuplicate) {
+            setDuplicateWarning({ matches: dupData.matches });
+          }
+        }
+      } catch {
+        // Duplicate check failure is non-critical — proceed silently
+      }
+
       setStep("review");
     }
 
@@ -99,6 +125,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
         setParsedSkills([]);
         setParsedResponsibilities([]);
         setExtractedValues(null);
+        setDuplicateWarning(null);
         setStep("paste");
         setIsOpen(false);
         onJobAdded();
@@ -117,7 +144,9 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
     setStep("paste");
     setRawText("");
     setParsedSkills([]);
+    setParsedResponsibilities([]);
     setExtractedValues(null);
+    setDuplicateWarning(null);
     setFormData({
       title: "",
       company: "",
@@ -195,6 +224,35 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
       <p className="text-sm text-gray-500 mb-4">
         I pulled these from the description. Fix anything that looks wrong.
       </p>
+
+      {/* Duplicate warning */}
+      {duplicateWarning && (
+        <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg" role="alert">
+          <div className="flex items-start gap-2">
+            <svg className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-amber-800">
+                Possible duplicate detected
+              </p>
+              <ul className="mt-1 text-sm text-amber-700">
+                {duplicateWarning.matches.map((m) => (
+                  <li key={m.id}>
+                    <strong>{m.title}</strong> at {m.company} — {m.reason}
+                    <span className="text-amber-500 ml-1">
+                      (saved {new Date(m.createdAt).toLocaleDateString()})
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-xs text-amber-600">
+                You can still save this job if it&apos;s a different posting.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
