@@ -4,11 +4,11 @@
       "id": "schema-push-15",
       "command": "npx prisma db push && echo 'DONE: Experience tables created'",
       "status": "success",
-      "stdout": "Datasource \"db\": PostgreSQL database \"neondb\", schema \"public\" at \"ep-tiny-brook-au73axd4-pooler.c-10.us-east-1.aws.neon.tech\"\n\n🚀  Your database is now in sync with your Prisma schema. Done in 4.45s\n\nDONE: Experience tables created\n",
+      "stdout": "Datasource \"db\": PostgreSQL database \"neondb\", schema \"public\" at \"ep-tiny-brook-au73axd4-pooler.c-10.us-east-1.aws.neon.tech\"\n\nThe database is already in sync with the Prisma schema.\n\nDONE: Experience tables created\n",
       "stderr": "Loaded Prisma config from prisma.config.ts.\n\nPrisma schema loaded from prisma/schema.prisma.\n",
       "exitCode": 0,
-      "duration": 6978
+      "duration": 5902
     }
   ],
-  "processedAt": "2026-07-28T22:32:08.897Z"
+  "processedAt": "2026-07-28T22:32:10.620Z"
 }
