@@ -1,11 +1,11 @@
 {
   "commands": [
     {
-      "id": "schema-push-11",
-      "command": "npx prisma db push --accept-data-loss && echo 'Schema push complete'",
-      "description": "Push schema to Neon (adds keywords column to JobResponsibility)"
+      "id": "schema-push-13",
+      "command": "npx prisma generate && npx prisma db push --accept-data-loss && echo 'Schema push complete - keywords column added'",
+      "description": "Generate client with keywords field and push to Neon"
     }
   ],
-  "createdAt": "2026-07-28T03:35:00Z",
+  "createdAt": "2026-07-28T03:42:00Z",
   "source": "kiro"
 }
