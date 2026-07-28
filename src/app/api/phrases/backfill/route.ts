@@ -6,13 +6,15 @@ export const maxDuration = 300; // 5 minutes for processing many jobs
 /**
  * POST /api/phrases/backfill
  *
- * Re-processes existing jobs through the LLM to tag each phrase
- * with the keywords it relates to. Only processes jobs that have
- * phrases without keyword tags.
+ * Re-processes existing jobs through the LLM to extract skills,
+ * responsibilities/phrases, and keyword associations.
+ *
+ * Handles TWO cases:
+ * 1. Jobs with NO responsibilities at all (need full extraction)
+ * 2. Jobs with responsibilities but no keyword tags (need tagging only)
  *
  * Query params:
- *   ?limit=10  — max jobs to process per call (default 10)
- *   ?force=true — re-process all jobs, even those already tagged
+ *   ?limit=5   — max jobs to process per call (default 5, LLM is slow)
  */
 export async function POST(request: Request) {
   try {
@@ -20,116 +22,97 @@ export async function POST(request: Request) {
     const { llmParseJob } = await import("@/lib/llm-parse-job");
 
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const force = searchParams.get("force") === "true";
+    const limit = parseInt(searchParams.get("limit") || "5", 10);
 
-    // Find jobs with untagged phrases
+    // Find jobs that need processing: no responsibilities OR no skills
     const jobs = await prisma.job.findMany({
       include: { skills: true, responsibilities: true },
+      where: {
+        OR: [
+          { responsibilities: { none: {} } },
+          { skills: { none: {} } },
+        ],
+      },
       orderBy: { createdAt: "desc" },
       take: limit,
-      ...(force
-        ? {}
-        : {
-            where: {
-              responsibilities: {
-                some: { keywords: { isEmpty: true } },
-              },
-            },
-          }),
     });
 
     if (jobs.length === 0) {
       return NextResponse.json({
         status: "complete",
-        message: "No jobs need backfilling",
+        message: "All jobs have been parsed! No more to process.",
         processed: 0,
+        totalJobsRemaining: 0,
       });
     }
 
     const results = {
       processed: 0,
-      tagged: 0,
+      skillsAdded: 0,
+      phrasesAdded: 0,
       failed: 0,
       errors: [] as string[],
     };
 
     for (const job of jobs) {
       try {
-        // Re-parse with LLM to get phrase→keyword associations
+        // Parse the job description through LLM
         const parsed = await llmParseJob(job.description);
 
-        // Match parsed phrases to existing responsibilities
-        for (const resp of job.responsibilities) {
-          // Find the matching parsed phrase (by text similarity)
-          const matchedPhrase = parsed.phrases.find(
-            (p) =>
-              p.text === resp.text ||
-              p.text.toLowerCase().includes(resp.text.toLowerCase().slice(0, 40)) ||
-              resp.text.toLowerCase().includes(p.text.toLowerCase().slice(0, 40))
-          );
-
-          const keywords = matchedPhrase?.keywords || [];
-
-          // If no exact match, assign keywords based on which job-level keywords
-          // are mentioned in the phrase text
-          if (keywords.length === 0) {
-            const allKeywords = parsed.keywords || job.skills.map((s) => s.name);
-            for (const kw of allKeywords) {
-              if (resp.text.toLowerCase().includes(kw.toLowerCase())) {
-                keywords.push(kw);
-              }
-            }
-          }
-
-          // If still no keywords, use the job-level skills most likely related
-          // by checking if any extracted phrases have similar text
-          if (keywords.length === 0 && parsed.phrases.length > 0) {
-            // Assign the most common keywords from the parsed output
-            const kwFreq = new Map<string, number>();
-            for (const p of parsed.phrases) {
-              for (const k of p.keywords) {
-                kwFreq.set(k, (kwFreq.get(k) || 0) + 1);
-              }
-            }
-            const topKeywords = Array.from(kwFreq.entries())
-              .sort((a, b) => b[1] - a[1])
-              .slice(0, 3)
-              .map(([k]) => k);
-            keywords.push(...topKeywords);
-          }
-
-          if (keywords.length > 0) {
-            await prisma.jobResponsibility.update({
-              where: { id: resp.id },
-              data: { keywords },
+        // Add skills if missing
+        if (job.skills.length === 0 && parsed.keywords.length > 0) {
+          for (const keyword of parsed.keywords) {
+            await prisma.jobSkill.create({
+              data: {
+                name: keyword,
+                jobId: job.id,
+              },
             });
-            results.tagged++;
+            results.skillsAdded++;
+          }
+        }
+
+        // Add responsibilities/phrases if missing
+        if (job.responsibilities.length === 0 && parsed.phrases.length > 0) {
+          for (const phrase of parsed.phrases) {
+            await prisma.jobResponsibility.create({
+              data: {
+                text: phrase.text,
+                category: phrase.category,
+                keywords: phrase.keywords || [],
+                jobId: job.id,
+              },
+            });
+            results.phrasesAdded++;
           }
         }
 
         results.processed++;
       } catch (err) {
         results.failed++;
-        results.errors.push(
-          `Job "${job.title}" (${job.id}): ${err instanceof Error ? err.message : String(err)}`
-        );
+        const msg = err instanceof Error ? err.message : String(err);
+        results.errors.push(`"${job.title}" at ${job.company}: ${msg}`);
       }
     }
 
-    // Count remaining untagged
-    const remaining = await prisma.jobResponsibility.count({
-      where: { keywords: { isEmpty: true } },
+    // Count remaining
+    const remaining = await prisma.job.count({
+      where: {
+        OR: [
+          { responsibilities: { none: {} } },
+          { skills: { none: {} } },
+        ],
+      },
     });
 
     return NextResponse.json({
       status: "complete",
       ...results,
-      remainingUntagged: remaining,
+      totalJobsRemaining: remaining,
       message:
         remaining > 0
-          ? `Call again to process more (${remaining} phrases still untagged)`
-          : "All phrases are now tagged with keywords!",
+          ? `Processed ${results.processed} jobs. ${remaining} remaining — click again.`
+          : `Done! All jobs have skills and phrases extracted.`,
     });
   } catch (error) {
     console.error("[phrases/backfill] Failed:", error);
@@ -150,21 +133,31 @@ export async function GET() {
   try {
     const { prisma } = await import("@/lib/db");
 
-    const totalPhrases = await prisma.jobResponsibility.count();
-    const taggedPhrases = await prisma.jobResponsibility.count({
-      where: { keywords: { isEmpty: false } },
+    const totalJobs = await prisma.job.count();
+    const jobsWithPhrases = await prisma.job.count({
+      where: { responsibilities: { some: {} } },
     });
-    const untaggedPhrases = totalPhrases - taggedPhrases;
+    const jobsWithSkills = await prisma.job.count({
+      where: { skills: { some: {} } },
+    });
+    const jobsNeedingParsing = await prisma.job.count({
+      where: {
+        OR: [
+          { responsibilities: { none: {} } },
+          { skills: { none: {} } },
+        ],
+      },
+    });
 
     return NextResponse.json({
-      totalPhrases,
-      taggedPhrases,
-      untaggedPhrases,
-      percentTagged: totalPhrases > 0 ? Math.round((taggedPhrases / totalPhrases) * 100) : 0,
+      totalJobs,
+      jobsWithPhrases,
+      jobsWithSkills,
+      jobsNeedingParsing,
       message:
-        untaggedPhrases > 0
-          ? `POST to this endpoint to tag ${untaggedPhrases} phrases with keywords via LLM`
-          : "All phrases are tagged!",
+        jobsNeedingParsing > 0
+          ? `${jobsNeedingParsing} jobs need parsing. POST to this endpoint to process them via GPT-4o-mini.`
+          : "All jobs have been parsed!",
     });
   } catch (error) {
     return NextResponse.json(
