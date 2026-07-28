@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+/**
+ * Check if a Prisma error is a "table does not exist" error.
+ */
+function isTableMissingError(err: unknown): boolean {
+  if (err instanceof Error) {
+    return err.message.includes("does not exist in the current database") ||
+           err.message.includes("relation") && err.message.includes("does not exist");
+  }
+  return false;
+}
+
+const TABLE_MISSING_MSG = "Database setup required. Run: npx prisma db push";
+
 // GET /api/experience/[id] - Get a single experience entry
 export async function GET(
   _request: NextRequest,
@@ -20,6 +33,9 @@ export async function GET(
 
     return NextResponse.json(experience);
   } catch (err) {
+    if (isTableMissingError(err)) {
+      return NextResponse.json({ error: TABLE_MISSING_MSG }, { status: 503 });
+    }
     console.error("GET /api/experience/[id] error:", err);
     const message = err instanceof Error ? err.message : "Failed to fetch experience";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -135,6 +151,9 @@ export async function PATCH(
 
     return NextResponse.json(experience);
   } catch (err) {
+    if (isTableMissingError(err)) {
+      return NextResponse.json({ error: TABLE_MISSING_MSG }, { status: 503 });
+    }
     console.error("PATCH /api/experience/[id] error:", err);
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -159,6 +178,9 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (err) {
+    if (isTableMissingError(err)) {
+      return NextResponse.json({ error: TABLE_MISSING_MSG }, { status: 503 });
+    }
     console.error("DELETE /api/experience/[id] error:", err);
     const message = err instanceof Error ? err.message : "Failed to delete experience";
     return NextResponse.json({ error: message }, { status: 500 });
