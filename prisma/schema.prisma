@@ -2,6 +2,7 @@ generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
+// Schema version: 2 (Experience tables added)
 
 datasource db {
   provider = "postgresql"
