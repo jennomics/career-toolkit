@@ -28,6 +28,7 @@ export async function GET() {
       {
         count: number;
         phrases: {
+          id: string;
           text: string;
           category: string;
           keywords: string[];
@@ -64,6 +65,7 @@ export async function GET() {
             );
             if (!alreadyAdded) {
               entry.phrases.push({
+                id: resp.id,
                 text: resp.text,
                 category: resp.category,
                 keywords: phraseKeywords,
@@ -83,6 +85,7 @@ export async function GET() {
               );
               if (!alreadyAdded) {
                 entry.phrases.push({
+                  id: resp.id,
                   text: resp.text,
                   category: resp.category,
                   keywords: job.skills.map((s) => s.name),
