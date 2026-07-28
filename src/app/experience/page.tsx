@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
 import ExperienceCard from "@/components/ExperienceCard";
 import ExperienceForm from "@/components/ExperienceForm";
+import ResumeUpload from "@/components/ResumeUpload";
 
 interface Highlight {
   id: string;
@@ -272,7 +273,9 @@ export default function ExperiencePage() {
           </div>
         )}
 
-        {/* Add / Edit Form */}
+        {/* Upload Resume / Add Form */}
+        <ResumeUpload onSaved={fetchExperiences} />
+
         {showForm ? (
           <ExperienceForm
             initialData={editingData}
@@ -287,7 +290,7 @@ export default function ExperiencePage() {
             }}
             className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors cursor-pointer"
           >
-            + Add Work Experience
+            + Add Experience Manually
           </button>
         )}
 
