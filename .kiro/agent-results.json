@@ -4,11 +4,11 @@
       "id": "schema-push-13",
       "command": "npx prisma generate && npx prisma db push --accept-data-loss && echo 'Schema push complete - keywords column added'",
       "status": "success",
-      "stdout": "\n✔ Generated Prisma Client (7.9.0) to ./src/generated/prisma in 70ms\n\nDatasource \"db\": PostgreSQL database \"neondb\", schema \"public\" at \"ep-tiny-brook-au73axd4-pooler.c-10.us-east-1.aws.neon.tech\"\n\n🚀  Your database is now in sync with your Prisma schema. Done in 3.12s\n\nSchema push complete - keywords column added\n",
+      "stdout": "\n✔ Generated Prisma Client (7.9.0) to ./src/generated/prisma in 69ms\n\nDatasource \"db\": PostgreSQL database \"neondb\", schema \"public\" at \"ep-tiny-brook-au73axd4-pooler.c-10.us-east-1.aws.neon.tech\"\n\nThe database is already in sync with the Prisma schema.\n\nSchema push complete - keywords column added\n",
       "stderr": "Loaded Prisma config from prisma.config.ts.\n\nPrisma schema loaded from prisma/schema.prisma.\nLoaded Prisma config from prisma.config.ts.\n\nPrisma schema loaded from prisma/schema.prisma.\n┌─────────────────────────────────────────────────────────┐\n│  Update available 7.9.0 -> 7.9.1                        │\n│  Run the following to update                            │\n│    npm i --save-dev prisma@latest                       │\n│    npm i @prisma/client@latest                          │\n└─────────────────────────────────────────────────────────┘\n",
       "exitCode": 0,
-      "duration": 7652
+      "duration": 7970
     }
   ],
-  "processedAt": "2026-07-28T03:41:03.927Z"
+  "processedAt": "2026-07-28T03:41:13.353Z"
 }
