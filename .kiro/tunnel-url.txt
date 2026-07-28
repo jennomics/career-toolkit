@@ -1,5 +1,4 @@
 {
-  "url": "https://automation-indiana-kid-maui.trycloudflare.com",
-  "startedAt": "2026-07-28T22:30:33.711Z",
-  "host": "LANGs-MacBook-Pro.local"
+  "url": null,
+  "stoppedAt": "2026-07-28T22:31:53.308Z"
 }
