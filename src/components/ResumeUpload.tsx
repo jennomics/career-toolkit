@@ -24,6 +24,7 @@ interface ExtractedExperience {
   highlights: ExtractedHighlight[];
   // UI state
   _selected: boolean;
+  _sources: string[]; // which files this role was found in
 }
 
 interface ResumeUploadProps {
@@ -33,57 +34,191 @@ interface ResumeUploadProps {
 type UploadStep = "upload" | "extracting" | "review" | "saving";
 type InputMode = "file" | "paste";
 
+/**
+ * Generates a key for deduplicating roles.
+ * Two roles are considered the same if title + company match (case-insensitive).
+ */
+function roleKey(title: string, company: string): string {
+  return `${title.toLowerCase().trim()}|||${company.toLowerCase().trim()}`;
+}
+
+/**
+ * Merges extracted experiences from multiple resumes.
+ * Same role (by title+company) accumulates all unique highlights and skills.
+ */
+function mergeExperiences(
+  existing: ExtractedExperience[],
+  incoming: ExtractedExperience[],
+  sourceName: string
+): ExtractedExperience[] {
+  const merged = new Map<string, ExtractedExperience>();
+
+  // Index existing
+  for (const exp of existing) {
+    merged.set(roleKey(exp.title, exp.company), exp);
+  }
+
+  // Merge incoming
+  for (const exp of incoming) {
+    const key = roleKey(exp.title, exp.company);
+    const existing = merged.get(key);
+
+    if (existing) {
+      // Merge highlights — add any that are substantially different
+      for (const h of exp.highlights) {
+        const isDuplicate = existing.highlights.some(
+          (eh) => similarity(eh.text, h.text) > 0.8
+        );
+        if (!isDuplicate) {
+          existing.highlights.push(h);
+        }
+      }
+
+      // Merge skills — add new ones
+      for (const skill of exp.skills) {
+        if (!existing.skills.some((s) => s.toLowerCase() === skill.toLowerCase())) {
+          existing.skills.push(skill);
+        }
+      }
+
+      // Track source
+      if (!existing._sources.includes(sourceName)) {
+        existing._sources.push(sourceName);
+      }
+
+      // Use longer description
+      if (exp.description && (!existing.description || exp.description.length > existing.description.length)) {
+        existing.description = exp.description;
+      }
+
+      // Use more specific location
+      if (exp.location && !existing.location) {
+        existing.location = exp.location;
+      }
+    } else {
+      // New role
+      merged.set(key, {
+        ...exp,
+        _selected: true,
+        _sources: [sourceName],
+      });
+    }
+  }
+
+  return Array.from(merged.values());
+}
+
+/**
+ * Simple word-overlap similarity (0-1) for deduplicating highlights.
+ */
+function similarity(a: string, b: string): number {
+  const wordsA = new Set(a.toLowerCase().split(/\s+/));
+  const wordsB = new Set(b.toLowerCase().split(/\s+/));
+  const intersection = [...wordsA].filter((w) => wordsB.has(w));
+  const union = new Set([...wordsA, ...wordsB]);
+  return union.size === 0 ? 0 : intersection.length / union.size;
+}
+
 export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState<UploadStep>("upload");
   const [inputMode, setInputMode] = useState<InputMode>("file");
   const [pastedText, setPastedText] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState("");
   const [extracted, setExtracted] = useState<ExtractedExperience[]>([]);
   const [saveProgress, setSaveProgress] = useState({ saved: 0, total: 0 });
+  const [extractProgress, setExtractProgress] = useState({ done: 0, total: 0, current: "" });
 
   const handleExtract = async () => {
     setError(null);
     setStep("extracting");
 
     try {
-      const formData = new FormData();
-      if (inputMode === "file" && file) {
-        formData.append("file", file);
+      if (inputMode === "file" && files.length > 0) {
+        // Multi-file batch extraction
+        setExtractProgress({ done: 0, total: files.length, current: files[0].name });
+        let merged: ExtractedExperience[] = [];
+
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          setExtractProgress({ done: i, total: files.length, current: file.name });
+
+          const formData = new FormData();
+          formData.append("file", file);
+
+          try {
+            const res = await fetch("/api/experience/extract", {
+              method: "POST",
+              body: formData,
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.experiences && data.experiences.length > 0) {
+              merged = mergeExperiences(merged, data.experiences, file.name);
+            }
+            // If one file fails, continue with the others
+          } catch {
+            // Skip failed file, continue
+          }
+        }
+
+        setExtractProgress({ done: files.length, total: files.length, current: "" });
+
+        if (merged.length === 0) {
+          setError("No experience entries found in any of the uploaded files.");
+          setStep("upload");
+          return;
+        }
+
+        // Sort by start date (most recent first)
+        merged.sort((a, b) => (b.startDate || "").localeCompare(a.startDate || ""));
+
+        setExtracted(merged);
+        const totalHighlights = merged.reduce((sum, r) => sum + r.highlights.length, 0);
+        const totalSkills = new Set(merged.flatMap((r) => r.skills.map((s) => s.toLowerCase()))).size;
+        setSummary(
+          `${merged.length} roles, ${totalHighlights} highlights, ${totalSkills} skills from ${files.length} file${files.length > 1 ? "s" : ""}`
+        );
+        setStep("review");
       } else if (inputMode === "paste") {
+        // Single text extraction
+        setExtractProgress({ done: 0, total: 1, current: "pasted text" });
+
+        const formData = new FormData();
         formData.append("text", pastedText);
+
+        const res = await fetch("/api/experience/extract", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setError(data.error || `Extraction failed (${res.status})`);
+          setStep("upload");
+          return;
+        }
+
+        if (!data.experiences || data.experiences.length === 0) {
+          setError(data.summary || "No experience entries found.");
+          setStep("upload");
+          return;
+        }
+
+        const withSelection = data.experiences.map((exp: Omit<ExtractedExperience, "_selected" | "_sources">) => ({
+          ...exp,
+          _selected: true,
+          _sources: ["pasted text"],
+        }));
+
+        setExtracted(withSelection);
+        setSummary(data.summary || `Found ${withSelection.length} roles`);
+        setStep("review");
       }
-
-      const res = await fetch("/api/experience/extract", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || `Extraction failed (${res.status})`);
-        setStep("upload");
-        return;
-      }
-
-      if (!data.experiences || data.experiences.length === 0) {
-        setError(data.summary || "No experience entries found in this document.");
-        setStep("upload");
-        return;
-      }
-
-      // Mark all as selected by default
-      const withSelection = data.experiences.map((exp: Omit<ExtractedExperience, "_selected">) => ({
-        ...exp,
-        _selected: true,
-      }));
-
-      setExtracted(withSelection);
-      setSummary(data.summary || `Found ${withSelection.length} roles`);
-      setStep("review");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");
       setStep("upload");
@@ -149,7 +284,6 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
       setError("Failed to save any entries. The database may need setup (npx prisma db push).");
       setStep("review");
     } else {
-      // Done - reset and notify parent
       handleReset();
       onSaved();
     }
@@ -157,7 +291,7 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
 
   const handleReset = () => {
     setStep("upload");
-    setFile(null);
+    setFiles([]);
     setPastedText("");
     setExtracted([]);
     setSummary("");
@@ -178,7 +312,7 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
         onClick={() => setIsOpen(true)}
         className="w-full p-4 border-2 border-dashed border-purple-300 rounded-lg text-purple-500 hover:border-purple-400 hover:text-purple-600 transition-colors cursor-pointer bg-purple-50/50"
       >
-        Upload a Resume to Extract Experience
+        Upload Resumes to Extract Experience
       </button>
     );
   }
@@ -187,9 +321,9 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
   if (step === "upload") {
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-        <h2 className="text-lg font-semibold mb-1">Upload a Resume</h2>
+        <h2 className="text-lg font-semibold mb-1">Upload Resumes</h2>
         <p className="text-sm text-gray-500 mb-4">
-          Upload a PDF, Word doc, or paste text from an old resume. I&apos;ll extract your work history automatically.
+          Upload multiple resumes (PDF, Word, or text). I&apos;ll extract your work history from all of them, merge duplicates, and accumulate all unique highlights and skills.
         </p>
 
         {/* Input mode toggle */}
@@ -203,7 +337,7 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
               inputMode === "file" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            Upload File
+            Upload Files
           </button>
           <button
             type="button"
@@ -221,38 +355,51 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
         {inputMode === "file" && (
           <div className="space-y-3">
             <label
-              htmlFor="resume-file"
+              htmlFor="resume-files"
               className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
-                file ? "border-blue-400 bg-blue-50" : "border-gray-300 hover:border-gray-400 bg-gray-50"
+                files.length > 0 ? "border-blue-400 bg-blue-50" : "border-gray-300 hover:border-gray-400 bg-gray-50"
               }`}
             >
-              {file ? (
+              {files.length > 0 ? (
                 <div className="text-center">
-                  <p className="text-sm font-medium text-blue-700">{file.name}</p>
-                  <p className="text-xs text-blue-500 mt-1">{(file.size / 1024).toFixed(1)} KB</p>
+                  <p className="text-sm font-medium text-blue-700">
+                    {files.length} file{files.length > 1 ? "s" : ""} selected
+                  </p>
+                  <p className="text-xs text-blue-500 mt-1">
+                    {files.map((f) => f.name).join(", ")}
+                  </p>
                 </div>
               ) : (
                 <div className="text-center">
-                  <p className="text-sm text-gray-500">Click to upload or drag and drop</p>
-                  <p className="text-xs text-gray-400 mt-1">PDF, DOCX, or TXT (max 5MB)</p>
+                  <p className="text-sm text-gray-500">Click to select files (or drag and drop)</p>
+                  <p className="text-xs text-gray-400 mt-1">PDF, DOCX, or TXT &mdash; select multiple</p>
                 </div>
               )}
               <input
-                id="resume-file"
+                id="resume-files"
                 type="file"
                 accept=".pdf,.docx,.txt,.md"
+                multiple
                 className="hidden"
                 onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f && f.size > 5 * 1024 * 1024) {
-                    setError("File too large (max 5MB)");
+                  const selectedFiles = Array.from(e.target.files || []);
+                  const oversized = selectedFiles.filter((f) => f.size > 5 * 1024 * 1024);
+                  if (oversized.length > 0) {
+                    setError(`${oversized.length} file(s) too large (max 5MB each): ${oversized.map((f) => f.name).join(", ")}`);
                     return;
                   }
-                  setFile(f || null);
+                  setFiles(selectedFiles);
                   setError(null);
                 }}
               />
             </label>
+            {files.length > 0 && (
+              <ul className="text-xs text-gray-500 space-y-0.5">
+                {files.map((f, i) => (
+                  <li key={i}>&bull; {f.name} ({(f.size / 1024).toFixed(0)} KB)</li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 
@@ -276,12 +423,12 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
           <button
             onClick={handleExtract}
             disabled={
-              (inputMode === "file" && !file) ||
+              (inputMode === "file" && files.length === 0) ||
               (inputMode === "paste" && pastedText.length < 20)
             }
             className="px-5 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm font-medium"
           >
-            Extract Experience
+            Extract Experience{files.length > 1 ? ` from ${files.length} Files` : ""}
           </button>
           <button
             onClick={handleReset}
@@ -299,8 +446,20 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-center">
         <div className="inline-block w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" role="status" aria-label="Extracting experience" />
-        <p className="text-gray-600 mt-4 text-sm">Extracting experience from your resume...</p>
-        <p className="text-gray-400 text-xs mt-1">This may take 10-20 seconds</p>
+        <p className="text-gray-600 mt-4 text-sm">
+          Extracting experience from {extractProgress.total > 1 ? `file ${extractProgress.done + 1} of ${extractProgress.total}` : "your resume"}...
+        </p>
+        {extractProgress.current && (
+          <p className="text-gray-400 text-xs mt-1 truncate max-w-xs mx-auto">{extractProgress.current}</p>
+        )}
+        {extractProgress.total > 1 && (
+          <div className="w-48 mx-auto mt-3 bg-gray-200 rounded-full h-1.5">
+            <div
+              className="bg-purple-500 h-1.5 rounded-full transition-all"
+              style={{ width: `${(extractProgress.done / extractProgress.total) * 100}%` }}
+            />
+          </div>
+        )}
       </div>
     );
   }
@@ -327,7 +486,7 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
         <span className="text-xs text-gray-400">{summary}</span>
       </div>
       <p className="text-sm text-gray-500 mb-4">
-        Select the entries you want to save. Uncheck any that are incorrect or duplicates.
+        Roles have been merged across resumes. All unique highlights and skills are accumulated. Uncheck any you don&apos;t want.
       </p>
 
       {error && (
@@ -346,7 +505,7 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
           className="h-4 w-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
         />
         <label htmlFor="select-all" className="text-sm text-gray-700 font-medium">
-          Select all ({extracted.length})
+          Select all ({extracted.length} roles)
         </label>
       </div>
 
@@ -375,6 +534,11 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
                     Current
                   </span>
                 )}
+                {exp._sources.length > 1 && (
+                  <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-[10px] font-medium">
+                    {exp._sources.length} sources
+                  </span>
+                )}
               </div>
               <p className="text-xs text-gray-600">
                 {exp.company}
@@ -385,17 +549,24 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
                 {exp.employmentType !== "full-time" && ` \u2022 ${exp.employmentType}`}
               </p>
 
+              {/* Source files */}
+              {exp._sources.length > 1 && (
+                <p className="text-[10px] text-purple-500 mt-1">
+                  Found in: {exp._sources.join(", ")}
+                </p>
+              )}
+
               {/* Skills */}
               {exp.skills && exp.skills.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2">
-                  {exp.skills.slice(0, 8).map((skill) => (
+                  {exp.skills.slice(0, 10).map((skill) => (
                     <span key={skill} className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px]">
                       {skill}
                     </span>
                   ))}
-                  {exp.skills.length > 8 && (
+                  {exp.skills.length > 10 && (
                     <span className="px-1.5 py-0.5 text-gray-400 text-[10px]">
-                      +{exp.skills.length - 8} more
+                      +{exp.skills.length - 10} more
                     </span>
                   )}
                 </div>
@@ -405,17 +576,17 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
               {exp.highlights && exp.highlights.length > 0 && (
                 <div className="mt-2">
                   <p className="text-[10px] text-gray-400 uppercase font-medium mb-1">
-                    {exp.highlights.length} highlight{exp.highlights.length !== 1 ? "s" : ""}
+                    {exp.highlights.length} highlight{exp.highlights.length !== 1 ? "s" : ""} (merged)
                   </p>
                   <ul className="space-y-0.5">
-                    {exp.highlights.slice(0, 3).map((h, j) => (
+                    {exp.highlights.slice(0, 5).map((h, j) => (
                       <li key={j} className="text-xs text-gray-600 truncate">
                         &bull; {h.text}
                       </li>
                     ))}
-                    {exp.highlights.length > 3 && (
+                    {exp.highlights.length > 5 && (
                       <li className="text-xs text-gray-400">
-                        &bull; ...and {exp.highlights.length - 3} more
+                        &bull; ...and {exp.highlights.length - 5} more
                       </li>
                     )}
                   </ul>
@@ -443,7 +614,7 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
             disabled={selectedCount === 0}
             className="px-5 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm font-medium"
           >
-            Save {selectedCount} {selectedCount === 1 ? "Entry" : "Entries"}
+            Save {selectedCount} {selectedCount === 1 ? "Role" : "Roles"} (with all highlights)
           </button>
         </div>
       </div>
