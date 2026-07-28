@@ -153,6 +153,12 @@ export default function Home() {
           </div>
           <div className="flex gap-4">
             <Link
+              href="/experience"
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              My Experience &rarr;
+            </Link>
+            <Link
               href="/phrases"
               className="text-sm text-blue-600 hover:text-blue-800 font-medium"
             >
