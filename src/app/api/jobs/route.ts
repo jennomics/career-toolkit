@@ -122,9 +122,10 @@ export async function POST(request: NextRequest) {
           : undefined,
         responsibilities: responsibilities?.length
           ? {
-              create: responsibilities.map((r: { text: string; category?: string }) => ({
+              create: responsibilities.map((r: { text: string; category?: string; keywords?: string[] }) => ({
                 text: r.text,
                 category: r.category || "responsibility",
+                keywords: r.keywords || [],
               })),
             }
           : undefined,
