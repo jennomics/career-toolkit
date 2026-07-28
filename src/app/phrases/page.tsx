@@ -34,6 +34,7 @@ export default function PhrasesPage() {
   const [expandedKeyword, setExpandedKeyword] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [backfillStatus, setBackfillStatus] = useState<string | null>(null);
   const hasFetched = useRef(false);
 
   async function fetchPhrases() {
@@ -49,6 +50,25 @@ export default function PhrasesPage() {
       setError(err instanceof Error ? err.message : "Failed to load");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function runBackfill() {
+    setBackfillStatus("Running LLM tagging...");
+    try {
+      const res = await fetch("/api/phrases/backfill", { method: "POST" });
+      const result = await res.json();
+      if (!res.ok) {
+        setBackfillStatus(`Error: ${result.error || "Failed"}`);
+        return;
+      }
+      setBackfillStatus(
+        `Done! Tagged ${result.tagged} phrases across ${result.processed} jobs. ${result.remainingUntagged > 0 ? `${result.remainingUntagged} remaining — click again.` : "All tagged!"}`
+      );
+      // Refresh data
+      fetchPhrases();
+    } catch (err) {
+      setBackfillStatus(`Error: ${err instanceof Error ? err.message : "Failed"}`);
     }
   }
 
@@ -163,6 +183,34 @@ export default function PhrasesPage() {
               </p>
               <p className="text-sm text-gray-500">Jobs Analyzed</p>
             </div>
+          </div>
+        )}
+
+        {/* Backfill button */}
+        {data && data.summary.totalPhrases > 0 && (
+          <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-700">
+                Tag phrases with keywords via AI
+              </p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Uses GPT-4o-mini to associate each phrase with relevant skills
+              </p>
+            </div>
+            <button
+              onClick={runBackfill}
+              disabled={backfillStatus?.startsWith("Running")}
+              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed cursor-pointer"
+              aria-label="Run AI tagging on phrases"
+            >
+              {backfillStatus?.startsWith("Running") ? "Tagging..." : "Tag with AI"}
+            </button>
+          </div>
+        )}
+
+        {backfillStatus && !backfillStatus.startsWith("Running") && (
+          <div className={`text-sm p-3 rounded-lg ${backfillStatus.startsWith("Error") ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"}`}>
+            {backfillStatus}
           </div>
         )}
 
