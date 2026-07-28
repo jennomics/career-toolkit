@@ -1,0 +1,166 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+
+// GET /api/experience/[id] - Get a single experience entry
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    const experience = await prisma.experience.findUnique({
+      where: { id },
+      include: { skills: true, highlights: true },
+    });
+
+    if (!experience) {
+      return NextResponse.json({ error: "Experience not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(experience);
+  } catch (err) {
+    console.error("GET /api/experience/[id] error:", err);
+    const message = err instanceof Error ? err.message : "Failed to fetch experience";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+// PATCH /api/experience/[id] - Update an experience entry
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+
+    const {
+      title,
+      company,
+      location,
+      employmentType,
+      industry,
+      department,
+      startDate,
+      endDate,
+      isCurrent,
+      description,
+      skills,
+      highlights,
+    } = body;
+
+    // Verify the experience exists
+    const existing = await prisma.experience.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Experience not found" }, { status: 404 });
+    }
+
+    // Validate dates if provided
+    let start: Date | undefined;
+    if (startDate) {
+      start = new Date(startDate);
+      if (isNaN(start.getTime())) {
+        return NextResponse.json({ error: "Invalid start date" }, { status: 400 });
+      }
+    }
+
+    let end: Date | null | undefined;
+    if (isCurrent) {
+      end = null;
+    } else if (endDate !== undefined) {
+      if (endDate === null) {
+        end = null;
+      } else {
+        end = new Date(endDate);
+        if (isNaN(end.getTime())) {
+          return NextResponse.json({ error: "Invalid end date" }, { status: 400 });
+        }
+        const effectiveStart = start || existing.startDate;
+        if (end < effectiveStart) {
+          return NextResponse.json(
+            { error: "End date cannot be before start date" },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
+    // Build the update data (only include provided fields)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateData: any = {};
+    if (title !== undefined) updateData.title = title;
+    if (company !== undefined) updateData.company = company;
+    if (location !== undefined) updateData.location = location || null;
+    if (employmentType !== undefined) updateData.employmentType = employmentType;
+    if (industry !== undefined) updateData.industry = industry || null;
+    if (department !== undefined) updateData.department = department || null;
+    if (start !== undefined) updateData.startDate = start;
+    if (end !== undefined) updateData.endDate = end;
+    if (isCurrent !== undefined) updateData.isCurrent = isCurrent;
+    if (description !== undefined) updateData.description = description || null;
+
+    // Handle skills: delete existing and recreate if provided
+    if (skills !== undefined) {
+      await prisma.experienceSkill.deleteMany({ where: { experienceId: id } });
+      if (skills.length > 0) {
+        updateData.skills = {
+          create: skills.map((s: string) => ({ name: s })),
+        };
+      }
+    }
+
+    // Handle highlights: delete existing and recreate if provided
+    if (highlights !== undefined) {
+      await prisma.experienceHighlight.deleteMany({ where: { experienceId: id } });
+      if (highlights.length > 0) {
+        updateData.highlights = {
+          create: highlights.map(
+            (h: { text: string; category?: string; metrics?: string; keywords?: string[] }) => ({
+              text: h.text,
+              category: h.category || "achievement",
+              metrics: h.metrics || null,
+              keywords: h.keywords || [],
+            })
+          ),
+        };
+      }
+    }
+
+    const experience = await prisma.experience.update({
+      where: { id },
+      data: updateData,
+      include: { skills: true, highlights: true },
+    });
+
+    return NextResponse.json(experience);
+  } catch (err) {
+    console.error("PATCH /api/experience/[id] error:", err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+// DELETE /api/experience/[id] - Delete an experience entry
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    // Verify it exists
+    const existing = await prisma.experience.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Experience not found" }, { status: 404 });
+    }
+
+    await prisma.experience.delete({ where: { id } });
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("DELETE /api/experience/[id] error:", err);
+    const message = err instanceof Error ? err.message : "Failed to delete experience";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}

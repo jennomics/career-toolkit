@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 interface ResumeData {
@@ -26,7 +26,17 @@ interface GapData {
   relevantPhrases: { id: string; text: string; category: string; jobTitle: string; company: string }[];
 }
 
+interface SavedJob {
+  id: string;
+  title: string;
+  company: string;
+  description: string;
+  status: string;
+  createdAt: string;
+}
+
 type Tab = "generate" | "gap";
+type GapSource = "saved" | "paste";
 
 export default function ResumePage() {
   const [tab, setTab] = useState<Tab>("generate");
@@ -36,10 +46,40 @@ export default function ResumePage() {
   const [error, setError] = useState<string | null>(null);
 
   // Gap analysis state
+  const [gapSource, setGapSource] = useState<GapSource>("saved");
   const [gapDescription, setGapDescription] = useState("");
+  const [selectedJobId, setSelectedJobId] = useState<string>("");
+  const [savedJobs, setSavedJobs] = useState<SavedJob[]>([]);
+  const [jobsLoading, setJobsLoading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [gapResult, setGapResult] = useState<GapData | null>(null);
   const [gapError, setGapError] = useState<string | null>(null);
+
+  // Fetch saved jobs when gap tab is selected
+  const hasFetchedJobs = useRef(false);
+
+  useEffect(() => {
+    if (tab !== "gap") return;
+    if (hasFetchedJobs.current) return;
+    hasFetchedJobs.current = true;
+
+    let cancelled = false;
+    setJobsLoading(true);
+
+    fetch("/api/jobs")
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        if (!cancelled) setSavedJobs(data);
+      })
+      .catch(() => {
+        // Non-critical — user can still paste
+      })
+      .finally(() => {
+        if (!cancelled) setJobsLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [tab]);
 
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
@@ -94,7 +134,17 @@ export default function ResumePage() {
 
   async function handleGapAnalysis(e: React.FormEvent) {
     e.preventDefault();
-    if (!gapDescription.trim() || gapDescription.length < 20) return;
+
+    // Determine which description to use
+    let description: string;
+    if (gapSource === "saved") {
+      const job = savedJobs.find((j) => j.id === selectedJobId);
+      if (!job) return;
+      description = job.description;
+    } else {
+      if (!gapDescription.trim() || gapDescription.length < 20) return;
+      description = gapDescription.trim();
+    }
 
     setIsAnalyzing(true);
     setGapError(null);
@@ -104,7 +154,7 @@ export default function ResumePage() {
       const res = await fetch("/api/resume/gap-analysis", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description: gapDescription.trim() }),
+        body: JSON.stringify({ description }),
       });
 
       const data = await res.json();
@@ -316,25 +366,109 @@ export default function ResumePage() {
         {tab === "gap" && (
           <>
             <form onSubmit={handleGapAnalysis} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-              <label htmlFor="gap-jd" className="block text-sm font-medium text-gray-700 mb-2">
-                Paste a job description to analyze
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Choose a job description to analyze
               </label>
-              <p className="text-xs text-gray-400 mb-3">
-                Paste a specific JD and I&apos;ll compare its requirements against your saved skills and phrases.
-                You&apos;ll see what you already have and what gaps to address.
+              <p className="text-xs text-gray-400 mb-4">
+                Select a saved job from your library, or paste a new one. I&apos;ll compare its requirements against your saved skills and phrases.
               </p>
-              <textarea
-                id="gap-jd"
-                rows={8}
-                value={gapDescription}
-                onChange={(e) => setGapDescription(e.target.value)}
-                placeholder="Paste the full job description here..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
-              />
+
+              {/* Source toggle */}
+              <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 w-fit mb-4" role="radiogroup" aria-label="Job description source">
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={gapSource === "saved"}
+                  onClick={() => setGapSource("saved")}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                    gapSource === "saved" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  From Job Library
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={gapSource === "paste"}
+                  onClick={() => setGapSource("paste")}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                    gapSource === "paste" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  Paste New
+                </button>
+              </div>
+
+              {/* Saved job selector */}
+              {gapSource === "saved" && (
+                <div>
+                  {jobsLoading ? (
+                    <p className="text-sm text-gray-400 py-4">Loading saved jobs...</p>
+                  ) : savedJobs.length === 0 ? (
+                    <div className="text-center py-6 border border-dashed border-gray-300 rounded-lg">
+                      <p className="text-sm text-gray-500">No saved jobs yet</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Add jobs from the <Link href="/" className="text-blue-600 hover:text-blue-800">Job Library</Link> first, or paste a description below.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-2">
+                      {savedJobs.map((job) => (
+                        <label
+                          key={job.id}
+                          className={`flex items-center gap-3 p-3 rounded-md cursor-pointer transition-colors ${
+                            selectedJobId === job.id
+                              ? "bg-blue-50 border border-blue-200"
+                              : "hover:bg-gray-50 border border-transparent"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="gap-job"
+                            value={job.id}
+                            checked={selectedJobId === job.id}
+                            onChange={() => setSelectedJobId(job.id)}
+                            className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">{job.title}</p>
+                            <p className="text-xs text-gray-500">{job.company} &middot; {new Date(job.createdAt).toLocaleDateString()}</p>
+                          </div>
+                          <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${
+                            job.status === "applied" ? "bg-blue-100 text-blue-700" :
+                            job.status === "interviewing" ? "bg-yellow-100 text-yellow-700" :
+                            job.status === "offer" ? "bg-green-100 text-green-700" :
+                            "bg-gray-100 text-gray-600"
+                          }`}>
+                            {job.status}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Paste textarea (alternative) */}
+              {gapSource === "paste" && (
+                <textarea
+                  id="gap-jd"
+                  rows={8}
+                  value={gapDescription}
+                  onChange={(e) => setGapDescription(e.target.value)}
+                  placeholder="Paste the full job description here..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                />
+              )}
+
               <div className="flex gap-3 mt-4">
                 <button
                   type="submit"
-                  disabled={gapDescription.length < 20 || isAnalyzing}
+                  disabled={
+                    isAnalyzing ||
+                    (gapSource === "saved" && !selectedJobId) ||
+                    (gapSource === "paste" && gapDescription.length < 20)
+                  }
                   className="px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isAnalyzing ? "Analyzing..." : "Analyze Gaps"}
