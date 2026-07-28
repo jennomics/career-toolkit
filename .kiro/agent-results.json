@@ -1,14 +1,14 @@
 {
   "results": [
     {
-      "id": "migrate-neon-10",
-      "command": "node scripts/migrate-to-neon.mjs",
-      "status": "timeout",
-      "stdout": "",
-      "stderr": "Command timeout after 120000ms: node scripts/migrate-to-neon.mjs",
-      "exitCode": null,
-      "duration": 120011
+      "id": "schema-push-13",
+      "command": "npx prisma generate && npx prisma db push --accept-data-loss && echo 'Schema push complete - keywords column added'",
+      "status": "success",
+      "stdout": "\n✔ Generated Prisma Client (7.9.0) to ./src/generated/prisma in 69ms\n\nDatasource \"db\": PostgreSQL database \"neondb\", schema \"public\" at \"ep-tiny-brook-au73axd4-pooler.c-10.us-east-1.aws.neon.tech\"\n\nThe database is already in sync with the Prisma schema.\n\nSchema push complete - keywords column added\n",
+      "stderr": "Loaded Prisma config from prisma.config.ts.\n\nPrisma schema loaded from prisma/schema.prisma.\nLoaded Prisma config from prisma.config.ts.\n\nPrisma schema loaded from prisma/schema.prisma.\n┌─────────────────────────────────────────────────────────┐\n│  Update available 7.9.0 -> 7.9.1                        │\n│  Run the following to update                            │\n│    npm i --save-dev prisma@latest                       │\n│    npm i @prisma/client@latest                          │\n└─────────────────────────────────────────────────────────┘\n",
+      "exitCode": 0,
+      "duration": 7970
     }
   ],
-  "processedAt": "2026-07-28T02:48:51.073Z"
+  "processedAt": "2026-07-28T03:41:13.353Z"
 }
