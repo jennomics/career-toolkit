@@ -1,11 +1,11 @@
 {
   "commands": [
     {
-      "id": "restart-dev-2",
-      "command": "kill $(lsof -t -i:3000) 2>/dev/null; sleep 1; npm run dev",
-      "description": "Restart dev server to pick up new routes"
+      "id": "investigate-db-5",
+      "command": "echo '=== dev.db investigation ===' && ls -la dev.db 2>/dev/null && echo '---' && ls -la prisma/dev.db 2>/dev/null && echo '---' && file dev.db 2>/dev/null && echo '---' && echo 'Checking git stash:' && git stash list 2>/dev/null && echo '---' && echo 'Searching for .db files:' && find /Users/REDACTED_ALT_NAME -name 'dev.db' -size +100k 2>/dev/null | head -10 && echo '---' && echo 'SQLite tables in dev.db:' && sqlite3 dev.db '.tables' 2>/dev/null && echo '---' && echo 'Row counts:' && sqlite3 dev.db 'SELECT count(*) FROM Job;' 2>/dev/null && echo '---' && echo 'Time Machine check:' && ls /Volumes/*/Backups.backupdb 2>/dev/null | head -3",
+      "description": "Investigate dev.db - check file size, contents, stashes, backups, alternate locations"
     }
   ],
-  "createdAt": "2026-07-27T23:45:00Z",
+  "createdAt": "2026-07-28T00:22:00Z",
   "source": "kiro"
 }
