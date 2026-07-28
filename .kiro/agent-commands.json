@@ -1,11 +1,11 @@
 {
   "commands": [
     {
-      "id": "check-stash-db-6",
-      "command": "echo '=== Checking prisma/dev.db ===' && sqlite3 prisma/dev.db '.tables' 2>/dev/null && sqlite3 prisma/dev.db 'SELECT count(*) as job_count FROM Job;' 2>/dev/null && echo '---' && echo '=== Checking current dev.db tables ===' && sqlite3 dev.db '.tables' 2>/dev/null && sqlite3 dev.db '.schema Job' 2>/dev/null && echo '---' && echo '=== Try stash 7 (before postgres switch) ===' && git stash show stash@{7} -- dev.db 2>/dev/null && echo '---' && echo '=== Restore stash 7 dev.db to temp file ===' && git show stash@{7}:dev.db > /tmp/old-dev.db 2>/dev/null && sqlite3 /tmp/old-dev.db 'SELECT count(*) as job_count FROM Job;' 2>/dev/null && sqlite3 /tmp/old-dev.db 'SELECT title, company FROM Job LIMIT 5;' 2>/dev/null",
-      "description": "Check prisma/dev.db and recover data from git stash before PostgreSQL switch"
+      "id": "recover-db-7",
+      "command": "echo '=== Checking each stash for dev.db with data ===' && for i in $(seq 7 20); do echo \"stash@{$i}:\"; git checkout stash@{$i} -- dev.db 2>/dev/null && COUNT=$(sqlite3 dev.db 'SELECT count(*) FROM Job;' 2>/dev/null) && echo \"  Jobs: $COUNT\" && git checkout HEAD -- dev.db 2>/dev/null; if [ \"$COUNT\" -gt \"0\" ]; then echo \"  FOUND DATA in stash@{$i}!\"; git checkout stash@{$i} -- dev.db 2>/dev/null; break; fi; done && echo '---' && echo 'Final check:' && sqlite3 dev.db 'SELECT count(*) as jobs FROM Job;' 2>/dev/null && sqlite3 dev.db 'SELECT title, company FROM Job LIMIT 3;' 2>/dev/null",
+      "description": "Iterate through stashes to find and restore dev.db with job data"
     }
   ],
-  "createdAt": "2026-07-28T02:25:00Z",
+  "createdAt": "2026-07-28T02:26:00Z",
   "source": "kiro"
 }
