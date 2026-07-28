@@ -56,3 +56,20 @@ model Correction {
 
   @@index([field])
 }
+
+model AgentCommand {
+  id          String   @id @default(cuid())
+  command     String   // shell command or action name
+  description String?  // human-readable purpose
+  status      String   @default("pending") // pending, running, success, failed
+  stdout      String?  // command output
+  stderr      String?  // error output
+  exitCode    Int?
+  duration    Int?     // ms
+  source      String   @default("kiro") // who created it
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
