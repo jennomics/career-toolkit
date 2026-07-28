@@ -79,6 +79,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
           responsibilities: parsedResponsibilities.map((r) => ({
             text: r.text,
             category: r.category,
+            keywords: r.keywords || [],
           })),
           extracted: extractedValues,
         }),
