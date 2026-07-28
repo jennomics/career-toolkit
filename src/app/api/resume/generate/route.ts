@@ -5,23 +5,36 @@ import OpenAI from "openai";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const SYSTEM_PROMPT = `You are a professional resume writer. Given a target role and a collection of the user's keywords (skills) and resume-ready phrases extracted from job descriptions they've saved, generate a tailored professional resume.
+const SYSTEM_PROMPT = `You are a professional resume writer. Given a target role, the user's actual work experience (with highlights and skills), and a collection of keywords and phrases from job descriptions they've been tracking, generate a tailored professional resume.
 
 Instructions:
-- Use the provided phrases as raw material — rewrite them in first person as accomplishments
-- Prioritize phrases and keywords that are most relevant to the target role
-- Organize into standard resume sections: Summary, Experience Highlights, Key Skills, and Additional Qualifications
+- Use the user's ACTUAL work experience as the primary source of truth
+- Use their experience highlights (achievements, projects, awards) as resume bullet points — rewrite in first person
+- Use tracked job keywords to inform which skills to emphasize
+- Use job description phrases as supplementary material for language/framing
+- Prioritize content most relevant to the target role
+- Organize into sections: Summary, Work Experience (structured by role), Key Skills, and Additional Qualifications
 - The Summary should be 2-3 sentences positioning the candidate for the target role
-- Experience Highlights should be 6-10 bullet points (best accomplishments rewritten)
-- Key Skills should list the most relevant 8-12 keywords
+- Work Experience should list their actual roles (most relevant first) with 2-4 tailored bullets each
+- Key Skills should list the most relevant 8-12 skills (combining their experience skills and tracked keywords)
 - Write in professional, concise resume language
-- Do NOT invent achievements — only use what's provided in the phrases
+- Do NOT invent achievements — only use what's provided
 
 Return a JSON object with this structure:
 {
   "targetRole": "the role",
   "summary": "2-3 sentence professional summary",
-  "experienceHighlights": ["bullet 1", "bullet 2", ...],
+  "workExperience": [
+    {
+      "title": "Job Title",
+      "company": "Company Name",
+      "location": "Location or null",
+      "startDate": "ISO date string",
+      "endDate": "ISO date string or null",
+      "isCurrent": true/false,
+      "bullets": ["achievement 1", "achievement 2", ...]
+    }
+  ],
   "keySkills": ["skill1", "skill2", ...],
   "additionalQualifications": ["qual 1", "qual 2", ...]
 }`;
@@ -29,7 +42,7 @@ Return a JSON object with this structure:
 /**
  * POST /api/resume/generate
  *
- * Generates a tailored resume draft using the user's saved phrases and keywords.
+ * Generates a tailored resume using the user's experience AND saved job data.
  * Body: { targetRole: string, topN?: number }
  */
 export async function POST(request: NextRequest) {
@@ -44,7 +57,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Gather user's data: top keywords and best phrases
+    // ─── Fetch user's experience ────────────────────────────────────────────────
+    let experiences: {
+      id: string;
+      title: string;
+      company: string;
+      location: string | null;
+      startDate: Date;
+      endDate: Date | null;
+      isCurrent: boolean;
+      description: string | null;
+      employmentType: string;
+      industry: string | null;
+      department: string | null;
+      skills: { name: string }[];
+      highlights: { text: string; category: string; metrics: string | null; keywords: string[] }[];
+    }[] = [];
+
+    try {
+      experiences = await prisma.experience.findMany({
+        include: { skills: true, highlights: true },
+        orderBy: [{ isCurrent: "desc" }, { startDate: "desc" }],
+      });
+    } catch {
+      // Experience table might not exist yet — gracefully degrade
+    }
+
+    // ─── Fetch saved job data (keywords & phrases) ──────────────────────────────
     const jobs = await prisma.job.findMany({
       include: {
         skills: true,
@@ -53,18 +92,30 @@ export async function POST(request: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    if (jobs.length === 0) {
+    // Must have at least experience OR jobs
+    if (jobs.length === 0 && experiences.length === 0) {
       return NextResponse.json(
-        { error: "No jobs saved yet. Add some job descriptions first." },
+        { error: "No experience or jobs saved yet. Add your work history or some job descriptions first." },
         { status: 400 }
       );
     }
 
-    // Collect all keywords with frequency
+    // ─── Collect all keywords with frequency (from both sources) ────────────────
     const keywordFreq = new Map<string, number>();
+
+    // From job descriptions
     for (const job of jobs) {
       for (const skill of job.skills) {
-        keywordFreq.set(skill.name, (keywordFreq.get(skill.name) || 0) + 1);
+        const lower = skill.name.toLowerCase();
+        keywordFreq.set(lower, (keywordFreq.get(lower) || 0) + 1);
+      }
+    }
+
+    // From experience (weighted higher — these are YOUR skills)
+    for (const exp of experiences) {
+      for (const skill of exp.skills) {
+        const lower = skill.name.toLowerCase();
+        keywordFreq.set(lower, (keywordFreq.get(lower) || 0) + 2);
       }
     }
 
@@ -72,9 +123,31 @@ export async function POST(request: NextRequest) {
     const topKeywords = Array.from(keywordFreq.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 30)
-      .map(([kw, count]) => `${kw} (${count} jobs)`);
+      .map(([kw, count]) => `${kw} (score: ${count})`);
 
-    // Collect all phrases
+    // ─── Collect experience highlights ──────────────────────────────────────────
+    const experienceSection = experiences.map((exp) => {
+      const duration = exp.isCurrent
+        ? `${exp.startDate.toISOString().slice(0, 7)} – Present`
+        : `${exp.startDate.toISOString().slice(0, 7)} – ${exp.endDate?.toISOString().slice(0, 7) || "Present"}`;
+
+      const highlights = exp.highlights.map((h) => {
+        let bullet = `[${h.category.toUpperCase()}] ${h.text}`;
+        if (h.metrics) bullet += ` (${h.metrics})`;
+        return bullet;
+      });
+
+      const skills = exp.skills.map((s) => s.name).join(", ");
+
+      return `### ${exp.title} at ${exp.company}${exp.location ? ` (${exp.location})` : ""}
+Duration: ${duration} | Type: ${exp.employmentType}${exp.industry ? ` | Industry: ${exp.industry}` : ""}${exp.department ? ` | Dept: ${exp.department}` : ""}
+${exp.description ? `Summary: ${exp.description}` : ""}
+Skills: ${skills || "none listed"}
+Highlights:
+${highlights.length > 0 ? highlights.map((h) => `- ${h}`).join("\n") : "- No highlights added"}`;
+    }).join("\n\n");
+
+    // ─── Collect job description phrases ────────────────────────────────────────
     const allPhrases: { text: string; category: string; keywords: string[] }[] = [];
     for (const job of jobs) {
       for (const resp of job.responsibilities) {
@@ -86,7 +159,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Take top N phrases (prioritize those with keywords matching the target role)
+    // Score phrases by relevance to target role
     const targetLower = targetRole.toLowerCase();
     const scoredPhrases = allPhrases.map((p) => {
       const relevance = p.keywords.some((k) => targetLower.includes(k.toLowerCase())) ? 2 : 1;
@@ -95,28 +168,45 @@ export async function POST(request: NextRequest) {
     scoredPhrases.sort((a, b) => b.relevance - a.relevance);
     const selectedPhrases = scoredPhrases.slice(0, topN);
 
-    // Build the prompt
+    // ─── Build the prompt ───────────────────────────────────────────────────────
     const userPrompt = `Target Role: ${targetRole}
 
-Top Keywords (by frequency across ${jobs.length} saved job descriptions):
+${experiences.length > 0 ? `## YOUR WORK EXPERIENCE (${experiences.length} roles)
+This is the user's actual career history. Use this as the primary source for the Work Experience section.
+
+${experienceSection}` : "## NO WORK EXPERIENCE ENTERED YET\nUse job description phrases to infer experience."}
+
+## TRACKED KEYWORDS (from ${jobs.length} saved job descriptions + your experience)
+These indicate market demand and your skill profile:
 ${topKeywords.join("\n")}
 
-Resume-Ready Phrases (${selectedPhrases.length} total):
-${selectedPhrases.map((p) => `- [${p.category.toUpperCase()}] ${p.text}`).join("\n")}
+${selectedPhrases.length > 0 ? `## RESUME-READY PHRASES (from tracked job descriptions)
+Use these for language and framing inspiration:
+${selectedPhrases.slice(0, 30).map((p) => `- [${p.category.toUpperCase()}] ${p.text}`).join("\n")}` : ""}
 
-Generate a tailored resume for the target role using these keywords and phrases as raw material.`;
+Generate a tailored resume for the target role. Prioritize the user's actual experience, supplemented by tracked keywords and phrases for language optimization.`;
 
-    // Check for API key
+    // ─── Check for API key ──────────────────────────────────────────────────────
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       // Fallback: return a structured template without LLM
+      const workExperience = experiences.map((exp) => ({
+        title: exp.title,
+        company: exp.company,
+        location: exp.location,
+        startDate: exp.startDate.toISOString(),
+        endDate: exp.endDate?.toISOString() || null,
+        isCurrent: exp.isCurrent,
+        bullets: exp.highlights
+          .filter((h) => h.category === "achievement" || h.category === "project")
+          .slice(0, 4)
+          .map((h) => h.metrics ? `${h.text} (${h.metrics})` : h.text),
+      }));
+
       return NextResponse.json({
         targetRole,
         summary: `Experienced professional seeking a ${targetRole} position. Bringing expertise in ${topKeywords.slice(0, 5).map((k) => k.split(" (")[0]).join(", ")}.`,
-        experienceHighlights: selectedPhrases
-          .filter((p) => p.category === "responsibility")
-          .slice(0, 8)
-          .map((p) => p.text),
+        workExperience,
         keySkills: Array.from(keywordFreq.entries())
           .sort((a, b) => b[1] - a[1])
           .slice(0, 12)
@@ -127,10 +217,16 @@ Generate a tailored resume for the target role using these keywords and phrases 
           .map((p) => p.text),
         generatedAt: new Date().toISOString(),
         source: "template",
+        stats: {
+          jobsAnalyzed: jobs.length,
+          experienceRoles: experiences.length,
+          phrasesConsidered: selectedPhrases.length,
+          keywordsAvailable: keywordFreq.size,
+        },
       });
     }
 
-    // LLM generation
+    // ─── LLM generation ─────────────────────────────────────────────────────────
     const openai = new OpenAI({ apiKey });
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -158,6 +254,7 @@ Generate a tailored resume for the target role using these keywords and phrases 
       source: "gpt-4o-mini",
       stats: {
         jobsAnalyzed: jobs.length,
+        experienceRoles: experiences.length,
         phrasesConsidered: selectedPhrases.length,
         keywordsAvailable: keywordFreq.size,
       },

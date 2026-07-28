@@ -6,13 +6,23 @@ import Link from "next/link";
 interface ResumeData {
   targetRole: string;
   summary: string;
-  experienceHighlights: string[];
+  workExperience?: {
+    title: string;
+    company: string;
+    location: string | null;
+    startDate: string;
+    endDate: string | null;
+    isCurrent: boolean;
+    bullets: string[];
+  }[];
+  experienceHighlights?: string[];
   keySkills: string[];
   additionalQualifications: string[];
   generatedAt: string;
   source: string;
   stats?: {
     jobsAnalyzed: number;
+    experienceRoles?: number;
     phrasesConsidered: number;
     keywordsAvailable: number;
   };
@@ -37,6 +47,11 @@ interface SavedJob {
 
 type Tab = "generate" | "gap";
 type GapSource = "saved" | "paste";
+
+function formatResumeDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
 
 export default function ResumePage() {
   const [tab, setTab] = useState<Tab>("generate");
@@ -113,23 +128,42 @@ export default function ResumePage() {
 
   function copyToClipboard() {
     if (!resume) return;
-    const text = [
+    const sections: string[] = [
       `# ${resume.targetRole}`,
       "",
       "## Summary",
       resume.summary,
-      "",
-      "## Experience Highlights",
-      ...resume.experienceHighlights.map((h) => `- ${h}`),
-      "",
-      "## Key Skills",
-      resume.keySkills.join(" | "),
-      "",
-      "## Additional Qualifications",
-      ...resume.additionalQualifications.map((q) => `- ${q}`),
-    ].join("\n");
+    ];
 
-    navigator.clipboard.writeText(text).catch(() => {});
+    if (resume.workExperience && resume.workExperience.length > 0) {
+      sections.push("", "## Work Experience");
+      for (const role of resume.workExperience) {
+        const dateRange = role.isCurrent
+          ? `${formatResumeDate(role.startDate)} – Present`
+          : `${formatResumeDate(role.startDate)} – ${role.endDate ? formatResumeDate(role.endDate) : "Present"}`;
+        sections.push(`\n### ${role.title} | ${role.company}${role.location ? ` | ${role.location}` : ""}`);
+        sections.push(dateRange);
+        for (const bullet of role.bullets) {
+          sections.push(`- ${bullet}`);
+        }
+      }
+    } else if (resume.experienceHighlights && resume.experienceHighlights.length > 0) {
+      sections.push("", "## Experience Highlights");
+      for (const h of resume.experienceHighlights) {
+        sections.push(`- ${h}`);
+      }
+    }
+
+    sections.push("", "## Key Skills", resume.keySkills.join(" | "));
+
+    if (resume.additionalQualifications.length > 0) {
+      sections.push("", "## Additional Qualifications");
+      for (const q of resume.additionalQualifications) {
+        sections.push(`- ${q}`);
+      }
+    }
+
+    navigator.clipboard.writeText(sections.join("\n")).catch(() => {});
   }
 
   async function handleGapAnalysis(e: React.FormEvent) {
@@ -179,10 +213,13 @@ export default function ResumePage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Resume Builder</h1>
             <p className="text-sm text-gray-500 mt-1">
-              Generate a tailored resume from your saved job data
+              Generate a tailored resume from your experience and saved job data
             </p>
           </div>
           <div className="flex gap-4">
+            <Link href="/experience" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+              My Experience
+            </Link>
             <Link href="/phrases" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
               Phrases
             </Link>
@@ -228,7 +265,7 @@ export default function ResumePage() {
               </label>
               <p className="text-xs text-gray-400 mb-3">
                 Enter a role title (e.g., &quot;VP of Data Science&quot;, &quot;Senior Product Manager&quot;).
-                The AI will select your most relevant keywords and phrases to build a tailored resume.
+                The AI will use your work experience and tracked keywords to build a tailored resume.
               </p>
               <div className="flex gap-3">
                 <input
@@ -260,7 +297,7 @@ export default function ResumePage() {
             {isGenerating && (
               <div className="text-center py-12">
                 <div className="inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" role="status" aria-label="Generating resume" />
-                <p className="text-gray-500 mt-3 text-sm">Analyzing your keywords and phrases...</p>
+                <p className="text-gray-500 mt-3 text-sm">Analyzing your experience, keywords, and phrases...</p>
               </div>
             )}
 
@@ -275,7 +312,7 @@ export default function ResumePage() {
                     </h2>
                     {resume.stats && (
                       <span className="text-xs text-gray-400">
-                        ({resume.stats.jobsAnalyzed} jobs, {resume.stats.phrasesConsidered} phrases analyzed)
+                        ({resume.stats.experienceRoles ? `${resume.stats.experienceRoles} roles, ` : ""}{resume.stats.jobsAnalyzed} jobs, {resume.stats.phrasesConsidered} phrases analyzed)
                       </span>
                     )}
                   </div>
@@ -297,8 +334,42 @@ export default function ResumePage() {
                     <p className="text-sm text-gray-700 leading-relaxed">{resume.summary}</p>
                   </section>
 
-                  {/* Experience Highlights */}
-                  {resume.experienceHighlights.length > 0 && (
+                  {/* Work Experience (structured roles) */}
+                  {resume.workExperience && resume.workExperience.length > 0 && (
+                    <section>
+                      <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-3">
+                        Work Experience
+                      </h3>
+                      <div className="space-y-5">
+                        {resume.workExperience.map((role, i) => (
+                          <div key={i} className="border-l-2 border-blue-200 pl-4">
+                            <div className="flex items-baseline justify-between gap-2">
+                              <h4 className="text-sm font-semibold text-gray-900">{role.title}</h4>
+                              <span className="text-xs text-gray-400 shrink-0">
+                                {formatResumeDate(role.startDate)} &ndash; {role.isCurrent ? "Present" : role.endDate ? formatResumeDate(role.endDate) : "Present"}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-1.5">
+                              {role.company}{role.location && ` \u2022 ${role.location}`}
+                            </p>
+                            {role.bullets.length > 0 && (
+                              <ul className="space-y-1">
+                                {role.bullets.map((bullet, j) => (
+                                  <li key={j} className="flex items-start gap-2 text-sm text-gray-700">
+                                    <span className="text-blue-500 mt-1 shrink-0">&#x2022;</span>
+                                    <span>{bullet}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Legacy: Experience Highlights (flat list, for resumes generated before work experience integration) */}
+                  {(!resume.workExperience || resume.workExperience.length === 0) && resume.experienceHighlights && resume.experienceHighlights.length > 0 && (
                     <section>
                       <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-2">
                         Experience Highlights
