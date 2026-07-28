@@ -1,14 +1,14 @@
 {
   "results": [
     {
-      "id": "backup-db-9",
-      "command": "cp dev.db dev.db.backup-$(date +%Y%m%d-%H%M%S) && cp dev.db ~/Desktop/career-toolkit-dev.db.backup && echo 'Backed up to:' && ls -la dev.db.backup-* && ls -la ~/Desktop/career-toolkit-dev.db.backup",
-      "status": "success",
-      "stdout": "Backed up to:\n-rw-r--r--  1 REDACTED_ALT_NAME  staff  1880064 Jul 27 19:42 dev.db.backup-20260727-194225\n-rw-r--r--@ 1 REDACTED_ALT_NAME  staff  1880064 Jul 27 19:42 /Users/REDACTED_ALT_NAME/Desktop/career-toolkit-dev.db.backup\n",
-      "stderr": "",
-      "exitCode": 0,
-      "duration": 55
+      "id": "migrate-neon-10",
+      "command": "node scripts/migrate-to-neon.mjs",
+      "status": "timeout",
+      "stdout": "",
+      "stderr": "Command timeout after 120000ms: node scripts/migrate-to-neon.mjs",
+      "exitCode": null,
+      "duration": 120011
     }
   ],
-  "processedAt": "2026-07-28T02:42:25.299Z"
+  "processedAt": "2026-07-28T02:48:50.811Z"
 }
