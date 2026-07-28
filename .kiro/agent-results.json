@@ -4,11 +4,11 @@
       "id": "schema-push-13",
       "command": "npx prisma generate && npx prisma db push --accept-data-loss && echo 'Schema push complete - keywords column added'",
       "status": "success",
-      "stdout": "\n✔ Generated Prisma Client (7.9.0) to ./src/generated/prisma in 59ms\n\nDatasource \"db\": PostgreSQL database \"neondb\", schema \"public\" at \"ep-tiny-brook-au73axd4-pooler.c-10.us-east-1.aws.neon.tech\"\n\nThe database is already in sync with the Prisma schema.\n\nSchema push complete - keywords column added\n",
+      "stdout": "\n✔ Generated Prisma Client (7.9.0) to ./src/generated/prisma in 77ms\n\nDatasource \"db\": PostgreSQL database \"neondb\", schema \"public\" at \"ep-tiny-brook-au73axd4-pooler.c-10.us-east-1.aws.neon.tech\"\n\nThe database is already in sync with the Prisma schema.\n\nSchema push complete - keywords column added\n",
       "stderr": "Loaded Prisma config from prisma.config.ts.\n\nPrisma schema loaded from prisma/schema.prisma.\nLoaded Prisma config from prisma.config.ts.\n\nPrisma schema loaded from prisma/schema.prisma.\n",
       "exitCode": 0,
-      "duration": 7189
+      "duration": 9445
     }
   ],
-  "processedAt": "2026-07-28T22:20:11.851Z"
+  "processedAt": "2026-07-28T22:30:36.405Z"
 }
