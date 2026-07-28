@@ -5,6 +5,7 @@ import Link from "next/link";
 import ExperienceCard from "@/components/ExperienceCard";
 import ExperienceForm from "@/components/ExperienceForm";
 import ResumeUpload from "@/components/ResumeUpload";
+import MergeExperience from "@/components/MergeExperience";
 
 interface Highlight {
   id: string;
@@ -61,6 +62,9 @@ export default function ExperiencePage() {
   const [showForm, setShowForm] = useState(false);
   const [editingData, setEditingData] = useState<FormData | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState("");
+  const [mergeMode, setMergeMode] = useState(false);
+  const [selectedForMerge, setSelectedForMerge] = useState<Set<string>>(new Set());
+  const [showMergeEditor, setShowMergeEditor] = useState(false);
 
   const [needsSetup, setNeedsSetup] = useState(false);
 
@@ -225,19 +229,56 @@ export default function ExperiencePage() {
 
         {/* Stats bar */}
         {experiences.length > 0 && (
-          <div className="flex items-center gap-6 text-sm text-gray-600">
-            <span>
-              <strong className="text-gray-900">{experiences.length}</strong>{" "}
-              {experiences.length === 1 ? "role" : "roles"}
-            </span>
-            <span>
-              <strong className="text-gray-900">{totalYears}</strong>{" "}
-              {totalYears === 1 ? "year" : "years"} total experience
-            </span>
-            <span>
-              <strong className="text-gray-900">{uniqueSkills}</strong> unique skills
-            </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6 text-sm text-gray-600">
+              <span>
+                <strong className="text-gray-900">{experiences.length}</strong>{" "}
+                {experiences.length === 1 ? "role" : "roles"}
+              </span>
+              <span>
+                <strong className="text-gray-900">{totalYears}</strong>{" "}
+                {totalYears === 1 ? "year" : "years"} total experience
+              </span>
+              <span>
+                <strong className="text-gray-900">{uniqueSkills}</strong> unique skills
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                setMergeMode(!mergeMode);
+                setSelectedForMerge(new Set());
+                setShowMergeEditor(false);
+              }}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium cursor-pointer transition-colors ${
+                mergeMode
+                  ? "bg-purple-100 text-purple-700 hover:bg-purple-200"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              {mergeMode ? "Exit Merge Mode" : "Merge Roles"}
+            </button>
           </div>
+        )}
+
+        {/* Merge mode toolbar */}
+        {mergeMode && selectedForMerge.size >= 2 && !showMergeEditor && (
+          <div className="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg">
+            <span className="text-sm text-purple-700">
+              <strong>{selectedForMerge.size}</strong> roles selected for merge
+            </span>
+            <button
+              onClick={() => setShowMergeEditor(true)}
+              className="px-4 py-2 bg-purple-600 text-white rounded-md text-sm font-medium cursor-pointer hover:bg-purple-700"
+            >
+              Merge Selected
+            </button>
+          </div>
+        )}
+
+        {mergeMode && selectedForMerge.size < 2 && (
+          <p className="text-sm text-purple-500 bg-purple-50 border border-purple-100 rounded-lg p-3">
+            Select 2 or more roles to merge them. Click the checkboxes below.
+          </p>
         )}
 
         {/* Search */}
@@ -294,6 +335,20 @@ export default function ExperiencePage() {
           </button>
         )}
 
+        {/* Merge Editor */}
+        {showMergeEditor && (
+          <MergeExperience
+            experiences={experiences.filter((e) => selectedForMerge.has(e.id))}
+            onMerged={() => {
+              setShowMergeEditor(false);
+              setMergeMode(false);
+              setSelectedForMerge(new Set());
+              fetchExperiences();
+            }}
+            onCancel={() => setShowMergeEditor(false)}
+          />
+        )}
+
         {/* Experience List */}
         {loading ? (
           <p className="text-center text-gray-400 py-12">Loading...</p>
@@ -320,12 +375,34 @@ export default function ExperiencePage() {
         ) : (
           <div className="space-y-3">
             {filteredExperiences.map((exp) => (
-              <ExperienceCard
-                key={exp.id}
-                experience={exp}
-                onEdit={handleEdit}
-                onDelete={fetchExperiences}
-              />
+              <div key={exp.id} className="flex gap-3 items-start">
+                {mergeMode && (
+                  <input
+                    type="checkbox"
+                    checked={selectedForMerge.has(exp.id)}
+                    onChange={() => {
+                      setSelectedForMerge((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(exp.id)) {
+                          next.delete(exp.id);
+                        } else {
+                          next.add(exp.id);
+                        }
+                        return next;
+                      });
+                    }}
+                    className="mt-5 h-5 w-5 text-purple-600 rounded border-gray-300 focus:ring-purple-500 shrink-0 cursor-pointer"
+                    aria-label={`Select ${exp.title} at ${exp.company} for merge`}
+                  />
+                )}
+                <div className="flex-1">
+                  <ExperienceCard
+                    experience={exp}
+                    onEdit={handleEdit}
+                    onDelete={fetchExperiences}
+                  />
+                </div>
+              </div>
             ))}
           </div>
         )}
