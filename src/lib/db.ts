@@ -25,7 +25,18 @@ function createPrismaClient() {
     );
   }
 
-  const adapter = new PrismaPg({ connectionString });
+  // Suppress pg SSL deprecation warning by explicitly setting sslmode=verify-full
+  // (which is the current default behavior anyway)
+  let finalUrl = connectionString;
+  if (finalUrl.includes("sslmode=require") || (finalUrl.includes("ssl=") && !finalUrl.includes("sslmode=verify-full"))) {
+    finalUrl = finalUrl.replace(/sslmode=require/g, "sslmode=verify-full");
+  } else if (finalUrl.includes("?") && !finalUrl.includes("sslmode=")) {
+    finalUrl += "&sslmode=verify-full";
+  } else if (!finalUrl.includes("?") && !finalUrl.includes("sslmode=")) {
+    finalUrl += "?sslmode=verify-full";
+  }
+
+  const adapter = new PrismaPg({ connectionString: finalUrl });
   return new PrismaClient({ adapter });
 }
 
