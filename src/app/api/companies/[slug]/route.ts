@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { normalizeCompanyName } from "@/lib/normalize-company";
 import { slugify } from "@/lib/slugify";
@@ -104,6 +105,37 @@ export async function PATCH(
 
     if (dreamCompany !== undefined) {
       updateData.dreamCompany = dreamCompany;
+    }
+
+    // If slug is being changed, handle potential collisions with retry loop
+    if (updateData.slug && updateData.slug !== slug) {
+      const baseSlug = updateData.slug;
+      const MAX_RETRIES = 10;
+
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          const updated = await prisma.company.update({
+            where: { slug },
+            data: updateData,
+          });
+          return NextResponse.json(updated);
+        } catch (err) {
+          if (
+            err instanceof Prisma.PrismaClientKnownRequestError &&
+            err.code === "P2002"
+          ) {
+            // Slug collision - retry with numeric suffix
+            updateData.slug = `${baseSlug}-${attempt + 2}`;
+            continue;
+          }
+          throw err;
+        }
+      }
+
+      return NextResponse.json(
+        { error: "Could not generate a unique slug" },
+        { status: 500 }
+      );
     }
 
     const updated = await prisma.company.update({
