@@ -104,19 +104,27 @@ export default function ExperiencePage() {
 
   // Client-side search
   const filteredExperiences = useMemo(() => {
-    if (!searchQuery) return experiences;
-    const q = searchQuery.toLowerCase();
-    return experiences.filter(
-      (exp) =>
-        exp.title.toLowerCase().includes(q) ||
-        exp.company.toLowerCase().includes(q) ||
-        (exp.location && exp.location.toLowerCase().includes(q)) ||
-        (exp.description && exp.description.toLowerCase().includes(q)) ||
-        (exp.industry && exp.industry.toLowerCase().includes(q)) ||
-        (exp.department && exp.department.toLowerCase().includes(q)) ||
-        exp.skills.some((s) => s.name.toLowerCase().includes(q)) ||
-        exp.highlights.some((h) => h.text.toLowerCase().includes(q))
-    );
+    let result = experiences;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (exp) =>
+          exp.title.toLowerCase().includes(q) ||
+          exp.company.toLowerCase().includes(q) ||
+          (exp.location && exp.location.toLowerCase().includes(q)) ||
+          (exp.description && exp.description.toLowerCase().includes(q)) ||
+          (exp.industry && exp.industry.toLowerCase().includes(q)) ||
+          (exp.department && exp.department.toLowerCase().includes(q)) ||
+          exp.skills.some((s) => s.name.toLowerCase().includes(q)) ||
+          exp.highlights.some((h) => h.text.toLowerCase().includes(q))
+      );
+    }
+    // Sort: current roles first, then by start date newest first
+    return [...result].sort((a, b) => {
+      if (a.isCurrent && !b.isCurrent) return -1;
+      if (!a.isCurrent && b.isCurrent) return 1;
+      return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+    });
   }, [experiences, searchQuery]);
 
   // Stats
@@ -163,6 +171,10 @@ export default function ExperiencePage() {
     };
     setEditingData(formData);
     setShowForm(true);
+    // Scroll to form
+    setTimeout(() => {
+      document.getElementById("experience-form-area")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
   };
 
   const handleSave = () => {
@@ -317,23 +329,25 @@ export default function ExperiencePage() {
         {/* Upload Resume / Add Form */}
         <ResumeUpload onSaved={fetchExperiences} />
 
-        {showForm ? (
-          <ExperienceForm
-            initialData={editingData}
-            onSave={handleSave}
-            onCancel={handleCancel}
-          />
-        ) : (
-          <button
-            onClick={() => {
-              setEditingData(undefined);
-              setShowForm(true);
-            }}
-            className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors cursor-pointer"
-          >
-            + Add Experience Manually
-          </button>
-        )}
+        <div id="experience-form-area">
+          {showForm ? (
+            <ExperienceForm
+              initialData={editingData}
+              onSave={handleSave}
+              onCancel={handleCancel}
+            />
+          ) : (
+            <button
+              onClick={() => {
+                setEditingData(undefined);
+                setShowForm(true);
+              }}
+              className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors cursor-pointer"
+            >
+              + Add Experience Manually
+            </button>
+          )}
+        </div>
 
         {/* Merge Editor */}
         {showMergeEditor && (
