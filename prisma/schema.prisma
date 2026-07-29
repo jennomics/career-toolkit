@@ -26,13 +26,16 @@ model Job {
 }
 
 model JobSkill {
-  id    String @id @default(cuid())
-  name  String
-  jobId String
-  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  id             String  @id @default(cuid())
+  name           String
+  normalizedName String?
+  category       String?
+  jobId          String
+  job            Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@index([jobId])
   @@index([name])
+  @@index([normalizedName])
 }
 
 model JobResponsibility {
@@ -100,13 +103,16 @@ model Experience {
 }
 
 model ExperienceSkill {
-  id           String     @id @default(cuid())
-  name         String     // Skill name — same conventions as JobSkill for cross-referencing
-  experienceId String
-  experience   Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  id             String     @id @default(cuid())
+  name           String     // Skill name — same conventions as JobSkill for cross-referencing
+  normalizedName String?
+  category       String?
+  experienceId   String
+  experience     Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
 
   @@index([experienceId])
   @@index([name])
+  @@index([normalizedName])
 }
 
 model ExperienceHighlight {
@@ -149,4 +155,15 @@ model ResumeProject {
 
   @@index([jobId])
   @@index([status])
+}
+
+// ─── Skill Taxonomy ──────────────────────────────────────────────────────────
+
+model SkillTaxonomy {
+  id            String   @id @default(cuid())
+  canonicalName String   @unique
+  category      String   // "Hard Skills" or "Soft Skills"
+  subcategory   String   // e.g. "Programming Languages", "Leadership"
+  aliases       String[] // known variant names
+  createdAt     DateTime @default(now())
 }

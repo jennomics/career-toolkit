@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Keyword normalization and hierarchical taxonomy system. Build a static taxonomy data structure, add DB models for normalized/categorized skills, create an API endpoint to normalize existing skills and view the taxonomy, and build a UI page to browse the skill taxonomy.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/lib/skill-taxonomy.ts - define a hierarchical taxonomy with top-level categories (Hard Skills, Soft Skills) -> subcategories (Programming Languages, Cloud & DevOps, Data & ML, Frontend, Backend, Databases, Project Management, Leadership, Communication, etc.) -> specific skills. Include a normalization map that maps variants to canonical forms (e.g., 'ML' -> 'Machine Learning', 'k8s' -> 'Kubernetes', 'JS' -> 'JavaScript', etc.). Export functions: normalizeSkillName(raw: string) -> string, categorizeSkill(name: string) -> { category: string, subcategory: string } | null, getTaxonomy() -> full taxonomy tree.",
     "Add new Prisma models to prisma/schema.prisma: SkillTaxonomy model with fields (id, canonicalName String @unique, category String, subcategory String, aliases String[] for known variants, createdAt). Also add optional fields normalizedName and category to JobSkill and ExperienceSkill models for storing the normalized/categorized version alongside the original.",
