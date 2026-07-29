@@ -65,12 +65,18 @@ export default function JobCard({ job, onUpdate, onDelete, onKeywordClick }: Job
   const handleToggleDreamCompany = async () => {
     setTogglingDreamCompany(true);
     try {
-      await fetch(`/api/jobs/${job.id}/dream`, {
+      const res = await fetch(`/api/jobs/${job.id}/dream`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dreamCompany: !job.dreamCompany }),
       });
+      if (!res.ok) {
+        console.error("Failed to toggle dream company:", res.status);
+        return;
+      }
       onUpdate();
+    } catch (err) {
+      console.error("Error toggling dream company:", err);
     } finally {
       setTogglingDreamCompany(false);
     }
@@ -79,12 +85,18 @@ export default function JobCard({ job, onUpdate, onDelete, onKeywordClick }: Job
   const handleToggleDreamJob = async () => {
     setTogglingDreamJob(true);
     try {
-      await fetch(`/api/jobs/${job.id}/dream`, {
+      const res = await fetch(`/api/jobs/${job.id}/dream`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dreamJob: !job.dreamJob }),
       });
+      if (!res.ok) {
+        console.error("Failed to toggle dream job:", res.status);
+        return;
+      }
       onUpdate();
+    } catch (err) {
+      console.error("Error toggling dream job:", err);
     } finally {
       setTogglingDreamJob(false);
     }

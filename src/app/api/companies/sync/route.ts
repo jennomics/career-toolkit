@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { normalizeCompanyName } from "@/lib/normalize-company";
 import { slugify } from "@/lib/slugify";
@@ -55,15 +56,37 @@ export async function POST() {
 
           let wasCreated = false;
           if (!company) {
-            // Create new company
-            company = await prisma.company.create({
-              data: {
-                name: group.displayName,
-                normalizedName: group.normalizedName,
-                slug: slugify(group.displayName),
-              },
-            });
-            wasCreated = true;
+            // Create new company with slug collision retry
+            const baseSlug = slugify(group.displayName);
+            let slug = baseSlug;
+            const MAX_RETRIES = 10;
+
+            for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+              try {
+                company = await prisma.company.create({
+                  data: {
+                    name: group.displayName,
+                    normalizedName: group.normalizedName,
+                    slug,
+                  },
+                });
+                wasCreated = true;
+                break;
+              } catch (err) {
+                if (
+                  err instanceof Prisma.PrismaClientKnownRequestError &&
+                  err.code === "P2002"
+                ) {
+                  slug = `${baseSlug}-${attempt + 2}`;
+                  continue;
+                }
+                throw err;
+              }
+            }
+
+            if (!company) {
+              throw new Error(`Could not generate a unique slug for "${group.displayName}"`);
+            }
           }
 
           // Link all jobs in this group to the company
