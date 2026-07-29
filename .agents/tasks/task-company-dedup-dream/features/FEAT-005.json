@@ -2,7 +2,7 @@
   "id": "FEAT-005",
   "type": "feat",
   "description": "Dream Company and Dream Job designators: toggle UI on job cards, visual badges, prominent display on company page, and backlog items for automated job alerts and dream jobs page.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Update src/app/api/jobs/[id]/route.ts PATCH handler to accept dreamCompany and dreamJob boolean fields.",
     "Update src/components/JobCard.tsx to: (1) show a star/heart badge next to company name if dreamCompany is true, (2) show a sparkle/star badge next to job title if dreamJob is true, (3) add toggle buttons for both fields that PATCH the job. Dream company badge: gold star with 'Dream Company' tooltip. Dream job badge: purple sparkle with 'Dream Job' tooltip. Visually distinct styling - dream jobs get a subtle gold left border or background tint.",

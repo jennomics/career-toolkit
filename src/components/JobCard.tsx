@@ -19,6 +19,8 @@ interface Job {
   source: string | null;
   notes: string | null;
   createdAt: string;
+  dreamCompany: boolean;
+  dreamJob: boolean;
   skills: { id: string; name: string }[];
   responsibilities: Responsibility[];
 }
@@ -44,9 +46,12 @@ const ARCHIVED_STATUSES = ["rejected", "closed"];
 export default function JobCard({ job, onUpdate, onDelete, onKeywordClick }: JobCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [togglingDreamCompany, setTogglingDreamCompany] = useState(false);
+  const [togglingDreamJob, setTogglingDreamJob] = useState(false);
 
   const statusConfig = STATUS_OPTIONS.find((s) => s.value === job.status) || STATUS_OPTIONS[0];
   const isArchived = ARCHIVED_STATUSES.includes(job.status);
+  const isDream = job.dreamCompany || job.dreamJob;
 
   const handleStatusChange = async (newStatus: string) => {
     await fetch(`/api/jobs/${job.id}`, {
@@ -55,6 +60,34 @@ export default function JobCard({ job, onUpdate, onDelete, onKeywordClick }: Job
       body: JSON.stringify({ status: newStatus }),
     });
     onUpdate();
+  };
+
+  const handleToggleDreamCompany = async () => {
+    setTogglingDreamCompany(true);
+    try {
+      await fetch(`/api/jobs/${job.id}/dream`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dreamCompany: !job.dreamCompany }),
+      });
+      onUpdate();
+    } finally {
+      setTogglingDreamCompany(false);
+    }
+  };
+
+  const handleToggleDreamJob = async () => {
+    setTogglingDreamJob(true);
+    try {
+      await fetch(`/api/jobs/${job.id}/dream`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dreamJob: !job.dreamJob }),
+      });
+      onUpdate();
+    } finally {
+      setTogglingDreamJob(false);
+    }
   };
 
   const handleArchive = async () => {
@@ -89,10 +122,21 @@ export default function JobCard({ job, onUpdate, onDelete, onKeywordClick }: Job
   });
 
   return (
-    <div className={`bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow ${isArchived ? "opacity-70" : ""}`}>
+    <div className={`bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow ${isArchived ? "opacity-70" : ""} ${isDream ? "border-l-4 border-l-amber-400" : ""}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
+            <button
+              onClick={handleToggleDreamJob}
+              disabled={togglingDreamJob}
+              className={`text-sm cursor-pointer transition-colors shrink-0 ${
+                job.dreamJob ? "text-purple-500" : "text-gray-300 hover:text-purple-400"
+              }`}
+              title={job.dreamJob ? "Dream Job (click to remove)" : "Mark as Dream Job"}
+              aria-label={job.dreamJob ? "Remove Dream Job designation" : "Mark as Dream Job"}
+            >
+              &#10024;
+            </button>
             <h3 className="font-semibold text-gray-900 truncate">{job.title}</h3>
             <select
               value={job.status}
@@ -107,9 +151,22 @@ export default function JobCard({ job, onUpdate, onDelete, onKeywordClick }: Job
               ))}
             </select>
           </div>
-          <p className="text-sm text-gray-600">
-            {job.company}
-            {job.location && ` \u2022 ${job.location}`}
+          <p className="text-sm text-gray-600 flex items-center gap-1">
+            <button
+              onClick={handleToggleDreamCompany}
+              disabled={togglingDreamCompany}
+              className={`text-sm cursor-pointer transition-colors shrink-0 ${
+                job.dreamCompany ? "text-yellow-500" : "text-gray-300 hover:text-yellow-400"
+              }`}
+              title={job.dreamCompany ? "Dream Company (click to remove)" : "Mark as Dream Company"}
+              aria-label={job.dreamCompany ? "Remove Dream Company designation" : "Mark as Dream Company"}
+            >
+              &#9733;
+            </button>
+            <span>
+              {job.company}
+              {job.location && ` \u2022 ${job.location}`}
+            </span>
           </p>
           <p className="text-xs text-gray-400 mt-1">
             Added {formattedDate}
