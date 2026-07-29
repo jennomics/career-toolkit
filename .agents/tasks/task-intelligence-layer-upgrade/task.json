@@ -9,6 +9,6 @@
     "tests": "pass",
     "test_quality": "skipped",
     "docker_build": "skipped",
-    "summary": "npm run build passes cleanly. No test framework exists in this project. All new routes (api/skills/normalize, api/skills/taxonomy, api/resume/coverage) and pages (/skills) compile and register correctly. Review feedback addressed: transaction batching, taxonomy reuse, word-boundary matching, zero-skill exclusion, prompt label fix."
+    "summary": "npm run build passes cleanly. No test framework exists in this project. All new routes compile correctly. V2 review feedback addressed: (1) 2-word skill proximity matching with 100-char window, (2) transaction batching in chunks of 500, (3) O(1) alias lookup via pre-computed aliasMap in skill-taxonomy.ts."
   }
 }
