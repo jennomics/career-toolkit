@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Schema changes: Add Company model with name, normalizedName, slug, notes (intelligence), dreamCompany flag. Add dreamCompany and dreamJob boolean fields to Job model. Add companyId foreign key to Job model linking to Company. Add migration-safe schema that allows existing jobs to have null companyId initially.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Update prisma/schema.prisma to add Company model with fields: id (cuid), name (String), normalizedName (String), slug (String @unique), notes (String? - intelligence field), dreamCompany (Boolean @default(false)), createdAt, updatedAt. Add indexes on normalizedName and slug.",
     "Add to Job model: dreamCompany (Boolean @default(false)), dreamJob (Boolean @default(false)), companyId (String? - nullable for existing jobs), company relation to Company model (optional).",
@@ -21,5 +21,5 @@
     "Run 'npm run build' and confirm exit code 0"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Schema updated successfully. Company model added with all specified fields. Job model now has dreamCompany, dreamJob booleans and optional companyId/companyRef relation. The relation field is named companyRef to avoid conflict with the existing company String field. prisma generate and npm run build both pass cleanly. The src/generated/prisma/ directory is gitignored so regenerated client files are not tracked."
 }
