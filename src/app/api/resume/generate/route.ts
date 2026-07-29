@@ -229,14 +229,19 @@ ${highlights.length > 0 ? highlights.map((h) => `- ${h}`).join("\n") : "- No hig
 
     if (isGenericMode) {
       // Generic mode: analyze all jobs for coverage optimization
-      const jobSummaries = jobs.slice(0, 20).map((job) => {
+      const jobsToShow = jobs.slice(0, 20);
+      const jobSummaries = jobsToShow.map((job) => {
         const skills = job.skills.map((s) => s.name).join(", ");
         return `- ${job.title} at ${job.company}: [${skills}]`;
       }).join("\n");
 
+      const positionLabel = jobs.length > 20
+        ? `TOP 20 OF ${jobs.length} SAVED POSITIONS (representative sample)`
+        : `ALL SAVED POSITIONS (${jobs.length} jobs to cover)`;
+
       userPrompt = `MODE: GENERIC RESUME - Optimize for maximum coverage across ALL saved positions.
 
-## ALL SAVED POSITIONS (${jobs.length} jobs to cover)
+## ${positionLabel}
 ${jobSummaries}
 
 ## MOST IN-DEMAND SKILLS (by frequency across all jobs)
