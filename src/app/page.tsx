@@ -135,6 +135,12 @@ export default async function DashboardPage() {
             >
               Phrases
             </Link>
+            <Link
+              href="/companies"
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Companies
+            </Link>
           </nav>
         </div>
       </header>
@@ -274,6 +280,21 @@ export default async function DashboardPage() {
               </p>
               <p className="text-xs text-gray-400 mt-2">
                 Detect duplicate companies and jobs, merge them interactively
+              </p>
+            </Link>
+
+            <Link
+              href="/companies"
+              className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group"
+            >
+              <h3 className="text-base font-semibold text-gray-900 group-hover:text-purple-600">
+                Companies
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Company intelligence hub
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
+                Track companies, view jobs by company, and build targeted resumes
               </p>
             </Link>
           </div>
