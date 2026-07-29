@@ -1,11 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { normalizeCompanyName } from "@/lib/normalize-company";
+
+/**
+ * Strip common title prefixes/suffixes for fuzzy matching.
+ * e.g. "Senior Software Engineer II" -> "software engineer"
+ */
+function normalizeTitleForComparison(title: string): string {
+  let t = title.trim().toLowerCase();
+  // Strip common prefixes
+  const prefixes = ["senior ", "sr. ", "sr ", "junior ", "jr. ", "jr ", "lead ", "staff ", "principal "];
+  for (const prefix of prefixes) {
+    if (t.startsWith(prefix)) {
+      t = t.slice(prefix.length);
+      break;
+    }
+  }
+  // Strip common suffixes (level numbers)
+  const suffixes = [" iv", " iii", " ii", " i"];
+  for (const suffix of suffixes) {
+    if (t.endsWith(suffix)) {
+      t = t.slice(0, -suffix.length);
+      break;
+    }
+  }
+  return t.trim();
+}
 
 /**
  * POST /api/jobs/check-duplicate
  *
  * Checks if a job with the same title+company already exists,
  * or if the description has high overlap with existing jobs.
+ * Uses company name normalization and fuzzy title matching.
  *
  * Body: { title: string, company: string, description: string }
  * Returns: { isDuplicate: boolean, matches: [...] }
@@ -18,7 +45,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ isDuplicate: false, matches: [] });
     }
 
-    const matches: { id: string; title: string; company: string; reason: string; createdAt: string }[] = [];
+    const matches: {
+      id: string;
+      title: string;
+      company: string;
+      reason: string;
+      confidence: "exact" | "likely" | "possible";
+      createdAt: string;
+    }[] = [];
 
     // Check 1: Exact title + company match (case-insensitive)
     if (title && company) {
@@ -36,13 +70,43 @@ export async function POST(request: NextRequest) {
           title: job.title,
           company: job.company,
           reason: "Same title and company",
+          confidence: "exact",
           createdAt: job.createdAt.toISOString(),
         });
       }
     }
 
-    // Check 2: If no exact match found, check for similar descriptions
-    // Use first 200 chars of description as a fingerprint (avoids full-text comparison overhead)
+    // Check 2: Normalized company + fuzzy title match
+    if (matches.length === 0 && title && company) {
+      const { normalizedName: inputNormCompany } = normalizeCompanyName(company);
+      const inputNormTitle = normalizeTitleForComparison(title);
+
+      // Get all jobs and check normalized company + fuzzy title
+      const allJobs = await prisma.job.findMany({
+        select: { id: true, title: true, company: true, createdAt: true },
+      });
+
+      for (const job of allJobs) {
+        const { normalizedName: jobNormCompany } = normalizeCompanyName(job.company);
+        const jobNormTitle = normalizeTitleForComparison(job.title);
+
+        if (jobNormCompany === inputNormCompany && jobNormTitle === inputNormTitle) {
+          // Avoid duplicating exact matches already found
+          if (!matches.some((m) => m.id === job.id)) {
+            matches.push({
+              id: job.id,
+              title: job.title,
+              company: job.company,
+              reason: "Similar title and company (normalized match)",
+              confidence: "likely",
+              createdAt: job.createdAt.toISOString(),
+            });
+          }
+        }
+      }
+    }
+
+    // Check 3: If no match found yet, check for similar descriptions
     if (matches.length === 0 && description && description.length > 50) {
       const snippet = description.slice(0, 200).trim();
 
@@ -60,6 +124,7 @@ export async function POST(request: NextRequest) {
           title: job.title,
           company: job.company,
           reason: "Very similar description",
+          confidence: "possible",
           createdAt: job.createdAt.toISOString(),
         });
       }
@@ -70,7 +135,7 @@ export async function POST(request: NextRequest) {
       matches,
     });
   } catch (err) {
-    // Duplicate check should never block the user — fail silently
+    // Duplicate check should never block the user - fail silently
     console.error("POST /api/jobs/check-duplicate error:", err);
     return NextResponse.json({ isDuplicate: false, matches: [] });
   }
