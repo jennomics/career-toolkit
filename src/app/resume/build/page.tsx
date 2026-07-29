@@ -446,10 +446,20 @@ export default function ResumeBuildPage() {
     setError(null);
 
     const job = jobs.find((j) => j.id === selectedJobId);
-    if (!job) return;
+    if (!job) {
+      setError("Could not find selected job");
+      setIsGeneratingCover(false);
+      return;
+    }
+
+    if (!projectId) {
+      setError("No project ID — try restarting the workflow");
+      setIsGeneratingCover(false);
+      return;
+    }
 
     try {
-      const res = await fetch("/api/resume/project/" + projectId + "/cover-letter", {
+      const res = await fetch(`/api/resume/project/${projectId}/cover-letter`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -466,15 +476,13 @@ export default function ResumeBuildPage() {
         setStep(5);
 
         // Autosave
-        if (projectId) {
-          try {
-            await fetch(`/api/resume/project/${projectId}`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ coverLetterContent: data.coverLetter, step: 5 }),
-            });
-          } catch { /* non-critical */ }
-        }
+        try {
+          await fetch(`/api/resume/project/${projectId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ coverLetterContent: data.coverLetter, step: 5 }),
+          });
+        } catch { /* non-critical */ }
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data.error || "Failed to generate cover letter");
