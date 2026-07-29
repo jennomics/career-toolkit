@@ -1,26 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { normalizeSkillName, getTaxonomy } from "@/lib/skill-taxonomy";
+import { normalizeSkillName, getAliases } from "@/lib/skill-taxonomy";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Get all aliases for a canonical skill name from the taxonomy.
- * This replaces the hardcoded abbreviationMap by leveraging the taxonomy module.
- */
-function getCanonicalAliases(canonicalName: string): string[] {
-  const taxonomy = getTaxonomy();
-  for (const category of taxonomy.categories) {
-    for (const subcategory of category.subcategories) {
-      for (const skill of subcategory.skills) {
-        if (skill.canonicalName === canonicalName) {
-          return skill.aliases;
-        }
-      }
-    }
-  }
-  return [];
-}
+// Alias lookup is now O(1) via getAliases from the taxonomy module.
 
 /**
  * Escape special regex characters in a string.
@@ -51,7 +35,7 @@ function isSkillInResume(skillRaw: string, resumeLower: string): boolean {
   }
 
   // Check if any known alias of the skill's canonical form appears in the resume
-  const aliases = getCanonicalAliases(canonicalName);
+  const aliases = getAliases(canonicalName);
   for (const alias of aliases) {
     const aliasLower = alias.toLowerCase();
     const aliasEscaped = escapeRegex(aliasLower);
@@ -59,15 +43,35 @@ function isSkillInResume(skillRaw: string, resumeLower: string): boolean {
     if (aliasRegex.test(resumeLower)) return true;
   }
 
-  // For multi-word skills, check if all significant words appear with word boundaries
+  // For multi-word skills, check if all significant words appear
   const words = skillLower.split(/\s+/).filter((w) => w.length > 2);
   if (words.length > 1) {
-    const allPresent = words.every((word) => {
-      const wordEscaped = escapeRegex(word);
-      const wordRegex = new RegExp(`\\b${wordEscaped}\\b`);
-      return wordRegex.test(resumeLower);
-    });
-    if (allPresent) return true;
+    if (words.length === 2) {
+      // For 2-word skills, require both words to appear within a 100-char sliding window
+      // to avoid false positives from scattered occurrences (e.g., "data engineering" matching
+      // "data governance" in one paragraph and "software engineering" in another).
+      const [word1, word2] = words;
+      const word1Escaped = escapeRegex(word1);
+      const word1Regex = new RegExp(`\\b${word1Escaped}\\b`, "g");
+      let match: RegExpExecArray | null;
+      while ((match = word1Regex.exec(resumeLower)) !== null) {
+        // Check if word2 appears within 100 chars of this occurrence of word1
+        const windowStart = Math.max(0, match.index - 100);
+        const windowEnd = Math.min(resumeLower.length, match.index + match[0].length + 100);
+        const window = resumeLower.slice(windowStart, windowEnd);
+        const word2Escaped = escapeRegex(word2);
+        const word2Regex = new RegExp(`\\b${word2Escaped}\\b`);
+        if (word2Regex.test(window)) return true;
+      }
+    } else {
+      // For 3+ word skills, check if all words appear anywhere (existing behavior)
+      const allPresent = words.every((word) => {
+        const wordEscaped = escapeRegex(word);
+        const wordRegex = new RegExp(`\\b${wordEscaped}\\b`);
+        return wordRegex.test(resumeLower);
+      });
+      if (allPresent) return true;
+    }
   }
 
   return false;
