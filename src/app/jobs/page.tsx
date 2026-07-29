@@ -182,6 +182,12 @@ export default function Home() {
             >
               Resume Builder &rarr;
             </Link>
+            <Link
+              href="/dedup"
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              De-dup
+            </Link>
           </div>
         </div>
       </header>

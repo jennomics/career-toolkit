@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "Interactive de-duplication system: company name normalization with user-confirmed merging, job deduplication detection and merge UI, enhanced check-duplicate endpoint, and skill recount after merges.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/app/api/companies/duplicates/route.ts with GET handler that: finds company name variants (groups by normalizedName where there are multiple Company records with the same normalizedName), returns groups of potential duplicates with their job counts. Each group shows the variants and suggests which to keep (the one with most jobs).",
     "Create src/app/api/companies/merge/route.ts with POST handler that: accepts { keepId: string, mergeIds: string[] }, moves all jobs from mergeIds companies to keepId company, deletes the merged company records, returns the updated company. Use individual updates (not createMany) with Promise.allSettled.",

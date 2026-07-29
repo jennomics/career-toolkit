@@ -261,6 +261,21 @@ export default async function DashboardPage() {
                 Extracted phrases grouped by keyword for resume building
               </p>
             </Link>
+
+            <Link
+              href="/dedup"
+              className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group"
+            >
+              <h3 className="text-base font-semibold text-gray-900 group-hover:text-purple-600">
+                De-duplication
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Find and merge duplicates
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
+                Detect duplicate companies and jobs, merge them interactively
+              </p>
+            </Link>
           </div>
         </section>
 
@@ -287,6 +302,12 @@ export default async function DashboardPage() {
               className="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 border border-gray-200 transition-colors"
             >
               View Skills
+            </Link>
+            <Link
+              href="/dedup"
+              className="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 border border-gray-200 transition-colors"
+            >
+              De-duplication
             </Link>
           </div>
         </section>
