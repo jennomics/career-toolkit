@@ -1,7 +1,77 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { normalizeSkillName, getTaxonomy } from "@/lib/skill-taxonomy";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Get all aliases for a canonical skill name from the taxonomy.
+ * This replaces the hardcoded abbreviationMap by leveraging the taxonomy module.
+ */
+function getCanonicalAliases(canonicalName: string): string[] {
+  const taxonomy = getTaxonomy();
+  for (const category of taxonomy.categories) {
+    for (const subcategory of category.subcategories) {
+      for (const skill of subcategory.skills) {
+        if (skill.canonicalName === canonicalName) {
+          return skill.aliases;
+        }
+      }
+    }
+  }
+  return [];
+}
+
+/**
+ * Escape special regex characters in a string.
+ */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Check if a skill appears in the resume content using word-boundary regex matching.
+ * Uses the taxonomy's normalizeSkillName to resolve variants instead of a local abbreviation map.
+ */
+function isSkillInResume(skillRaw: string, resumeLower: string): boolean {
+  const skillLower = skillRaw.toLowerCase().trim();
+
+  // Use word-boundary regex for precise matching (avoids "go" matching "google")
+  const escaped = escapeRegex(skillLower);
+  const regex = new RegExp(`\\b${escaped}\\b`);
+  if (regex.test(resumeLower)) return true;
+
+  // Normalize the skill using the taxonomy and check the canonical form
+  const canonicalName = normalizeSkillName(skillRaw);
+  if (canonicalName !== skillRaw) {
+    const canonicalLower = canonicalName.toLowerCase();
+    const canonicalEscaped = escapeRegex(canonicalLower);
+    const canonicalRegex = new RegExp(`\\b${canonicalEscaped}\\b`);
+    if (canonicalRegex.test(resumeLower)) return true;
+  }
+
+  // Check if any known alias of the skill's canonical form appears in the resume
+  const aliases = getCanonicalAliases(canonicalName);
+  for (const alias of aliases) {
+    const aliasLower = alias.toLowerCase();
+    const aliasEscaped = escapeRegex(aliasLower);
+    const aliasRegex = new RegExp(`\\b${aliasEscaped}\\b`);
+    if (aliasRegex.test(resumeLower)) return true;
+  }
+
+  // For multi-word skills, check if all significant words appear with word boundaries
+  const words = skillLower.split(/\s+/).filter((w) => w.length > 2);
+  if (words.length > 1) {
+    const allPresent = words.every((word) => {
+      const wordEscaped = escapeRegex(word);
+      const wordRegex = new RegExp(`\\b${wordEscaped}\\b`);
+      return wordRegex.test(resumeLower);
+    });
+    if (allPresent) return true;
+  }
+
+  return false;
+}
 
 /**
  * POST /api/resume/coverage
@@ -46,48 +116,42 @@ export async function POST(request: NextRequest) {
     // Track all missed skills across jobs for topGaps
     const gapFrequency = new Map<string, number>();
 
-    // Calculate per-job coverage scores
-    const jobScores = jobs.map((job) => {
-      const jobSkills = job.skills.map((s) => s.name);
+    // Calculate per-job coverage scores (exclude jobs with no skills)
+    const jobScores = jobs
+      .map((job) => {
+        const jobSkills = job.skills.map((s) => s.name);
 
-      if (jobSkills.length === 0) {
+        // Exclude jobs with no skills from scoring - they cannot be meaningfully evaluated
+        if (jobSkills.length === 0) {
+          return null;
+        }
+
+        const matchedSkills: string[] = [];
+        const missedSkills: string[] = [];
+
+        for (const skill of jobSkills) {
+          const matched = isSkillInResume(skill, resumeLower);
+
+          if (matched) {
+            matchedSkills.push(skill);
+          } else {
+            missedSkills.push(skill);
+            gapFrequency.set(skill, (gapFrequency.get(skill) || 0) + 1);
+          }
+        }
+
+        const score = Math.round((matchedSkills.length / jobSkills.length) * 100);
+
         return {
           jobId: job.id,
           jobTitle: job.title,
           company: job.company,
-          score: 100,
-          matchedSkills: [] as string[],
-          missedSkills: [] as string[],
+          score,
+          matchedSkills,
+          missedSkills,
         };
-      }
-
-      const matchedSkills: string[] = [];
-      const missedSkills: string[] = [];
-
-      for (const skill of jobSkills) {
-        const skillLower = skill.toLowerCase();
-        // Check for the skill in the resume content using various matching strategies
-        const matched = isSkillInResume(skillLower, resumeLower);
-
-        if (matched) {
-          matchedSkills.push(skill);
-        } else {
-          missedSkills.push(skill);
-          gapFrequency.set(skill, (gapFrequency.get(skill) || 0) + 1);
-        }
-      }
-
-      const score = Math.round((matchedSkills.length / jobSkills.length) * 100);
-
-      return {
-        jobId: job.id,
-        jobTitle: job.title,
-        company: job.company,
-        score,
-        matchedSkills,
-        missedSkills,
-      };
-    });
+      })
+      .filter((score): score is NonNullable<typeof score> => score !== null);
 
     // Calculate overall score (weighted average, jobs with more skills matter more)
     const totalSkillChecks = jobScores.reduce(
@@ -120,76 +184,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-/**
- * Check if a skill appears in the resume content using fuzzy matching.
- * Handles multi-word skills, abbreviations, and common variants.
- */
-function isSkillInResume(skillLower: string, resumeLower: string): boolean {
-  // Direct match
-  if (resumeLower.includes(skillLower)) return true;
-
-  // Try individual significant words (for multi-word skills like "machine learning")
-  const words = skillLower.split(/\s+/).filter((w) => w.length > 2);
-  if (words.length > 1) {
-    // All significant words present = likely match
-    const allPresent = words.every((word) => resumeLower.includes(word));
-    if (allPresent) return true;
-  }
-
-  // Common abbreviation/variant matching
-  const variants = getSkillVariants(skillLower);
-  for (const variant of variants) {
-    if (resumeLower.includes(variant)) return true;
-  }
-
-  return false;
-}
-
-/**
- * Get common variants of a skill name for fuzzy matching.
- */
-function getSkillVariants(skill: string): string[] {
-  const variants: string[] = [];
-
-  // Common tech abbreviation mappings
-  const abbreviationMap: Record<string, string[]> = {
-    "javascript": ["js", "ecmascript"],
-    "typescript": ["ts"],
-    "python": ["py"],
-    "machine learning": ["ml", "deep learning"],
-    "artificial intelligence": ["ai"],
-    "kubernetes": ["k8s"],
-    "amazon web services": ["aws"],
-    "google cloud platform": ["gcp"],
-    "microsoft azure": ["azure"],
-    "continuous integration": ["ci/cd", "ci"],
-    "continuous deployment": ["cd", "ci/cd"],
-    "react": ["reactjs", "react.js"],
-    "node.js": ["nodejs", "node"],
-    "postgresql": ["postgres"],
-    "mongodb": ["mongo"],
-    "docker": ["containerization", "containers"],
-    "agile": ["scrum", "kanban"],
-    "project management": ["program management", "project mgmt"],
-    "data analysis": ["data analytics", "analytics"],
-    "natural language processing": ["nlp"],
-    "user experience": ["ux"],
-    "user interface": ["ui"],
-  };
-
-  // Check if the skill has known variants
-  if (abbreviationMap[skill]) {
-    variants.push(...abbreviationMap[skill]);
-  }
-
-  // Also check if the skill IS an abbreviation
-  for (const [full, abbrevs] of Object.entries(abbreviationMap)) {
-    if (abbrevs.includes(skill)) {
-      variants.push(full);
-    }
-  }
-
-  return variants;
 }

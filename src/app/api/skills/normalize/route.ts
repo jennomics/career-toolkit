@@ -16,6 +16,10 @@ export async function POST() {
     const unmapped: string[] = [];
     const unmappedSet = new Set<string>();
 
+    // Build all update operations for atomicity
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const operations: any[] = [];
+
     // Process JobSkills
     for (const skill of jobSkills) {
       totalProcessed++;
@@ -40,10 +44,12 @@ export async function POST() {
         }
       }
 
-      await prisma.jobSkill.update({
-        where: { id: skill.id },
-        data: updateData,
-      });
+      operations.push(
+        prisma.jobSkill.update({
+          where: { id: skill.id },
+          data: updateData,
+        })
+      );
     }
 
     // Process ExperienceSkills
@@ -70,11 +76,16 @@ export async function POST() {
         }
       }
 
-      await prisma.experienceSkill.update({
-        where: { id: skill.id },
-        data: updateData,
-      });
+      operations.push(
+        prisma.experienceSkill.update({
+          where: { id: skill.id },
+          data: updateData,
+        })
+      );
     }
+
+    // Execute all updates atomically in a transaction
+    await prisma.$transaction(operations);
 
     return NextResponse.json({
       totalProcessed,
