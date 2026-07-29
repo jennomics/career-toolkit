@@ -281,13 +281,16 @@ export default function ResumePage() {
             </p>
           </div>
           <div className="flex gap-4">
+            <Link href="/" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+              Home
+            </Link>
             <Link href="/experience" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
               My Experience
             </Link>
             <Link href="/phrases" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
               Phrases
             </Link>
-            <Link href="/" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+            <Link href="/jobs" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
               &larr; Jobs
             </Link>
           </div>
@@ -690,7 +693,7 @@ export default function ResumePage() {
                     <div className="text-center py-6 border border-dashed border-gray-300 rounded-lg">
                       <p className="text-sm text-gray-500">No saved jobs yet</p>
                       <p className="text-xs text-gray-400 mt-1">
-                        Add jobs from the <Link href="/" className="text-blue-600 hover:text-blue-800">Job Library</Link> first, or paste a description below.
+                        Add jobs from the <Link href="/jobs" className="text-blue-600 hover:text-blue-800">Job Library</Link> first, or paste a description below.
                       </p>
                     </div>
                   ) : (

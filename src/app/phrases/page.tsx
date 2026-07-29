@@ -296,12 +296,20 @@ export default function PhrasesPage() {
               All extracted phrases grouped by keyword, sorted by frequency
             </p>
           </div>
-          <Link
-            href="/"
-            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-          >
-            &larr; Back to Jobs
-          </Link>
+          <div className="flex gap-4">
+            <Link
+              href="/"
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Home
+            </Link>
+            <Link
+              href="/jobs"
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              &larr; Back to Jobs
+            </Link>
+          </div>
         </div>
       </header>
 
