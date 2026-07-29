@@ -18,6 +18,8 @@ interface Job {
   source: string | null;
   notes: string | null;
   createdAt: string;
+  dreamCompany: boolean;
+  dreamJob: boolean;
   skills: { id: string; name: string }[];
   responsibilities: { id: string; text: string; category: string }[];
 }

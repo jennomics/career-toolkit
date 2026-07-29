@@ -34,6 +34,8 @@
 | J-5 | **Job similarity scoring** | "Jobs like this one" — find clusters in your saved jobs | Medium |
 | J-6 | **Archive vs. active** | Separate closed/old jobs from active pipeline without deleting | Low |
 | J-7 | **Duplicate detection** | Warn when pasting a JD that's already saved | Low |
+| J-8 | **Automated job alerts** | Auto-import new postings for watched/dream companies via RSS or scraping their careers pages | High |
+| J-9 | **Dream Jobs page** | Dedicated page showing all dream company jobs and dream jobs in one curated view | Medium |
 
 ## Networking
 

@@ -35,7 +35,7 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    const { title, company, location, url, description, status, source, notes, skills } = body;
+    const { title, company, location, url, description, status, source, notes, skills, dreamCompany, dreamJob } = body;
 
     // If skills are provided, delete existing and recreate
     if (skills !== undefined) {
@@ -53,6 +53,8 @@ export async function PATCH(
         ...(status !== undefined && { status }),
         ...(source !== undefined && { source }),
         ...(notes !== undefined && { notes }),
+        ...(dreamCompany !== undefined && { dreamCompany }),
+        ...(dreamJob !== undefined && { dreamJob }),
         ...(skills !== undefined && {
           skills: {
             create: skills.map((skill: string) => ({ name: skill })),
