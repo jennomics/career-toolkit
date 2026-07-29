@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Auto-normalize skills at insert time, LLM fallback for unknown skills, and incremental normalization endpoint.",
+  "status": "in_progress",
+  "steps": [
+    "Add LLM fallback helper to src/lib/skill-taxonomy.ts that calls GPT-4o-mini to categorize unknown skills, with try/catch and graceful degradation.",
+    "Update POST /api/jobs to normalize and categorize each skill at creation time using the taxonomy (and LLM fallback for unknowns).",
+    "Update POST /api/experience to normalize and categorize each skill at creation time.",
+    "Update PATCH /api/experience/[id] to normalize and categorize skills when they are replaced.",
+    "Change POST /api/skills/normalize to only process records where normalizedName is null by default. Add optional force:true body parameter to re-process all.",
+    "Verify build passes with npm run build."
+  ],
+  "acceptance_criteria": [
+    "POST /api/jobs stores skills with normalizedName and category populated at creation time",
+    "POST /api/experience stores skills with normalizedName and category populated at creation time",
+    "PATCH /api/experience/[id] stores skills with normalizedName and category populated when skills are updated",
+    "LLM fallback is called for skills not in static taxonomy, wrapped in try/catch",
+    "LLM failure or missing API key gracefully degrades (leaves category as null)",
+    "POST /api/skills/normalize only processes null normalizedName records by default",
+    "POST /api/skills/normalize with force:true re-processes all records",
+    "npm run build completes without errors"
+  ],
+  "verification": [
+    "npm run build exits with code 0"
+  ],
+  "blocked_reason": null,
+  "findings": null
+}

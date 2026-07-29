@@ -1,14 +1,26 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { normalizeSkillName, categorizeSkill } from "@/lib/skill-taxonomy";
+import { normalizeSkillName, categorizeSkill, normalizeAndCategorizeWithFallback } from "@/lib/skill-taxonomy";
 
-// POST /api/skills/normalize - Normalize all existing skill records
-export async function POST() {
+// POST /api/skills/normalize - Normalize skill records
+// By default, only processes records where normalizedName is null (incremental).
+// Pass { "force": true } in body to re-process all records.
+export async function POST(request: NextRequest) {
   try {
-    // Fetch all JobSkill records
-    const jobSkills = await prisma.jobSkill.findMany();
-    // Fetch all ExperienceSkill records
-    const experienceSkills = await prisma.experienceSkill.findMany();
+    let force = false;
+    try {
+      const body = await request.json();
+      force = body?.force === true;
+    } catch {
+      // No body or invalid JSON - use defaults (incremental mode)
+    }
+
+    // Build where clause: only unprocessed by default, all if force
+    const whereClause = force ? {} : { normalizedName: null };
+
+    // Fetch records to process
+    const jobSkills = await prisma.jobSkill.findMany({ where: whereClause });
+    const experienceSkills = await prisma.experienceSkill.findMany({ where: whereClause });
 
     let totalProcessed = 0;
     let normalized = 0;
@@ -19,6 +31,9 @@ export async function POST() {
     // Build all update operations for atomicity
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const operations: any[] = [];
+
+    // Collect skills that need LLM fallback
+    const llmCandidates: { id: string; type: "job" | "experience"; normalizedName: string }[] = [];
 
     // Process JobSkills
     for (const skill of jobSkills) {
@@ -38,6 +53,7 @@ export async function POST() {
         updateData.category = `${classification.category} > ${classification.subcategory}`;
         categorized++;
       } else {
+        llmCandidates.push({ id: skill.id, type: "job", normalizedName });
         if (!unmappedSet.has(normalizedName)) {
           unmappedSet.add(normalizedName);
           unmapped.push(normalizedName);
@@ -70,6 +86,7 @@ export async function POST() {
         updateData.category = `${classification.category} > ${classification.subcategory}`;
         categorized++;
       } else {
+        llmCandidates.push({ id: skill.id, type: "experience", normalizedName });
         if (!unmappedSet.has(normalizedName)) {
           unmappedSet.add(normalizedName);
           unmapped.push(normalizedName);
@@ -84,18 +101,85 @@ export async function POST() {
       );
     }
 
-    // Execute updates in batches of 500 to avoid Prisma's parameter limit
+    // Execute static taxonomy updates in batches of 500
     const BATCH_SIZE = 500;
     for (let i = 0; i < operations.length; i += BATCH_SIZE) {
       const batch = operations.slice(i, i + BATCH_SIZE);
       await prisma.$transaction(batch);
     }
 
+    // LLM fallback for unmapped skills (non-blocking, best-effort)
+    let llmCategorized = 0;
+    try {
+      if (llmCandidates.length > 0) {
+        // Deduplicate by normalizedName to avoid redundant LLM calls
+        const uniqueNames = [...new Set(llmCandidates.map((c) => c.normalizedName))];
+        const llmResults = await Promise.allSettled(
+          uniqueNames.map((name) => normalizeAndCategorizeWithFallback(name))
+        );
+
+        // Build a map of normalizedName -> LLM result
+        const llmMap = new Map<string, { normalizedName: string; category: string | null }>();
+        uniqueNames.forEach((name, idx) => {
+          const result = llmResults[idx];
+          if (result.status === "fulfilled" && result.value.category) {
+            llmMap.set(name, result.value);
+          }
+        });
+
+        // Apply LLM results
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const llmOperations: any[] = [];
+        for (const candidate of llmCandidates) {
+          const llmResult = llmMap.get(candidate.normalizedName);
+          if (llmResult) {
+            if (candidate.type === "job") {
+              llmOperations.push(
+                prisma.jobSkill.update({
+                  where: { id: candidate.id },
+                  data: {
+                    normalizedName: llmResult.normalizedName,
+                    category: llmResult.category,
+                  },
+                })
+              );
+            } else {
+              llmOperations.push(
+                prisma.experienceSkill.update({
+                  where: { id: candidate.id },
+                  data: {
+                    normalizedName: llmResult.normalizedName,
+                    category: llmResult.category,
+                  },
+                })
+              );
+            }
+            llmCategorized++;
+          }
+        }
+
+        // Execute LLM updates in batches
+        for (let i = 0; i < llmOperations.length; i += BATCH_SIZE) {
+          const batch = llmOperations.slice(i, i + BATCH_SIZE);
+          await prisma.$transaction(batch);
+        }
+
+        // Remove LLM-resolved skills from unmapped list
+        for (const name of llmMap.keys()) {
+          unmappedSet.delete(name);
+        }
+      }
+    } catch {
+      // LLM failures never block the normalization process
+    }
+
     return NextResponse.json({
+      mode: force ? "full" : "incremental",
       totalProcessed,
       normalized,
-      categorized,
-      unmapped: unmapped.sort(),
+      categorized: categorized + llmCategorized,
+      llmCategorized,
+      unmapped: [...unmappedSet].sort(),
     });
   } catch (err) {
     console.error("POST /api/skills/normalize error:", err);

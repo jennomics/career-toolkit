@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { normalizeAndCategorize, normalizeAndCategorizeWithFallback } from "@/lib/skill-taxonomy";
 
 /**
  * Check if a Prisma error is a "table does not exist" error.
@@ -124,6 +125,41 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Pre-process skills: normalize and categorize at insert time
+    let processedSkills: { name: string; normalizedName: string; category: string | null }[] | undefined;
+    if (skills?.length) {
+      // First pass: use static taxonomy (synchronous, fast)
+      const skillsWithTaxonomy = (skills as string[]).map((s: string) => {
+        const { normalizedName, category } = normalizeAndCategorize(s);
+        return { name: s, normalizedName, category };
+      });
+
+      // Second pass: LLM fallback for skills not in taxonomy (async, non-blocking)
+      try {
+        const unknownSkills = skillsWithTaxonomy.filter((s) => !s.category);
+        if (unknownSkills.length > 0) {
+          const llmResults = await Promise.allSettled(
+            unknownSkills.map((s) => normalizeAndCategorizeWithFallback(s.name))
+          );
+          let idx = 0;
+          for (const skill of skillsWithTaxonomy) {
+            if (!skill.category) {
+              const result = llmResults[idx];
+              if (result.status === "fulfilled" && result.value.category) {
+                skill.normalizedName = result.value.normalizedName;
+                skill.category = result.value.category;
+              }
+              idx++;
+            }
+          }
+        }
+      } catch {
+        // LLM failures never block saving the experience
+      }
+
+      processedSkills = skillsWithTaxonomy;
+    }
+
     const experience = await prisma.experience.create({
       data: {
         title,
@@ -136,8 +172,14 @@ export async function POST(request: NextRequest) {
         endDate: isCurrent ? null : end,
         isCurrent: isCurrent || false,
         description: description || null,
-        skills: skills?.length
-          ? { create: skills.map((s: string) => ({ name: s })) }
+        skills: processedSkills?.length
+          ? {
+              create: processedSkills.map((s) => ({
+                name: s.name,
+                normalizedName: s.normalizedName,
+                category: s.category,
+              })),
+            }
           : undefined,
         highlights: highlights?.length
           ? {
