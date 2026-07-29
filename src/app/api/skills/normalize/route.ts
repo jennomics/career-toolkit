@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     const unmapped: string[] = [];
     const unmappedSet = new Set<string>();
 
-    // Build all update operations for atomicity
+    // Build all update operations (each is independent and idempotent)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const operations: any[] = [];
 
@@ -101,11 +101,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Execute static taxonomy updates in batches of 500
-    const BATCH_SIZE = 500;
-    for (let i = 0; i < operations.length; i += BATCH_SIZE) {
-      const batch = operations.slice(i, i + BATCH_SIZE);
-      await prisma.$transaction(batch);
+    // Execute static taxonomy updates with limited concurrency (no transaction needed - each update is independent and idempotent)
+    const CONCURRENCY = 20;
+    for (let i = 0; i < operations.length; i += CONCURRENCY) {
+      const batch = operations.slice(i, i + CONCURRENCY);
+      await Promise.allSettled(batch);
     }
 
     // LLM fallback for unmapped skills (non-blocking, best-effort)
@@ -158,10 +158,10 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Execute LLM updates in batches
-        for (let i = 0; i < llmOperations.length; i += BATCH_SIZE) {
-          const batch = llmOperations.slice(i, i + BATCH_SIZE);
-          await prisma.$transaction(batch);
+        // Execute LLM updates with limited concurrency (no transaction needed - each update is independent)
+        for (let i = 0; i < llmOperations.length; i += CONCURRENCY) {
+          const batch = llmOperations.slice(i, i + CONCURRENCY);
+          await Promise.allSettled(batch);
         }
 
         // Remove LLM-resolved skills from unmapped list
