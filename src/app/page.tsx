@@ -159,6 +159,12 @@ export default function Home() {
               My Experience &rarr;
             </Link>
             <Link
+              href="/skills"
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Skills Taxonomy &rarr;
+            </Link>
+            <Link
               href="/phrases"
               className="text-sm text-blue-600 hover:text-blue-800 font-medium"
             >
