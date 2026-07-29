@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { normalizeAndCategorize, normalizeAndCategorizeWithFallback } from "@/lib/skill-taxonomy";
 
 /**
  * Check if a Prisma error is a "table does not exist" error.
@@ -120,8 +121,41 @@ export async function PATCH(
     if (skills !== undefined) {
       await prisma.experienceSkill.deleteMany({ where: { experienceId: id } });
       if (skills.length > 0) {
+        // Pre-process skills: normalize and categorize at insert time
+        const skillsWithTaxonomy = (skills as string[]).map((s: string) => {
+          const { normalizedName, category } = normalizeAndCategorize(s);
+          return { name: s, normalizedName, category };
+        });
+
+        // LLM fallback for skills not in taxonomy (async, non-blocking)
+        try {
+          const unknownSkills = skillsWithTaxonomy.filter((s) => !s.category);
+          if (unknownSkills.length > 0) {
+            const llmResults = await Promise.allSettled(
+              unknownSkills.map((s) => normalizeAndCategorizeWithFallback(s.name))
+            );
+            let idx = 0;
+            for (const skill of skillsWithTaxonomy) {
+              if (!skill.category) {
+                const result = llmResults[idx];
+                if (result.status === "fulfilled" && result.value.category) {
+                  skill.normalizedName = result.value.normalizedName;
+                  skill.category = result.value.category;
+                }
+                idx++;
+              }
+            }
+          }
+        } catch {
+          // LLM failures never block saving the experience
+        }
+
         updateData.skills = {
-          create: skills.map((s: string) => ({ name: s })),
+          create: skillsWithTaxonomy.map((s) => ({
+            name: s.name,
+            normalizedName: s.normalizedName,
+            category: s.category,
+          })),
         };
       }
     }

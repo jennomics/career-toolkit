@@ -345,3 +345,111 @@ export function getAliases(canonicalName: string): string[] {
 export function getNormalizationMapSize(): number {
   return normalizationMap.size;
 }
+
+/**
+ * Normalize and categorize a skill name using the static taxonomy.
+ * Returns the normalized name plus category string (or null if not in taxonomy).
+ */
+export function normalizeAndCategorize(raw: string): {
+  normalizedName: string;
+  category: string | null;
+} {
+  const normalizedName = normalizeSkillName(raw);
+  const classification = categorizeSkill(normalizedName);
+  const category = classification
+    ? `${classification.category} > ${classification.subcategory}`
+    : null;
+  return { normalizedName, category };
+}
+
+/**
+ * LLM fallback: categorize an unknown skill using GPT-4o-mini.
+ * Returns the canonical name and category string, or null on failure.
+ * This function is designed to never throw - all errors are caught internally.
+ */
+export async function categorizeSkilLWithLLM(
+  skillName: string
+): Promise<{ normalizedName: string; category: string } | null> {
+  try {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return null;
+    }
+
+    const OpenAI = (await import("openai")).default;
+    const openai = new OpenAI({ apiKey });
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0,
+      max_tokens: 150,
+      messages: [
+        {
+          role: "system",
+          content: `You are a skill taxonomy expert. Given a skill name, return the canonical name and its category/subcategory classification.
+
+Respond in JSON format only:
+{"canonicalName": "...", "category": "Hard Skills" or "Soft Skills", "subcategory": "..."}
+
+Use these subcategories:
+Hard Skills: Programming Languages, Frontend, Backend, Databases, Cloud & DevOps, Data & ML, Architecture & Design, Security, Testing & QA
+Soft Skills: Leadership, Communication, Project Management, Collaboration, Problem Solving
+
+If the skill doesn't fit neatly, pick the closest subcategory. Always provide a response.`,
+        },
+        {
+          role: "user",
+          content: `Classify this skill: "${skillName}"`,
+        },
+      ],
+    });
+
+    const content = response.choices[0]?.message?.content?.trim();
+    if (!content) return null;
+
+    const parsed = JSON.parse(content);
+    if (parsed.canonicalName && parsed.category && parsed.subcategory) {
+      return {
+        normalizedName: parsed.canonicalName,
+        category: `${parsed.category} > ${parsed.subcategory}`,
+      };
+    }
+    return null;
+  } catch {
+    // LLM failure should never block the main operation
+    return null;
+  }
+}
+
+/**
+ * Normalize and categorize a skill, falling back to LLM for unknown skills.
+ * This is the primary function to use at insert time.
+ * It never throws - gracefully degrades to just the normalized name.
+ */
+export async function normalizeAndCategorizeWithFallback(raw: string): Promise<{
+  normalizedName: string;
+  category: string | null;
+}> {
+  const { normalizedName, category } = normalizeAndCategorize(raw);
+
+  // If we found a category in the static taxonomy, use it
+  if (category) {
+    return { normalizedName, category };
+  }
+
+  // Otherwise, try LLM fallback
+  try {
+    const llmResult = await categorizeSkilLWithLLM(normalizedName);
+    if (llmResult) {
+      return {
+        normalizedName: llmResult.normalizedName,
+        category: llmResult.category,
+      };
+    }
+  } catch {
+    // Swallow any error - graceful degradation
+  }
+
+  // Return what we have without a category
+  return { normalizedName, category: null };
+}
