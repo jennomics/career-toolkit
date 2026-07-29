@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "feat",
   "description": "Company index page at /companies and company detail page at /company/[slug] with full company-scoped views: jobs list, skills breakdown, phrases, gap analysis, company-scoped resume builder (using company intelligence in LLM context), resume/cover letter drafts, application tracking, and networking placeholder.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/app/companies/page.tsx - Companies index page listing all companies as cards. Show: company name, job count, dream company badge (star icon), last job added date. Include search/filter, link to add company. Cards link to /company/[slug]. Add a 'Sync Companies from Jobs' button that calls POST /api/companies/sync. Visual style matches existing pages (bg-gray-50, white cards, purple-600 primary).",
     "Create src/app/company/[slug]/page.tsx - Company detail page. This is the main company hub. Fetch company data from GET /api/companies/[slug]. Layout: header with company name, dream company toggle (star), intelligence notes editor (textarea that auto-saves via PATCH). Below header, tabbed interface with tabs: Jobs, Skills, Phrases, Resume Builder, Drafts, Applications, Networking.",
