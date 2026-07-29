@@ -60,6 +60,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Preserve dream status: if any merged company was a dream company, keep it
+    if (!keepCompany.dreamCompany) {
+      const mergedCompanies = await prisma.company.findMany({
+        where: { id: { in: mergeIds } },
+        select: { dreamCompany: true },
+      });
+
+      const anyDream = mergedCompanies.some((c) => c.dreamCompany);
+      if (anyDream) {
+        await prisma.company.update({
+          where: { id: keepId },
+          data: { dreamCompany: true },
+        });
+      }
+    }
+
     // Delete the merged companies
     const deletePromises = mergeIds.map((mergeId: string) =>
       prisma.company.delete({ where: { id: mergeId } })

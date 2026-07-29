@@ -81,26 +81,62 @@ export async function POST(request: NextRequest) {
       const { normalizedName: inputNormCompany } = normalizeCompanyName(company);
       const inputNormTitle = normalizeTitleForComparison(title);
 
-      // Get all jobs and check normalized company + fuzzy title
-      const allJobs = await prisma.job.findMany({
-        select: { id: true, title: true, company: true, createdAt: true },
+      // First, find the company record by normalized name
+      const companyRecord = await prisma.company.findFirst({
+        where: { normalizedName: inputNormCompany },
+        select: { id: true },
       });
 
-      for (const job of allJobs) {
-        const { normalizedName: jobNormCompany } = normalizeCompanyName(job.company);
-        const jobNormTitle = normalizeTitleForComparison(job.title);
+      if (companyRecord) {
+        // Only fetch jobs for this specific company instead of all jobs
+        const companyJobs = await prisma.job.findMany({
+          where: { companyId: companyRecord.id },
+          select: { id: true, title: true, company: true, createdAt: true },
+        });
 
-        if (jobNormCompany === inputNormCompany && jobNormTitle === inputNormTitle) {
-          // Avoid duplicating exact matches already found
-          if (!matches.some((m) => m.id === job.id)) {
-            matches.push({
-              id: job.id,
-              title: job.title,
-              company: job.company,
-              reason: "Similar title and company (normalized match)",
-              confidence: "likely",
-              createdAt: job.createdAt.toISOString(),
-            });
+        for (const job of companyJobs) {
+          const jobNormTitle = normalizeTitleForComparison(job.title);
+
+          if (jobNormTitle === inputNormTitle) {
+            if (!matches.some((m) => m.id === job.id)) {
+              matches.push({
+                id: job.id,
+                title: job.title,
+                company: job.company,
+                reason: "Similar title and company (normalized match)",
+                confidence: "likely",
+                createdAt: job.createdAt.toISOString(),
+              });
+            }
+          }
+        }
+      }
+
+      // Also check unlinked jobs with the same company string (normalized)
+      if (matches.length === 0) {
+        const unlinkedJobs = await prisma.job.findMany({
+          where: {
+            companyId: null,
+            company: { mode: "insensitive", contains: inputNormCompany },
+          },
+          select: { id: true, title: true, company: true, createdAt: true },
+        });
+
+        for (const job of unlinkedJobs) {
+          const { normalizedName: jobNormCompany } = normalizeCompanyName(job.company);
+          const jobNormTitle = normalizeTitleForComparison(job.title);
+
+          if (jobNormCompany === inputNormCompany && jobNormTitle === inputNormTitle) {
+            if (!matches.some((m) => m.id === job.id)) {
+              matches.push({
+                id: job.id,
+                title: job.title,
+                company: job.company,
+                reason: "Similar title and company (normalized match)",
+                confidence: "likely",
+                createdAt: job.createdAt.toISOString(),
+              });
+            }
           }
         }
       }
