@@ -111,6 +111,30 @@ export default function SkillsPage() {
     }
   };
 
+  const handleForceNormalize = async () => {
+    setNormalizing(true);
+    setNormalizeResult(null);
+    try {
+      const res = await fetch("/api/skills/normalize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ force: true }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNormalizeResult(data);
+        await fetchTaxonomy();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setError(errData.error || "Failed to normalize skills");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to normalize");
+    } finally {
+      setNormalizing(false);
+    }
+  };
+
   const toggleCategory = (name: string) => {
     setExpandedCategories((prev) => {
       const next = new Set(prev);
@@ -226,25 +250,52 @@ export default function SkillsPage() {
                   <p className="text-sm text-gray-500">Unmapped</p>
                 </div>
               </div>
-              <button
-                onClick={handleNormalize}
-                disabled={normalizing}
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              >
-                {normalizing ? "Normalizing..." : "Normalize Skills"}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleNormalize}
+                  disabled={normalizing}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {normalizing ? "Normalizing..." : "Normalize New Skills"}
+                </button>
+                <button
+                  onClick={handleForceNormalize}
+                  disabled={normalizing}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  title="Re-process all skills against the latest taxonomy (use after taxonomy updates)"
+                >
+                  {normalizing ? "..." : "Re-normalize All"}
+                </button>
+              </div>
             </div>
 
             {/* Normalize result */}
             {normalizeResult && (
-              <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4 text-sm">
-                <p className="font-medium text-green-800">Normalization complete!</p>
-                <p className="text-green-700 mt-1">
-                  Processed {normalizeResult.totalProcessed} skills:
-                  {" "}{normalizeResult.normalized} names normalized,
-                  {" "}{normalizeResult.categorized} categorized,
-                  {" "}{normalizeResult.unmapped.length} unmapped.
-                </p>
+              <div className={`mt-4 rounded-lg p-4 text-sm ${
+                normalizeResult.totalProcessed === 0
+                  ? "bg-blue-50 border border-blue-200"
+                  : "bg-green-50 border border-green-200"
+              }`}>
+                {normalizeResult.totalProcessed === 0 ? (
+                  <>
+                    <p className="font-medium text-blue-800">All skills already normalized</p>
+                    <p className="text-blue-700 mt-1">
+                      Skills are automatically categorized when jobs are saved. Use &quot;Re-normalize All&quot; to re-process against the latest taxonomy.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-medium text-green-800">Normalization complete!</p>
+                    <p className="text-green-700 mt-1">
+                      Processed {normalizeResult.totalProcessed} skills:
+                      {" "}{normalizeResult.normalized} names normalized,
+                      {" "}{normalizeResult.categorized} categorized
+                      {normalizeResult.unmapped.length > 0 && (
+                        <>, {normalizeResult.unmapped.length} unmapped</>
+                      )}.
+                    </p>
+                  </>
+                )}
               </div>
             )}
           </div>
