@@ -314,6 +314,32 @@ export function getAllCanonicalNames(): string[] {
 }
 
 /**
+ * Build an alias map: canonical name -> aliases array.
+ * Provides O(1) lookup for aliases given a canonical name.
+ */
+function buildAliasMap(): Map<string, string[]> {
+  const map = new Map<string, string[]>();
+  for (const category of TAXONOMY.categories) {
+    for (const subcategory of category.subcategories) {
+      for (const skill of subcategory.skills) {
+        map.set(skill.canonicalName, skill.aliases);
+      }
+    }
+  }
+  return map;
+}
+
+const aliasMap = buildAliasMap();
+
+/**
+ * Get all aliases for a canonical skill name. O(1) lookup.
+ * Returns an empty array if the canonical name is not found in the taxonomy.
+ */
+export function getAliases(canonicalName: string): string[] {
+  return aliasMap.get(canonicalName) || [];
+}
+
+/**
  * Get the normalization map entries (for debugging/API).
  */
 export function getNormalizationMapSize(): number {

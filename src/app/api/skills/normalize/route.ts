@@ -84,8 +84,12 @@ export async function POST() {
       );
     }
 
-    // Execute all updates atomically in a transaction
-    await prisma.$transaction(operations);
+    // Execute updates in batches of 500 to avoid Prisma's parameter limit
+    const BATCH_SIZE = 500;
+    for (let i = 0; i < operations.length; i += BATCH_SIZE) {
+      const batch = operations.slice(i, i + BATCH_SIZE);
+      await prisma.$transaction(batch);
+    }
 
     return NextResponse.json({
       totalProcessed,
