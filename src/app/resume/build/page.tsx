@@ -69,6 +69,7 @@ export default function ResumeBuildPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string>("");
   const [jobsLoading, setJobsLoading] = useState(true);
+  const [jobSearch, setJobSearch] = useState("");
 
 
   // Step 2: Gap analysis
@@ -86,6 +87,8 @@ export default function ResumeBuildPage() {
   const [roleBuild, setRoleBuild] = useState<RoleBuild[]>([]);
   const [buildLoading, setBuildLoading] = useState(false);
   const [improvingIdx, setImprovingIdx] = useState<{ role: number; highlight: number } | null>(null);
+  const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
+  const [draftResume, setDraftResume] = useState<string | null>(null);
 
   // General
   const [error, setError] = useState<string | null>(null);
@@ -100,6 +103,18 @@ export default function ResumeBuildPage() {
       .then((data) => setJobs(data))
       .finally(() => setJobsLoading(false));
   }, []);
+
+  // Filtered jobs for search
+  const filteredJobs = jobSearch
+    ? jobs.filter((j) => {
+        const q = jobSearch.toLowerCase();
+        return (
+          j.title.toLowerCase().includes(q) ||
+          j.company.toLowerCase().includes(q) ||
+          j.skills.some((s) => s.name.toLowerCase().includes(q))
+        );
+      })
+    : jobs;
 
 
   // ─── Step 1 → 2: Create project and run gap analysis ─────────────────────────
@@ -326,6 +341,77 @@ export default function ResumeBuildPage() {
     }));
   };
 
+  // ─── Generate draft resume from selected highlights ────────────────────────
+  const handleGenerateDraft = async () => {
+    setIsGeneratingDraft(true);
+    setDraftResume(null);
+    setError(null);
+
+    const job = jobs.find((j) => j.id === selectedJobId);
+    if (!job) return;
+
+    // Build structured content from selections
+    const resumeRoles = roleBuild
+      .filter((r) => r.recommendedHighlights.some((h) => h.selected))
+      .map((r) => ({
+        title: r.title,
+        company: r.company,
+        startDate: r.startDate,
+        endDate: r.endDate,
+        isCurrent: r.isCurrent,
+        bullets: r.recommendedHighlights
+          .filter((h) => h.selected)
+          .map((h) => h.edited || h.text),
+      }));
+
+    try {
+      const res = await fetch("/api/resume/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targetRole: job.title,
+          selectedRoles: resumeRoles,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Format as readable text
+        const lines: string[] = [];
+        lines.push(data.targetRole || job.title);
+        lines.push("");
+        if (data.summary) {
+          lines.push("PROFESSIONAL SUMMARY");
+          lines.push(data.summary);
+          lines.push("");
+        }
+        lines.push("EXPERIENCE");
+        lines.push("");
+        for (const role of resumeRoles) {
+          const dateRange = `${formatDate(role.startDate)} - ${role.isCurrent ? "Present" : formatDate(role.endDate)}`;
+          lines.push(`${role.title} | ${role.company} | ${dateRange}`);
+          for (const bullet of role.bullets) {
+            lines.push(`  \u2022 ${bullet}`);
+          }
+          lines.push("");
+        }
+        if (data.keySkills && data.keySkills.length > 0) {
+          lines.push("SKILLS");
+          lines.push(data.keySkills.join(" | "));
+          lines.push("");
+        }
+        setDraftResume(lines.join("\n"));
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to generate resume draft");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error");
+    } finally {
+      setIsGeneratingDraft(false);
+    }
+  };
+
 
   const handleToggleHighlight = (roleIdx: number, highlightIdx: number) => {
     setRoleBuild((prev) => prev.map((r, ri) =>
@@ -416,20 +502,51 @@ export default function ResumeBuildPage() {
             ) : jobs.length === 0 ? (
               <p className="text-sm text-gray-500">No jobs saved. <Link href="/" className="text-blue-600">Add some first</Link>.</p>
             ) : (
-              <div className="space-y-2 max-h-80 overflow-y-auto border border-gray-200 rounded-lg p-2">
-                {jobs.map((job) => (
-                  <label key={job.id} className={`flex items-center gap-3 p-3 rounded-md cursor-pointer transition-colors ${
-                    selectedJobId === job.id ? "bg-purple-50 border border-purple-200" : "hover:bg-gray-50 border border-transparent"
-                  }`}>
-                    <input type="radio" name="target-job" value={job.id} checked={selectedJobId === job.id}
-                      onChange={() => setSelectedJobId(job.id)} className="h-4 w-4 text-purple-600 border-gray-300" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{job.title}</p>
-                      <p className="text-xs text-gray-500">{job.company} &middot; {job.skills.length} skills &middot; {new Date(job.createdAt).toLocaleDateString()}</p>
-                    </div>
-                  </label>
-                ))}
-              </div>
+              <>
+                {/* Search */}
+                <div className="relative mb-3">
+                  <input
+                    type="text"
+                    value={jobSearch}
+                    onChange={(e) => setJobSearch(e.target.value)}
+                    placeholder="Search by title, company, or skill..."
+                    className="w-full px-4 py-2 pl-9 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    aria-label="Search jobs"
+                  />
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+
+                {/* Job list */}
+                <div className="space-y-2 max-h-80 overflow-y-auto border border-gray-200 rounded-lg p-2">
+                  {filteredJobs.length === 0 ? (
+                    <p className="text-sm text-gray-400 p-3">No jobs match &ldquo;{jobSearch}&rdquo;</p>
+                  ) : (
+                    filteredJobs.map((job) => (
+                      <label key={job.id} className={`flex items-center gap-3 p-3 rounded-md cursor-pointer transition-colors ${
+                        selectedJobId === job.id ? "bg-purple-50 border border-purple-200" : "hover:bg-gray-50 border border-transparent"
+                      }`}>
+                        <input type="radio" name="target-job" value={job.id} checked={selectedJobId === job.id}
+                          onChange={() => setSelectedJobId(job.id)} className="h-4 w-4 text-purple-600 border-gray-300" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{job.title}</p>
+                          <p className="text-xs text-gray-500">{job.company} &middot; {job.skills.length} skills &middot; {new Date(job.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <span className={`text-xs px-2 py-0.5 rounded-full capitalize shrink-0 ${
+                          job.status === "applied" ? "bg-blue-100 text-blue-700" :
+                          job.status === "interviewing" ? "bg-yellow-100 text-yellow-700" :
+                          job.status === "offer" ? "bg-green-100 text-green-700" :
+                          "bg-gray-100 text-gray-600"
+                        }`}>{job.status}</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+                {jobSearch && (
+                  <p className="text-xs text-gray-400 mt-1">{filteredJobs.length} of {jobs.length} jobs</p>
+                )}
+              </>
             )}
 
             <div className="mt-4">
@@ -663,6 +780,43 @@ export default function ResumeBuildPage() {
                   </div>
                 </div>
               ))
+            )}
+
+            {/* Generate button */}
+            {!buildLoading && roleBuild.length > 0 && (
+              <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700 font-medium">
+                      {roleBuild.reduce((sum, r) => sum + r.recommendedHighlights.filter((h) => h.selected).length, 0)} highlights selected across {roleBuild.filter((r) => r.recommendedHighlights.some((h) => h.selected)).length} roles
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">Ready to generate your tailored resume draft</p>
+                  </div>
+                  <button
+                    onClick={handleGenerateDraft}
+                    disabled={isGeneratingDraft || roleBuild.every((r) => !r.recommendedHighlights.some((h) => h.selected))}
+                    className="px-6 py-2.5 bg-purple-600 text-white rounded-md text-sm font-medium cursor-pointer hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isGeneratingDraft ? "Generating..." : "Generate Draft Resume"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Generated draft */}
+            {draftResume && (
+              <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                <div className="bg-gray-50 border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-gray-900">Resume Draft</h3>
+                  <button onClick={() => { navigator.clipboard.writeText(draftResume); }}
+                    className="text-xs text-purple-600 hover:text-purple-800 font-medium cursor-pointer">
+                    Copy to clipboard
+                  </button>
+                </div>
+                <div className="px-6 py-4 whitespace-pre-wrap text-sm text-gray-800 font-mono leading-relaxed max-h-[600px] overflow-y-auto">
+                  {draftResume}
+                </div>
+              </div>
             )}
           </div>
         )}
