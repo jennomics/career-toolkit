@@ -18,11 +18,32 @@ model Job {
   status      String   @default("saved") // saved, applied, interviewing, offer, rejected, closed
   source      String?  // linkedin, company-site, referral, etc.
   notes       String?
+  dreamCompany Boolean @default(false)
+  dreamJob     Boolean @default(false)
+  companyId   String?
+  companyRef  Company? @relation(fields: [companyId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   skills           JobSkill[]
   responsibilities JobResponsibility[]
+
+  @@index([companyId])
+}
+
+model Company {
+  id             String   @id @default(cuid())
+  name           String
+  normalizedName String
+  slug           String   @unique
+  notes          String?
+  dreamCompany   Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  jobs           Job[]
+
+  @@index([normalizedName])
+  @@index([slug])
 }
 
 model JobSkill {
