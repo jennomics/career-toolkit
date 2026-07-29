@@ -5,25 +5,33 @@ import OpenAI from "openai";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const SYSTEM_PROMPT = `You are a professional resume writer. Given a target role, the user's actual work experience (with highlights and skills), and a collection of keywords and phrases from job descriptions they've been tracking, generate a tailored professional resume.
+const SYSTEM_PROMPT = `You are an elite executive resume strategist charging $500+ per engagement. Your expertise transforms career histories into compelling strategic narratives that position candidates as indispensable leaders and high-value contributors.
+
+Your approach:
+- Craft a powerful executive brand narrative, not a list of duties
+- Position each bullet as a strategic contribution that drove business outcomes
+- Use the language of leadership: "Architected," "Spearheaded," "Pioneered," "Orchestrated," "Championed"
+- Frame accomplishments in terms of business value: revenue impact, efficiency gains, team scale, market positioning
+- Elevate industry-specific terminology to signal insider expertise
+- Ensure the summary reads as a confident value proposition, not a bland objective statement
+- Connect career trajectory dots into a coherent narrative of increasing strategic impact
 
 Instructions:
 - Use the user's ACTUAL work experience as the primary source of truth
-- Use their experience highlights (achievements, projects, awards) as resume bullet points — rewrite in first person
-- Use tracked job keywords to inform which skills to emphasize
-- Use job description phrases as supplementary material for language/framing
-- Prioritize content most relevant to the target role
+- Transform their experience highlights into powerful, outcome-driven bullet points
+- Prioritize achievements that demonstrate strategic thinking, leadership, and measurable impact
+- Use tracked job keywords to inform which skills to emphasize and how to frame them
 - Organize into sections: Summary, Work Experience (structured by role), Key Skills, and Additional Qualifications
-- The Summary should be 2-3 sentences positioning the candidate for the target role
-- Work Experience should list their actual roles (most relevant first) with 2-4 tailored bullets each
-- Key Skills should list the most relevant 8-12 skills (combining their experience skills and tracked keywords)
-- Write in professional, concise resume language
-- Do NOT invent achievements — only use what's provided
+- The Summary should be 2-3 sentences that read as a compelling executive value proposition
+- Work Experience should list their actual roles (most relevant first) with 2-4 strategically framed bullets each
+- Key Skills should list the most relevant 8-12 skills using precise industry terminology
+- Do NOT invent achievements, but DO reframe existing ones to highlight strategic value and business impact
+- Every bullet should answer: "So what? Why did this matter to the business?"
 
 Return a JSON object with this structure:
 {
   "targetRole": "the role",
-  "summary": "2-3 sentence professional summary",
+  "summary": "2-3 sentence executive value proposition",
   "workExperience": [
     {
       "title": "Job Title",
@@ -32,27 +40,70 @@ Return a JSON object with this structure:
       "startDate": "ISO date string",
       "endDate": "ISO date string or null",
       "isCurrent": true/false,
-      "bullets": ["achievement 1", "achievement 2", ...]
+      "bullets": ["strategic achievement 1", "strategic achievement 2", ...]
     }
   ],
   "keySkills": ["skill1", "skill2", ...],
   "additionalQualifications": ["qual 1", "qual 2", ...]
 }`;
 
+const GENERIC_SYSTEM_PROMPT = `You are an elite executive resume strategist charging $500+ per engagement. You are creating a GENERIC resume optimized for maximum market coverage across multiple target positions.
+
+Your approach for generic resumes:
+- Identify the common strategic themes across all target roles
+- Craft a versatile executive brand that resonates across the broadest set of opportunities
+- Position accomplishments using universally powerful framing: business impact, leadership scope, technical depth
+- Select and emphasize transferable skills that appear most frequently across all target positions
+- Use industry-standard terminology that resonates with the widest range of hiring managers and ATS systems
+- Build a narrative that demonstrates adaptability and breadth without sacrificing depth
+
+Instructions:
+- Use the user's ACTUAL work experience as the primary source of truth
+- Analyze all saved job descriptions to identify the MOST COMMONLY demanded skills and requirements
+- Generate a resume that maximizes coverage across all saved positions, not just one
+- Prioritize skills and achievements that appear across multiple job descriptions
+- Frame bullets to demonstrate versatility and broad strategic impact
+- The Summary should position the candidate as a versatile leader whose expertise spans the identified demand areas
+- Do NOT invent achievements, but DO select and frame existing ones to maximize cross-job relevance
+
+Return a JSON object with this structure:
+{
+  "targetRole": "Versatile Professional Summary",
+  "summary": "2-3 sentence value proposition emphasizing breadth of impact",
+  "workExperience": [
+    {
+      "title": "Job Title",
+      "company": "Company Name",
+      "location": "Location or null",
+      "startDate": "ISO date string",
+      "endDate": "ISO date string or null",
+      "isCurrent": true/false,
+      "bullets": ["strategic achievement 1", "strategic achievement 2", ...]
+    }
+  ],
+  "keySkills": ["skill1", "skill2", ...],
+  "additionalQualifications": ["qual 1", "qual 2", ...],
+  "coverageScore": 0
+}`;
+
 /**
  * POST /api/resume/generate
  *
  * Generates a tailored resume using the user's experience AND saved job data.
- * Body: { targetRole: string, topN?: number }
+ * Body: { targetRole: string, topN?: number, mode?: 'targeted' | 'generic' }
+ *
+ * In generic mode, targetRole is optional and the resume is optimized for
+ * maximum coverage across all saved jobs.
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { targetRole, topN = 50 } = body;
+    const { targetRole, topN = 50, mode = "targeted" } = body;
+    const isGenericMode = mode === "generic";
 
-    if (!targetRole || typeof targetRole !== "string") {
+    if (!isGenericMode && (!targetRole || typeof targetRole !== "string")) {
       return NextResponse.json(
-        { error: "targetRole (string) is required" },
+        { error: "targetRole (string) is required for targeted mode" },
         { status: 400 }
       );
     }
@@ -160,8 +211,13 @@ ${highlights.length > 0 ? highlights.map((h) => `- ${h}`).join("\n") : "- No hig
     }
 
     // Score phrases by relevance to target role
-    const targetLower = targetRole.toLowerCase();
+    const targetLower = isGenericMode ? "" : targetRole.toLowerCase();
     const scoredPhrases = allPhrases.map((p) => {
+      if (isGenericMode) {
+        // In generic mode, score by keyword frequency across all jobs
+        const freqScore = p.keywords.reduce((sum, k) => sum + (keywordFreq.get(k.toLowerCase()) || 0), 0);
+        return { ...p, relevance: freqScore };
+      }
       const relevance = p.keywords.some((k) => targetLower.includes(k.toLowerCase())) ? 2 : 1;
       return { ...p, relevance };
     });
@@ -169,7 +225,34 @@ ${highlights.length > 0 ? highlights.map((h) => `- ${h}`).join("\n") : "- No hig
     const selectedPhrases = scoredPhrases.slice(0, topN);
 
     // ─── Build the prompt ───────────────────────────────────────────────────────
-    const userPrompt = `Target Role: ${targetRole}
+    let userPrompt: string;
+
+    if (isGenericMode) {
+      // Generic mode: analyze all jobs for coverage optimization
+      const jobSummaries = jobs.slice(0, 20).map((job) => {
+        const skills = job.skills.map((s) => s.name).join(", ");
+        return `- ${job.title} at ${job.company}: [${skills}]`;
+      }).join("\n");
+
+      userPrompt = `MODE: GENERIC RESUME - Optimize for maximum coverage across ALL saved positions.
+
+## ALL SAVED POSITIONS (${jobs.length} jobs to cover)
+${jobSummaries}
+
+## MOST IN-DEMAND SKILLS (by frequency across all jobs)
+${topKeywords.join("\n")}
+
+${experiences.length > 0 ? `## YOUR WORK EXPERIENCE (${experiences.length} roles)
+${experienceSection}` : "## NO WORK EXPERIENCE ENTERED YET\nUse job description phrases to infer experience."}
+
+${selectedPhrases.length > 0 ? `## HIGH-FREQUENCY PHRASES (appear across multiple job descriptions)
+${selectedPhrases.slice(0, 30).map((p) => `- [${p.category.toUpperCase()}] ${p.text}`).join("\n")}` : ""}
+
+Generate a generic resume that maximizes coverage across ALL the saved positions above. Focus on the most commonly demanded skills and frame achievements to demonstrate breadth of strategic impact.
+
+After generating, calculate a coverageScore (0-100) representing what percentage of the saved jobs' key requirements this resume addresses.`;
+    } else {
+      userPrompt = `Target Role: ${targetRole}
 
 ${experiences.length > 0 ? `## YOUR WORK EXPERIENCE (${experiences.length} roles)
 This is the user's actual career history. Use this as the primary source for the Work Experience section.
@@ -184,7 +267,8 @@ ${selectedPhrases.length > 0 ? `## RESUME-READY PHRASES (from tracked job descri
 Use these for language and framing inspiration:
 ${selectedPhrases.slice(0, 30).map((p) => `- [${p.category.toUpperCase()}] ${p.text}`).join("\n")}` : ""}
 
-Generate a tailored resume for the target role. Prioritize the user's actual experience, supplemented by tracked keywords and phrases for language optimization.`;
+Generate a strategically positioned executive resume for the target role. Transform the user's experience into compelling strategic narratives that demonstrate clear business value and leadership impact.`;
+    }
 
     // ─── Check for API key ──────────────────────────────────────────────────────
     const apiKey = process.env.OPENAI_API_KEY;
@@ -203,9 +287,15 @@ Generate a tailored resume for the target role. Prioritize the user's actual exp
           .map((h) => h.metrics ? `${h.text} (${h.metrics})` : h.text),
       }));
 
+      const displayRole = isGenericMode
+        ? "Generic Resume (All Positions)"
+        : targetRole;
+
       return NextResponse.json({
-        targetRole,
-        summary: `Experienced professional seeking a ${targetRole} position. Bringing expertise in ${topKeywords.slice(0, 5).map((k) => k.split(" (")[0]).join(", ")}.`,
+        targetRole: displayRole,
+        summary: isGenericMode
+          ? `Versatile professional with expertise spanning ${topKeywords.slice(0, 5).map((k) => k.split(" (")[0]).join(", ")}. Proven track record of delivering strategic impact across multiple domains.`
+          : `Experienced professional seeking a ${targetRole} position. Bringing expertise in ${topKeywords.slice(0, 5).map((k) => k.split(" (")[0]).join(", ")}.`,
         workExperience,
         keySkills: Array.from(keywordFreq.entries())
           .sort((a, b) => b[1] - a[1])
@@ -217,6 +307,8 @@ Generate a tailored resume for the target role. Prioritize the user's actual exp
           .map((p) => p.text),
         generatedAt: new Date().toISOString(),
         source: "template",
+        mode: isGenericMode ? "generic" : "targeted",
+        ...(isGenericMode ? { coverageScore: null } : {}),
         stats: {
           jobsAnalyzed: jobs.length,
           experienceRoles: experiences.length,
@@ -228,11 +320,13 @@ Generate a tailored resume for the target role. Prioritize the user's actual exp
 
     // ─── LLM generation ─────────────────────────────────────────────────────────
     const openai = new OpenAI({ apiKey });
+    const systemPrompt = isGenericMode ? GENERIC_SYSTEM_PROMPT : SYSTEM_PROMPT;
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.3,
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
       response_format: { type: "json_object" },
@@ -252,6 +346,7 @@ Generate a tailored resume for the target role. Prioritize the user's actual exp
       ...resume,
       generatedAt: new Date().toISOString(),
       source: "gpt-4o-mini",
+      mode: isGenericMode ? "generic" : "targeted",
       stats: {
         jobsAnalyzed: jobs.length,
         experienceRoles: experiences.length,

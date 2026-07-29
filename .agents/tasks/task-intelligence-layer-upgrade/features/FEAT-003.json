@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "LLM prompt upgrade to executive resume writer level ($500+) and add generic resume mode with coverage scoring. Rewrite all resume builder prompts with strategic positioning expertise. Add a 'generic resume' mode that optimizes for maximum coverage across all saved jobs. Add a coverage score showing what percentage of saved jobs' requirements the generic resume would satisfy.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Rewrite the SYSTEM_PROMPT in src/app/api/resume/generate/route.ts with executive resume writer expertise. The prompt should emphasize: strategic career narrative positioning, value propositions tied to business outcomes, executive branding language, quantified impact statements with context, industry-specific terminology elevation, leadership and influence framing for senior roles. Remove generic/formulaic language. This is a $500+ executive resume writer's perspective.",
     "Rewrite the system prompt in src/app/api/resume/project/[id]/build/route.ts (the highlight recommendation prompt) with executive-level strategic thinking. Focus on: selecting highlights that tell a cohesive career narrative, prioritizing business impact over task descriptions, recommending edits that reframe accomplishments as strategic contributions, evaluating highlight strength based on executive positioning value.",

@@ -111,13 +111,18 @@ ${highlights || "  (none)"}`;
       messages: [
         {
           role: "system",
-          content: `You are a resume strategist. Given a target job and a candidate's work experience with all their highlights/achievements, recommend which highlights to include on a resume for this specific job.
+          content: `You are an elite executive resume strategist ($500+ level). Your task is to curate and recommend which career highlights tell the most compelling strategic narrative for a specific target role.
 
-For each role, select the 3-5 most relevant highlights and explain why each is a good fit. Prioritize:
-1. Direct skill matches with the job requirements
-2. Quantified achievements
-3. Leadership/impact statements relevant to the target level
-4. Recent and relevant over old and tangential
+Your selection philosophy:
+- Choose highlights that together paint a picture of STRATEGIC LEADERSHIP, not just competence
+- Prioritize achievements that demonstrate business impact: revenue growth, cost reduction, team scaling, market expansion
+- Select bullets that show progressive responsibility and increasing scope of influence
+- Favor highlights with quantified outcomes (but strong strategic framing without numbers beats weak statements with numbers)
+- Look for highlights that address the target job's specific challenges and requirements
+- Consider how highlights complement each other to form a cohesive career narrative
+- Reject generic task descriptions in favor of outcome-driven accomplishments
+
+For each recommendation, explain the STRATEGIC reason it belongs on this resume - how it positions the candidate as the solution to the hiring manager's needs.
 
 Return a JSON object:
 {
@@ -125,14 +130,14 @@ Return a JSON object:
     {
       "experienceIndex": 0,
       "recommended": [
-        { "highlightIndex": 2, "reason": "Directly demonstrates X which is a key requirement" },
-        { "highlightIndex": 0, "reason": "Shows quantified impact in relevant area" }
+        { "highlightIndex": 2, "reason": "Demonstrates executive-level strategic thinking that directly maps to the role's core mandate" },
+        { "highlightIndex": 0, "reason": "Quantified business impact that signals the candidate can deliver at scale" }
       ]
     }
   ]
 }
 
-Only include roles that are relevant to the target job. If a role has no relevant highlights, omit it.`,
+Only include roles that are strategically relevant to the target position. Omit roles that would dilute the narrative.`,
         },
         {
           role: "user",
