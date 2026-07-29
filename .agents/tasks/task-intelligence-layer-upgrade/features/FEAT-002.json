@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Keyword normalization and hierarchical taxonomy system. Build a static taxonomy data structure, add DB models for normalized/categorized skills, create an API endpoint to normalize existing skills and view the taxonomy, and build a UI page to browse the skill taxonomy.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create src/lib/skill-taxonomy.ts - define a hierarchical taxonomy with top-level categories (Hard Skills, Soft Skills) -> subcategories (Programming Languages, Cloud & DevOps, Data & ML, Frontend, Backend, Databases, Project Management, Leadership, Communication, etc.) -> specific skills. Include a normalization map that maps variants to canonical forms (e.g., 'ML' -> 'Machine Learning', 'k8s' -> 'Kubernetes', 'JS' -> 'JavaScript', etc.). Export functions: normalizeSkillName(raw: string) -> string, categorizeSkill(name: string) -> { category: string, subcategory: string } | null, getTaxonomy() -> full taxonomy tree.",
     "Add new Prisma models to prisma/schema.prisma: SkillTaxonomy model with fields (id, canonicalName String @unique, category String, subcategory String, aliases String[] for known variants, createdAt). Also add optional fields normalizedName and category to JobSkill and ExperienceSkill models for storing the normalized/categorized version alongside the original.",
@@ -25,5 +25,5 @@
     "npm run build exits with code 0"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Build passes cleanly with all new routes and pages registered. The taxonomy contains 80+ skills organized into 2 top-level categories (Hard Skills, Soft Skills) with 14 subcategories. The normalization map covers 150+ variant-to-canonical mappings. Prisma schema updated with SkillTaxonomy model plus normalizedName/category fields on JobSkill and ExperienceSkill. The generated Prisma client in src/generated/prisma/ was regenerated but did not need to be committed (it is in .gitignore or already tracked)."
 }
