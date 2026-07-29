@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { normalizeAndCategorize, normalizeAndCategorizeWithFallback } from "@/lib/skill-taxonomy";
 import { normalizeCompanyName } from "@/lib/normalize-company";
@@ -185,21 +186,52 @@ export async function POST(request: NextRequest) {
         });
 
         if (!companyRecord) {
-          companyRecord = await prisma.company.create({
-            data: {
-              name: displayName,
-              normalizedName,
-              slug: slugify(displayName),
-            },
-          });
+          // Attempt to create the company, retrying with numeric suffix on slug collision
+          const baseSlug = slugify(displayName);
+          let slug = baseSlug;
+          const MAX_RETRIES = 10;
+          let created = false;
+
+          for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            try {
+              companyRecord = await prisma.company.create({
+                data: {
+                  name: displayName,
+                  normalizedName,
+                  slug,
+                },
+              });
+              created = true;
+              break;
+            } catch (err) {
+              if (
+                err instanceof Prisma.PrismaClientKnownRequestError &&
+                err.code === "P2002"
+              ) {
+                // Slug collision - retry with numeric suffix
+                slug = `${baseSlug}-${attempt + 2}`;
+                continue;
+              }
+              throw err;
+            }
+          }
+
+          // If all retries failed, try to find existing company by normalizedName
+          if (!created) {
+            companyRecord = await prisma.company.findFirst({
+              where: { normalizedName },
+            });
+          }
         }
 
-        await prisma.job.update({
-          where: { id: job.id },
-          data: { companyId: companyRecord.id },
-        });
+        if (companyRecord) {
+          await prisma.job.update({
+            where: { id: job.id },
+            data: { companyId: companyRecord.id },
+          });
 
-        job.companyId = companyRecord.id;
+          job.companyId = companyRecord.id;
+        }
       }
     } catch (companyErr) {
       // Company linking failures should not block job creation
