@@ -1,0 +1,7 @@
+{
+  "task_id": "task-intelligence-layer-upgrade",
+  "task_description": "Career-toolkit intelligence layer upgrade: (A) Keyword normalization with hierarchical taxonomy and UI, (B) LLM prompt rewrite with executive resume writer expertise, generic resume mode, and coverage scoring.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}
