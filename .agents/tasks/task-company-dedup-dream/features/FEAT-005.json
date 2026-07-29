@@ -1,0 +1,31 @@
+{
+  "id": "FEAT-005",
+  "type": "feat",
+  "description": "Dream Company and Dream Job designators: toggle UI on job cards, visual badges, prominent display on company page, and backlog items for automated job alerts and dream jobs page.",
+  "status": "pending",
+  "steps": [
+    "Update src/app/api/jobs/[id]/route.ts PATCH handler to accept dreamCompany and dreamJob boolean fields.",
+    "Update src/components/JobCard.tsx to: (1) show a star/heart badge next to company name if dreamCompany is true, (2) show a sparkle/star badge next to job title if dreamJob is true, (3) add toggle buttons for both fields that PATCH the job. Dream company badge: gold star with 'Dream Company' tooltip. Dream job badge: purple sparkle with 'Dream Job' tooltip. Visually distinct styling - dream jobs get a subtle gold left border or background tint.",
+    "Update the Job interface in src/app/jobs/page.tsx to include dreamCompany and dreamJob fields.",
+    "Update src/app/company/[slug]/page.tsx header area: if company.dreamCompany is true, show a prominent gold badge/banner 'Dream Company' with a star icon. The toggle should be easily accessible.",
+    "When a user toggles dreamCompany on a job, also propagate to the Company record (set Company.dreamCompany = true). When toggling off, check if any other jobs for that company still have dreamCompany=true before setting Company.dreamCompany=false.",
+    "Create src/app/api/jobs/[id]/dream/route.ts with a PATCH handler specifically for toggling dream status. Accepts { dreamCompany?: boolean, dreamJob?: boolean }. If dreamCompany changes, also update the linked Company record's dreamCompany field.",
+    "Append to BACKLOG.md: (1) 'Automated job alerts + auto-import for watched companies (dream companies)' under Job Management section, (2) 'Dream Jobs dedicated page - curated view of all dream company jobs and dream jobs' as a new item.",
+    "Run 'npm run build' to verify."
+  ],
+  "acceptance_criteria": [
+    "Job cards show gold star badge for dream companies",
+    "Job cards show purple sparkle badge for dream jobs",
+    "Dream jobs have visually distinct styling (gold left border or tint)",
+    "Toggle buttons on job cards allow setting/unsetting dream status",
+    "Company page shows prominent dream company badge when flagged",
+    "Toggling dream company on a job propagates to the Company record",
+    "BACKLOG.md has new entries for job alerts and dream jobs page",
+    "npm run build passes"
+  ],
+  "verification": [
+    "Run 'npm run build' and confirm exit code 0"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
