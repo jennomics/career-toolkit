@@ -172,6 +172,12 @@ export default function SkillsPage() {
               href="/"
               className="text-sm text-blue-600 hover:text-blue-800 font-medium"
             >
+              Home
+            </Link>
+            <Link
+              href="/jobs"
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
               &larr; Jobs
             </Link>
             <Link

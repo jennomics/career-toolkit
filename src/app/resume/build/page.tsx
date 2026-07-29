@@ -590,6 +590,7 @@ export default function ResumeBuildPage() {
             <p className="text-sm text-gray-500 mt-1">Guided workflow: Job → Gap Analysis → Fill Gaps → Build</p>
           </div>
           <div className="flex gap-4">
+            <Link href="/" className="text-sm text-blue-600 hover:text-blue-800 font-medium">Home</Link>
             <Link href="/resume" className="text-sm text-blue-600 hover:text-blue-800 font-medium">&larr; Resume Tools</Link>
             <Link href="/experience" className="text-sm text-blue-600 hover:text-blue-800 font-medium">My Experience</Link>
           </div>
@@ -628,7 +629,7 @@ export default function ResumeBuildPage() {
             {jobsLoading ? (
               <p className="text-sm text-gray-400 py-4">Loading jobs...</p>
             ) : jobs.length === 0 ? (
-              <p className="text-sm text-gray-500">No jobs saved. <Link href="/" className="text-blue-600">Add some first</Link>.</p>
+              <p className="text-sm text-gray-500">No jobs saved. <Link href="/jobs" className="text-blue-600">Add some first</Link>.</p>
             ) : (
               <>
                 {/* Search */}
