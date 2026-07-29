@@ -139,6 +139,9 @@ model ResumeProject {
   resumeContent Json?     // Structured resume sections
   resumeMarkdown String?  // Rendered resume text
 
+  // Step 5: Cover letter
+  coverLetterContent String? // Generated cover letter text
+
   // Metadata
   llmModel  String @default("gpt-4o")
   createdAt DateTime @default(now())
