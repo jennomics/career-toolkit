@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Interactive de-duplication system: company name normalization with user-confirmed merging, job deduplication detection and merge UI, enhanced check-duplicate endpoint, and skill recount after merges.",
+  "status": "pending",
+  "steps": [
+    "Create src/app/api/companies/duplicates/route.ts with GET handler that: finds company name variants (groups by normalizedName where there are multiple Company records with the same normalizedName), returns groups of potential duplicates with their job counts. Each group shows the variants and suggests which to keep (the one with most jobs).",
+    "Create src/app/api/companies/merge/route.ts with POST handler that: accepts { keepId: string, mergeIds: string[] }, moves all jobs from mergeIds companies to keepId company, deletes the merged company records, returns the updated company. Use individual updates (not createMany) with Promise.allSettled.",
+    "Create src/app/api/jobs/duplicates/route.ts with GET handler that: finds potential duplicate jobs by (a) same title + same companyId/normalized company name, or (b) jobs with very similar first 200 chars of description. Returns groups of potential duplicates with metadata (which is richer - more skills, longer description, more recent).",
+    "Create src/app/api/jobs/merge/route.ts with POST handler that: accepts { keepId: string, deleteIds: string[] }, keeps the richer job, deletes the others (skills/responsibilities cascade), returns the kept job.",
+    "Create src/app/api/jobs/duplicates/recount/route.ts with POST handler that recalculates skill normalization and taxonomy counts after merges.",
+    "Enhance src/app/api/jobs/check-duplicate/route.ts: add company name normalization when checking (so 'Anthropic, Inc' matches 'Anthropic'), add fuzzy title matching (case-insensitive + strip common suffixes like 'Sr.', 'Senior', level numbers). Return a warning level: 'exact', 'likely', 'possible'.",
+    "Create src/app/dedup/page.tsx - an interactive de-duplication dashboard page with two tabs: 'Companies' and 'Jobs'. Companies tab: fetches GET /api/companies/duplicates, shows groups of company name variants with radio selection for which to keep, merge button per group. Jobs tab: fetches GET /api/jobs/duplicates, shows groups of duplicate jobs with side-by-side comparison, lets user pick which to keep and merge. After any merge, refresh the list. Show success/error messages in UI.",
+    "Add a 'De-duplication' link to the dashboard page (src/app/page.tsx) in the Features section and Quick Actions, and to the navigation in src/app/jobs/page.tsx header.",
+    "Run 'npm run build' to verify."
+  ],
+  "acceptance_criteria": [
+    "GET /api/companies/duplicates returns groups of company name variants",
+    "POST /api/companies/merge merges companies and reassigns jobs",
+    "GET /api/jobs/duplicates returns groups of potential duplicate jobs",
+    "POST /api/jobs/merge keeps one job and deletes duplicates",
+    "Enhanced check-duplicate endpoint uses company normalization and returns warning levels",
+    "/dedup page shows interactive UI for reviewing and confirming merges",
+    "User must confirm before any merge happens",
+    "npm run build passes"
+  ],
+  "verification": [
+    "Run 'npm run build' and confirm exit code 0"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

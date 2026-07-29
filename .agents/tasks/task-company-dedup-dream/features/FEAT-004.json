@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Company index page at /companies and company detail page at /company/[slug] with full company-scoped views: jobs list, skills breakdown, phrases, gap analysis, company-scoped resume builder (using company intelligence in LLM context), resume/cover letter drafts, application tracking, and networking placeholder.",
+  "status": "pending",
+  "steps": [
+    "Create src/app/companies/page.tsx - Companies index page listing all companies as cards. Show: company name, job count, dream company badge (star icon), last job added date. Include search/filter, link to add company. Cards link to /company/[slug]. Add a 'Sync Companies from Jobs' button that calls POST /api/companies/sync. Visual style matches existing pages (bg-gray-50, white cards, purple-600 primary).",
+    "Create src/app/company/[slug]/page.tsx - Company detail page. This is the main company hub. Fetch company data from GET /api/companies/[slug]. Layout: header with company name, dream company toggle (star), intelligence notes editor (textarea that auto-saves via PATCH). Below header, tabbed interface with tabs: Jobs, Skills, Phrases, Resume Builder, Drafts, Applications, Networking.",
+    "Implement the Jobs tab: list all jobs for this company (fetched with company data). Show job cards with status, dream job toggle, skills. Allow status changes inline.",
+    "Implement the Skills tab: aggregate all skills from this company's jobs, show them grouped by category with frequency counts. Similar to the main skills page but scoped to this company.",
+    "Implement the Phrases tab: show all responsibilities/phrases from this company's jobs, grouped by keyword. Similar to /phrases but scoped.",
+    "Implement the Resume Builder tab: two modes - (1) Targeted: select a specific job from this company and generate a resume for it, (2) Generic: generate a company-scoped generic resume optimized for all jobs at this company. Both modes include company intelligence in the LLM prompt context. Call the existing /api/resume/generate endpoint with an added companySlug or companyId parameter.",
+    "Create src/app/api/resume/generate-company/route.ts - A company-scoped resume generation endpoint that wraps the existing logic but: only considers jobs from the specified company, injects the company's intelligence/notes into the system prompt as additional context about the company, supports both targeted (single job) and generic (all company jobs) modes.",
+    "Implement the Drafts tab: list all ResumeProject records associated with this company's jobs. Show status, creation date, link to view/continue in the wizard.",
+    "Implement the Applications tab: show this company's jobs filtered by application statuses (applied, interviewing, offer, rejected). Timeline-like view showing status progression.",
+    "Implement the Networking tab: placeholder with a message like 'Networking features coming soon - track contacts and outreach for this company.' Style it nicely with an icon.",
+    "Add Companies link to the main dashboard navigation (src/app/page.tsx header nav) and add a Companies card to the Features section.",
+    "Run 'npm run build' to verify."
+  ],
+  "acceptance_criteria": [
+    "/companies page lists all companies with job counts and dream company badges",
+    "/company/[slug] page shows company detail with tabbed interface",
+    "Company intelligence field is editable and auto-saves",
+    "Dream company toggle works on company detail page",
+    "Jobs tab shows company's jobs with status management",
+    "Skills tab shows aggregated skills from company's jobs",
+    "Phrases tab shows company-scoped phrases",
+    "Resume Builder tab generates company-scoped resumes with intelligence in context",
+    "Drafts tab shows resume projects for company's jobs",
+    "Applications tab shows job application status timeline",
+    "Networking tab shows placeholder",
+    "Companies link appears in main navigation",
+    "npm run build passes"
+  ],
+  "verification": [
+    "Run 'npm run build' and confirm exit code 0"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

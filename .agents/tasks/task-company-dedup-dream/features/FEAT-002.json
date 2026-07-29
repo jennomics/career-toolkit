@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Company CRUD API routes and company auto-creation/linking logic. Includes API for listing, creating, updating, and fetching companies. Auto-generates companies from existing job data. Adds slug generation utility.",
+  "status": "in_progress",
+  "steps": [
+    "Create src/lib/slugify.ts with a slugify utility function that converts company names to URL-safe slugs (lowercase, replace spaces/special chars with hyphens, deduplicate hyphens).",
+    "Create src/lib/normalize-company.ts with a normalizeCompanyName function that handles common variants: strips suffixes like ', Inc', ', LLC', 'Inc.', 'Corporation', etc., trims whitespace, lowercases for comparison. Return both the cleaned display name and a normalized comparison key.",
+    "Create src/app/api/companies/route.ts with: GET (list all companies with job counts, ordered by name) and POST (create a company with name, notes, dreamCompany flag; auto-generate normalizedName and slug).",
+    "Create src/app/api/companies/[slug]/route.ts with: GET (fetch single company by slug with its jobs, skills breakdown, job count), PATCH (update company name, notes, dreamCompany flag), DELETE (delete company - only if no linked jobs, or unlink jobs first).",
+    "Create src/app/api/companies/sync/route.ts with POST handler that: (1) reads all distinct job.company values, (2) normalizes them, (3) groups variants together, (4) creates Company records for each unique normalized name (using the most common variant as display name), (5) links jobs to their companies via companyId. Use Promise.allSettled with batching for bulk operations.",
+    "Update src/app/api/jobs/route.ts POST handler to auto-create or link to Company when a job is created: normalize the company name, find existing Company by normalizedName, create if not found, set companyId on the new job.",
+    "Run 'npx prisma generate && npm run build' to verify everything compiles."
+  ],
+  "acceptance_criteria": [
+    "GET /api/companies returns a list of companies with job counts",
+    "POST /api/companies creates a new company with auto-generated slug",
+    "GET /api/companies/[slug] returns company details with associated jobs",
+    "PATCH /api/companies/[slug] updates company fields",
+    "POST /api/companies/sync generates companies from existing job data",
+    "Creating a job via POST /api/jobs auto-links it to a Company",
+    "npm run build passes"
+  ],
+  "verification": [
+    "Run 'npm run build' and confirm exit code 0"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

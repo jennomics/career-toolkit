@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { normalizeAndCategorize, normalizeAndCategorizeWithFallback } from "@/lib/skill-taxonomy";
+import { normalizeCompanyName } from "@/lib/normalize-company";
+import { slugify } from "@/lib/slugify";
 
 // GET /api/jobs - List all jobs with optional search/filter
 export async function GET(request: NextRequest) {
@@ -172,6 +174,37 @@ export async function POST(request: NextRequest) {
       },
       include: { skills: true, responsibilities: true },
     });
+
+    // Auto-create or link to Company record
+    try {
+      if (company && company.trim()) {
+        const { displayName, normalizedName } = normalizeCompanyName(company);
+
+        let companyRecord = await prisma.company.findFirst({
+          where: { normalizedName },
+        });
+
+        if (!companyRecord) {
+          companyRecord = await prisma.company.create({
+            data: {
+              name: displayName,
+              normalizedName,
+              slug: slugify(displayName),
+            },
+          });
+        }
+
+        await prisma.job.update({
+          where: { id: job.id },
+          data: { companyId: companyRecord.id },
+        });
+
+        job.companyId = companyRecord.id;
+      }
+    } catch (companyErr) {
+      // Company linking failures should not block job creation
+      console.error("Failed to auto-link company:", companyErr);
+    }
 
     return NextResponse.json(job, { status: 201 });
   } catch (err) {
