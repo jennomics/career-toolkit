@@ -57,7 +57,7 @@ interface RoleBuild {
   allHighlights: { id: string; text: string; category: string; metrics: string | null }[];
 }
 
-type WizardStep = 1 | 2 | 3 | 4;
+type WizardStep = 1 | 2 | 3 | 4 | 5 | 6;
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -89,6 +89,13 @@ export default function ResumeBuildPage() {
   const [improvingIdx, setImprovingIdx] = useState<{ role: number; highlight: number } | null>(null);
   const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
   const [draftResume, setDraftResume] = useState<string | null>(null);
+
+  // Step 5: Cover letter
+  const [coverLetter, setCoverLetter] = useState<string | null>(null);
+  const [isGeneratingCover, setIsGeneratingCover] = useState(false);
+
+  // Step 6: Export
+  const [isExporting, setIsExporting] = useState(false);
 
   // General
   const [error, setError] = useState<string | null>(null);
@@ -401,6 +408,26 @@ export default function ResumeBuildPage() {
           lines.push("");
         }
         setDraftResume(lines.join("\n"));
+
+        // Autosave to project
+        if (projectId) {
+          try {
+            await fetch(`/api/resume/project/${projectId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                resumeMarkdown: lines.join("\n"),
+                resumeContent: { summary: data.summary, keySkills: data.keySkills, roles: resumeRoles },
+                selectedHighlights: roleBuild.map((r) => ({
+                  roleId: r.id,
+                  highlights: r.recommendedHighlights.filter((h) => h.selected).map((h) => ({ text: h.edited || h.text })),
+                })),
+                step: 4,
+                status: "in-progress",
+              }),
+            });
+          } catch { /* autosave failure is non-critical */ }
+        }
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data.error || "Failed to generate resume draft");
@@ -409,6 +436,99 @@ export default function ResumeBuildPage() {
       setError(err instanceof Error ? err.message : "Network error");
     } finally {
       setIsGeneratingDraft(false);
+    }
+  };
+
+  // ─── Step 5: Generate cover letter ────────────────────────────────────────────
+  const handleGenerateCover = async () => {
+    setIsGeneratingCover(true);
+    setCoverLetter(null);
+    setError(null);
+
+    const job = jobs.find((j) => j.id === selectedJobId);
+    if (!job) return;
+
+    try {
+      const res = await fetch("/api/resume/project/" + projectId + "/cover-letter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobTitle: job.title,
+          company: job.company,
+          jobDescription: job.description.slice(0, 2000),
+          resumeDraft: draftResume?.slice(0, 3000) || "",
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCoverLetter(data.coverLetter || "");
+        setStep(5);
+
+        // Autosave
+        if (projectId) {
+          try {
+            await fetch(`/api/resume/project/${projectId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ coverLetterContent: data.coverLetter, step: 5 }),
+            });
+          } catch { /* non-critical */ }
+        }
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to generate cover letter");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error");
+    } finally {
+      setIsGeneratingCover(false);
+    }
+  };
+
+  // ─── Step 6: Export PDF ───────────────────────────────────────────────────────
+  const handleExportPDF = async (type: "resume" | "cover-letter") => {
+    setIsExporting(true);
+    try {
+      const content = type === "resume" ? draftResume : coverLetter;
+      if (!content) return;
+
+      const job = jobs.find((j) => j.id === selectedJobId);
+      const filename = type === "resume"
+        ? `Resume_${job?.company || "Draft"}_${job?.title || ""}.html`.replace(/\s+/g, "_")
+        : `CoverLetter_${job?.company || "Draft"}.html`.replace(/\s+/g, "_");
+
+      const res = await fetch("/api/resume/project/" + projectId + "/export-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content, type, filename }),
+      });
+
+      if (res.ok) {
+        const html = await res.text();
+        // Open in new tab for print-to-PDF
+        const blob = new Blob([html], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank");
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+        // Mark as complete
+        if (projectId) {
+          try {
+            await fetch(`/api/resume/project/${projectId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: "complete", step: 6 }),
+            });
+          } catch { /* non-critical */ }
+        }
+      } else {
+        setError("Export failed");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Export failed");
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -471,13 +591,13 @@ export default function ResumeBuildPage() {
       {/* Step indicator */}
       <div className="max-w-5xl mx-auto px-6 pt-6">
         <div className="flex items-center gap-2 text-xs font-medium">
-          {[1, 2, 3, 4].map((s) => (
+          {[1, 2, 3, 4, 5, 6].map((s) => (
             <div key={s} className={`flex items-center gap-1 ${step >= s ? "text-purple-700" : "text-gray-400"}`}>
               <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
                 step > s ? "bg-purple-600 text-white" : step === s ? "bg-purple-100 text-purple-700 ring-2 ring-purple-300" : "bg-gray-200"
               }`}>{step > s ? "\u2713" : s}</span>
-              <span className="hidden sm:inline">{["Select Job", "Gap Analysis", "Fill Gaps", "Build Resume"][s - 1]}</span>
-              {s < 4 && <span className="mx-1 text-gray-300">&rarr;</span>}
+              <span className="hidden sm:inline">{["Select Job", "Gap Analysis", "Fill Gaps", "Build Resume", "Cover Letter", "Export"][s - 1]}</span>
+              {s < 6 && <span className="mx-1 text-gray-300">&rarr;</span>}
             </div>
           ))}
         </div>
@@ -808,16 +928,101 @@ export default function ResumeBuildPage() {
               <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                 <div className="bg-gray-50 border-b border-gray-200 px-6 py-3 flex items-center justify-between">
                   <h3 className="text-sm font-medium text-gray-900">Resume Draft</h3>
-                  <button onClick={() => { navigator.clipboard.writeText(draftResume); }}
-                    className="text-xs text-purple-600 hover:text-purple-800 font-medium cursor-pointer">
-                    Copy to clipboard
-                  </button>
+                  <div className="flex gap-3">
+                    <button onClick={() => { navigator.clipboard.writeText(draftResume); }}
+                      className="text-xs text-purple-600 hover:text-purple-800 font-medium cursor-pointer">
+                      Copy to clipboard
+                    </button>
+                    <button onClick={handleGenerateCover} disabled={isGeneratingCover}
+                      className="px-3 py-1 bg-purple-600 text-white rounded text-xs font-medium cursor-pointer hover:bg-purple-700 disabled:opacity-50">
+                      {isGeneratingCover ? "Generating..." : "Next: Cover Letter \u2192"}
+                    </button>
+                  </div>
                 </div>
                 <div className="px-6 py-4 whitespace-pre-wrap text-sm text-gray-800 font-mono leading-relaxed max-h-[600px] overflow-y-auto">
                   {draftResume}
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ═══ STEP 5: Cover Letter ═══ */}
+        {step === 5 && (
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <div className="bg-gray-50 border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+              <h3 className="text-sm font-medium text-gray-900">5. Cover Letter Draft</h3>
+              <div className="flex gap-3">
+                <button onClick={() => { if (coverLetter) navigator.clipboard.writeText(coverLetter); }}
+                  className="text-xs text-purple-600 hover:text-purple-800 font-medium cursor-pointer">
+                  Copy
+                </button>
+                <button onClick={() => setStep(6)}
+                  className="px-3 py-1 bg-purple-600 text-white rounded text-xs font-medium cursor-pointer hover:bg-purple-700">
+                  Next: Export &rarr;
+                </button>
+              </div>
+            </div>
+            <div className="px-6 py-4">
+              <textarea
+                rows={15}
+                value={coverLetter || ""}
+                onChange={(e) => setCoverLetter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 leading-relaxed"
+              />
+              <div className="flex gap-3 mt-3">
+                <button onClick={handleGenerateCover} disabled={isGeneratingCover}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm cursor-pointer hover:bg-gray-200 disabled:opacity-50">
+                  {isGeneratingCover ? "Regenerating..." : "Regenerate"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══ STEP 6: Export ═══ */}
+        {step === 6 && (
+          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <h2 className="text-lg font-semibold mb-2">6. Export</h2>
+            <p className="text-sm text-gray-500 mb-4">Download your resume and cover letter as PDF files.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Resume */}
+              <div className="border border-gray-200 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-900 mb-2">Resume</h3>
+                <p className="text-xs text-gray-400 mb-3">Your tailored resume draft</p>
+                <div className="flex gap-2">
+                  <button onClick={() => handleExportPDF("resume")} disabled={!draftResume || isExporting}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-md text-sm cursor-pointer hover:bg-purple-700 disabled:opacity-50">
+                    {isExporting ? "Exporting..." : "Download PDF"}
+                  </button>
+                  <button onClick={() => { if (draftResume) navigator.clipboard.writeText(draftResume); }}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm cursor-pointer hover:bg-gray-200">
+                    Copy Text
+                  </button>
+                </div>
+              </div>
+
+              {/* Cover Letter */}
+              <div className="border border-gray-200 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-900 mb-2">Cover Letter</h3>
+                <p className="text-xs text-gray-400 mb-3">Your tailored half-page cover letter</p>
+                <div className="flex gap-2">
+                  <button onClick={() => handleExportPDF("cover-letter")} disabled={!coverLetter || isExporting}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-md text-sm cursor-pointer hover:bg-purple-700 disabled:opacity-50">
+                    {isExporting ? "Exporting..." : "Download PDF"}
+                  </button>
+                  <button onClick={() => { if (coverLetter) navigator.clipboard.writeText(coverLetter); }}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm cursor-pointer hover:bg-gray-200">
+                    Copy Text
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-400 mt-4">
+              Drafts are autosaved. You can come back to this project later from the Resume Tools page.
+            </p>
           </div>
         )}
       </main>

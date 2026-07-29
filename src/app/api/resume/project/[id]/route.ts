@@ -55,6 +55,7 @@ export async function PATCH(
       selectedHighlights,
       resumeContent,
       resumeMarkdown,
+      coverLetterContent,
     } = body;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,6 +66,7 @@ export async function PATCH(
     if (selectedHighlights !== undefined) updateData.selectedHighlights = selectedHighlights;
     if (resumeContent !== undefined) updateData.resumeContent = resumeContent;
     if (resumeMarkdown !== undefined) updateData.resumeMarkdown = resumeMarkdown;
+    if (coverLetterContent !== undefined) updateData.coverLetterContent = coverLetterContent;
 
     const project = await prisma.resumeProject.update({
       where: { id },
