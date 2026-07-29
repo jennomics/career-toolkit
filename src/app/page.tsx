@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { getTaxonomy, normalizeSkillName } from "@/lib/skill-taxonomy";
 
 interface DashboardStats {
   totalJobs: number;
@@ -39,7 +40,37 @@ async function fetchStats(): Promise<{ stats: DashboardStats; error: boolean }> 
 
     const totalSkills = totalJobSkills + totalExperienceSkills;
     const normalizedSkills = normalizedJobSkills + normalizedExperienceSkills;
-    const unmappedSkills = totalSkills - normalizedSkills;
+
+    // Calculate unmapped skills the same way as the taxonomy page:
+    // skills whose normalized name is NOT a canonical name in the static taxonomy
+    const taxonomy = getTaxonomy();
+    const allCanonical = new Set<string>();
+    for (const cat of taxonomy.categories) {
+      for (const sub of cat.subcategories) {
+        for (const skill of sub.skills) {
+          allCanonical.add(skill.canonicalName);
+        }
+      }
+    }
+
+    // Fetch all job skills to check which are actually mapped to taxonomy
+    const allJobSkills = await prisma.jobSkill.findMany({ select: { name: true, normalizedName: true } });
+    const allExpSkills = await prisma.experienceSkill.findMany({ select: { name: true, normalizedName: true } });
+
+    const unmappedNames = new Set<string>();
+    for (const skill of allJobSkills) {
+      const normalized = skill.normalizedName || normalizeSkillName(skill.name);
+      if (!allCanonical.has(normalized)) {
+        unmappedNames.add(normalized);
+      }
+    }
+    for (const skill of allExpSkills) {
+      const normalized = skill.normalizedName || normalizeSkillName(skill.name);
+      if (!allCanonical.has(normalized)) {
+        unmappedNames.add(normalized);
+      }
+    }
+    const unmappedSkills = unmappedNames.size;
 
     // Get top 10 most-demanded skills by job count
     const topSkillsRaw = await prisma.jobSkill.groupBy({
