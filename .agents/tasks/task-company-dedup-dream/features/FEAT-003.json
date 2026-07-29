@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "Interactive de-duplication system: company name normalization with user-confirmed merging, job deduplication detection and merge UI, enhanced check-duplicate endpoint, and skill recount after merges.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create src/app/api/companies/duplicates/route.ts with GET handler that: finds company name variants (groups by normalizedName where there are multiple Company records with the same normalizedName), returns groups of potential duplicates with their job counts. Each group shows the variants and suggests which to keep (the one with most jobs).",
     "Create src/app/api/companies/merge/route.ts with POST handler that: accepts { keepId: string, mergeIds: string[] }, moves all jobs from mergeIds companies to keepId company, deletes the merged company records, returns the updated company. Use individual updates (not createMany) with Promise.allSettled.",
@@ -28,5 +28,5 @@
     "Run 'npm run build' and confirm exit code 0"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All files created successfully. Build passes with exit code 0. The check-duplicate endpoint now uses normalizeCompanyName and fuzzy title matching (strips Senior/Sr./Jr./Lead prefixes and I/II/III/IV suffixes). Confidence levels: exact (title+company exact match), likely (normalized match), possible (description overlap). The dedup page uses two tabs with radio buttons for selection and merge buttons per group. Company relation field is companyRef (not company) on the Job model per FEAT-001 findings."
 }
