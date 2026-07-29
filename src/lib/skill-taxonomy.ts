@@ -122,6 +122,7 @@ const TAXONOMY: Taxonomy = {
         {
           name: "Data & ML",
           skills: [
+            { canonicalName: "Artificial Intelligence", aliases: ["artificial intelligence", "ai", "ai/ml", "ml/ai"] },
             { canonicalName: "Machine Learning", aliases: ["machine learning", "ml", "statistical learning"] },
             { canonicalName: "Deep Learning", aliases: ["deep learning", "dl", "neural networks", "neural nets"] },
             { canonicalName: "TensorFlow", aliases: ["tensorflow", "tf"] },
