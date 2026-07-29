@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "feat",
   "description": "Auto-normalize skills at insert time, LLM fallback for unknown skills, and incremental normalization endpoint.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Add LLM fallback helper to src/lib/skill-taxonomy.ts that calls GPT-4o-mini to categorize unknown skills, with try/catch and graceful degradation.",
     "Update POST /api/jobs to normalize and categorize each skill at creation time using the taxonomy (and LLM fallback for unknowns).",
@@ -25,5 +25,5 @@
     "npm run build exits with code 0"
   ],
   "blocked_reason": null,
-  "findings": null
+  "findings": "Build passes cleanly. Added three new exported functions to skill-taxonomy.ts: normalizeAndCategorize (sync), categorizeSkilLWithLLM (async LLM call), and normalizeAndCategorizeWithFallback (combined). All API routes use a two-pass approach: first static taxonomy (fast, sync), then LLM fallback only for unrecognized skills (async, non-blocking). The normalize endpoint now returns a 'mode' field indicating incremental vs full, and a 'llmCategorized' count showing how many were resolved via LLM."
 }
