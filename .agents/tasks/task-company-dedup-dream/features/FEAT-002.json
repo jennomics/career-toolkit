@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Company CRUD API routes and company auto-creation/linking logic. Includes API for listing, creating, updating, and fetching companies. Auto-generates companies from existing job data. Adds slug generation utility.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create src/lib/slugify.ts with a slugify utility function that converts company names to URL-safe slugs (lowercase, replace spaces/special chars with hyphens, deduplicate hyphens).",
     "Create src/lib/normalize-company.ts with a normalizeCompanyName function that handles common variants: strips suffixes like ', Inc', ', LLC', 'Inc.', 'Corporation', etc., trims whitespace, lowercases for comparison. Return both the cleaned display name and a normalized comparison key.",
@@ -25,5 +25,5 @@
     "Run 'npm run build' and confirm exit code 0"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All files created and build passes. The companyId field on Job is reassigned after job create (mutating the returned object for the response). No pre-commit hooks in the project."
 }
