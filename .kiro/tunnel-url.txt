@@ -1,5 +1,4 @@
 {
-  "url": "https://ctrl-earl-trackbacks-strategic.trycloudflare.com",
-  "startedAt": "2026-07-30T17:58:38.098Z",
-  "host": "LANGs-MacBook-Pro.local"
+  "url": null,
+  "stoppedAt": "2026-07-30T18:06:56.377Z"
 }
