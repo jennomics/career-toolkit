@@ -1,0 +1,7 @@
+{
+  "task_id": "task-candidate-profile",
+  "task_description": "Build a structured Candidate Profile feature for the career-toolkit app with schema models, API routes, UI page, and seed data for Jenna Lang's complete profile.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
+  "blocked_reason": null
+}

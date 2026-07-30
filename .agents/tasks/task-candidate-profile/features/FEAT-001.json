@@ -1,0 +1,27 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Add Candidate Profile schema models to Prisma and generate the client. Add all 6 new models (CandidateProfile, CareerRole, SignatureStory, ProfileMetric, UnresolvedItem, WritingSample) with proper relations and indexes.",
+  "status": "in_progress",
+  "steps": [
+    "Add CandidateProfile model to prisma/schema.prisma with fields: id (cuid), name, location, phone, email, linkedin, github, currentTitle, reportsTo, positioningStatements (String[]), selfDescribedStrengths (String[]), technicalInventory (String), educationCredentials (String), recognitionPresence (String), operatingPrinciples (String[]), writingStyle (String), selfDescribedPosture (String), searchTargetLevel (String), searchGeography (String), searchCompanies (String[]), searchFirms (String[]), resumeOperatingRules (String[]), knownGaps (String), personalBackground (String), createdAt, updatedAt. Include relations to CareerRole, SignatureStory, ProfileMetric, UnresolvedItem, WritingSample.",
+    "Add CareerRole model with id, profileId (relation to CandidateProfile with onDelete: Cascade), period, organization, title, scope (String?), highlights (String[]), sortOrder (Int). Add @@index([profileId]).",
+    "Add SignatureStory model with id, profileId (relation), title, situation, obstacle, action, result, whyItMatters. Add @@index([profileId]).",
+    "Add ProfileMetric model with id, profileId (relation), label, value, source (String?). Add @@index([profileId]).",
+    "Add UnresolvedItem model with id, profileId (relation), section, description, optionA, optionB, resolution (String?), resolvedAt (DateTime?), priority (String - high/medium/low). Add @@index([profileId]).",
+    "Add WritingSample model with id, profileId (relation), title, content, context (String?), createdAt. Add @@index([profileId]).",
+    "Run `npx prisma generate` to regenerate the client with new models."
+  ],
+  "acceptance_criteria": [
+    "prisma/schema.prisma contains all 6 new models with correct fields, types, and relations",
+    "All relation fields use onDelete: Cascade",
+    "All foreign key fields have @@index annotations",
+    "`npx prisma generate` completes successfully"
+  ],
+  "verification": [
+    "Run `npx prisma generate` and confirm it exits with code 0",
+    "Run `npx prisma validate` and confirm the schema is valid"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

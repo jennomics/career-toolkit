@@ -56,3 +56,109 @@ model Correction {
 
   @@index([field])
 }
+
+model CandidateProfile {
+  id                     String   @id @default(cuid())
+  name                   String
+  location               String?
+  phone                  String?
+  email                  String?
+  linkedin               String?
+  github                 String?
+  currentTitle           String?
+  reportsTo              String?
+  positioningStatements  String[]
+  selfDescribedStrengths String[]
+  technicalInventory     String?
+  educationCredentials   String?
+  recognitionPresence    String?
+  operatingPrinciples    String[]
+  writingStyle           String?
+  selfDescribedPosture   String?
+  searchTargetLevel      String?
+  searchGeography        String?
+  searchCompanies        String[]
+  searchFirms            String[]
+  resumeOperatingRules   String[]
+  knownGaps              String?
+  personalBackground     String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  careerRoles      CareerRole[]
+  signatureStories SignatureStory[]
+  profileMetrics   ProfileMetric[]
+  unresolvedItems  UnresolvedItem[]
+  writingSamples   WritingSample[]
+}
+
+model CareerRole {
+  id           String   @id @default(cuid())
+  profileId    String
+  period       String
+  organization String
+  title        String
+  scope        String?
+  highlights   String[]
+  sortOrder    Int
+
+  profile CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+model SignatureStory {
+  id           String @id @default(cuid())
+  profileId    String
+  title        String
+  situation    String
+  obstacle     String
+  action       String
+  result       String
+  whyItMatters String
+
+  profile CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+model ProfileMetric {
+  id        String  @id @default(cuid())
+  profileId String
+  label     String
+  value     String
+  source    String?
+
+  profile CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+model UnresolvedItem {
+  id          String    @id @default(cuid())
+  profileId   String
+  section     String
+  description String
+  optionA     String
+  optionB     String
+  resolution  String?
+  resolvedAt  DateTime?
+  priority    String
+
+  profile CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+model WritingSample {
+  id        String   @id @default(cuid())
+  profileId String
+  title     String
+  content   String
+  context   String?
+  createdAt DateTime @default(now())
+
+  profile CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}

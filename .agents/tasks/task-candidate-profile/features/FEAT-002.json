@@ -1,0 +1,28 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Create all API routes for the candidate profile feature. Routes: GET/PUT /api/profile, GET/POST/DELETE /api/profile/roles, GET/POST/PUT/DELETE /api/profile/stories, GET/POST/DELETE /api/profile/metrics, GET/POST/PUT/DELETE /api/profile/unresolved, GET/POST/DELETE /api/profile/writing-samples, GET /api/profile/generation-ready. Follow the exact pattern from src/app/api/jobs/route.ts.",
+  "status": "pending",
+  "steps": [
+    "Create src/app/api/profile/route.ts with GET (fetch single profile with all relations included: roles ordered by sortOrder, stories, metrics, unresolvedItems, writingSamples) and PUT (upsert profile - create if none exists, update if found). Use prisma from @/lib/db. Wrap in try/catch with error in JSON body.",
+    "Create src/app/api/profile/roles/route.ts with GET (list roles for profile, ordered by sortOrder), POST (create a new role linked to profile), DELETE (delete by id from query param). Include try/catch with error messages.",
+    "Create src/app/api/profile/stories/route.ts with GET (list stories for profile), POST (create story), PUT (update story by id in body), DELETE (delete by id from query param). Include try/catch.",
+    "Create src/app/api/profile/metrics/route.ts with GET (list metrics), POST (create metric), DELETE (delete by id from query param). Include try/catch.",
+    "Create src/app/api/profile/unresolved/route.ts with GET (list unresolved items), POST (create item), PUT (resolve item - set resolution and resolvedAt), DELETE (delete by id from query param). Include try/catch.",
+    "Create src/app/api/profile/writing-samples/route.ts with GET (list samples), POST (create sample - enforce max 5 limit, return 400 if exceeded), DELETE (delete by id from query param). Include try/catch.",
+    "Create src/app/api/profile/generation-ready/route.ts with GET that returns { ready: boolean, unresolvedCount: number, totalItems: number }. ready is true only when all UnresolvedItems have a non-null resolution."
+  ],
+  "acceptance_criteria": [
+    "All 7 route files exist in src/app/api/profile/",
+    "Every route handler has try/catch with error messages in JSON response body",
+    "Writing samples POST enforces max 5 limit",
+    "Generation-ready endpoint correctly checks resolution status",
+    "All routes use the prisma import from @/lib/db",
+    "Routes use NextRequest/NextResponse from next/server"
+  ],
+  "verification": [
+    "Run `npm run build` and confirm it completes without TypeScript errors"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

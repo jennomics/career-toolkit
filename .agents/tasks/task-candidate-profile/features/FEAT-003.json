@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Build the /profile page UI with collapsible sections, inline editing, unresolved items warning banner, and writing samples management. The page should be fully accessible with ARIA labels, keyboard navigation, and semantic HTML. Follow the patterns from src/app/page.tsx and src/app/phrases/page.tsx.",
+  "status": "pending",
+  "steps": [
+    "Create src/app/profile/page.tsx as a 'use client' page. Add navigation link in the header back to / and to /phrases. Fetch profile data from GET /api/profile on mount.",
+    "Build a CollapsibleSection component (either inline or in src/components/CollapsibleSection.tsx) that takes a title, optional badge/count, and children. Must use button with aria-expanded, aria-controls, and proper keyboard handling.",
+    "Add Identity & Contact section (collapsible) showing name, title, location, phone, email, linkedin, github, reportsTo. Each field should be editable inline (click to edit pattern or edit mode toggle). Save via PUT /api/profile.",
+    "Add Positioning Statements section (collapsible) showing the array of statements. Allow adding/removing statements. Save via PUT /api/profile.",
+    "Add Career Timeline section (collapsible) showing roles ordered by sortOrder. Each role shows period, org, title, scope, highlights. Allow adding new roles (POST /api/profile/roles) and deleting (DELETE). Display highlights as bullet points.",
+    "Add Signature Stories section (collapsible) showing stories with title, situation, obstacle, action, result, whyItMatters fields. Allow add (POST), edit (PUT), delete (DELETE).",
+    "Add Metrics section (collapsible) showing metrics in a grid/table. Allow add and delete.",
+    "Add Technical Inventory section (collapsible) showing the markdown content in a textarea for editing. Save via PUT /api/profile.",
+    "Add Education & Credentials section (collapsible) with markdown textarea. Save via PUT.",
+    "Add Operating Principles section (collapsible) showing the array. Allow add/remove. Save via PUT.",
+    "Add Search Parameters section (collapsible) showing searchTargetLevel, searchGeography, searchCompanies array, searchFirms array. Editable. Save via PUT.",
+    "Add Known Gaps section (collapsible) with markdown textarea. Save via PUT.",
+    "Add Unresolved Items section with a prominent warning banner (amber/yellow) when any items lack resolution. Show each item with section, description, optionA, optionB, and a way to select the resolution (buttons or radio). Use PUT /api/profile/unresolved to resolve. Show count of unresolved in the banner.",
+    "Add Writing Samples section showing existing samples with title, context, and truncated content preview. Add button to create new sample (textarea paste for content, input for title and context). Enforce max 5 on the UI. DELETE to remove.",
+    "Add Resume Operating Rules section (collapsible) showing the array. Allow add/remove. Save via PUT.",
+    "Add a link to the /profile page in the header nav on src/app/page.tsx (next to the existing 'Resume Phrases' link) and in src/app/phrases/page.tsx.",
+    "Ensure all interactive elements have visible focus states, proper ARIA labels, and work with keyboard-only navigation."
+  ],
+  "acceptance_criteria": [
+    "/profile page renders without errors",
+    "All sections are collapsible with proper ARIA attributes",
+    "Unresolved items section shows warning banner when items are unresolved",
+    "Writing samples section enforces max 5 limit visually",
+    "All API calls have error handling that shows errors to the user",
+    "Page is navigable via keyboard",
+    "Navigation links to /profile exist on home page and phrases page",
+    "TypeScript compiles without errors"
+  ],
+  "verification": [
+    "Run `npm run build` and confirm it completes without errors"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
