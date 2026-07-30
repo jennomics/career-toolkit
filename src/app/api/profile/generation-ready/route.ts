@@ -26,7 +26,7 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      ready: totalItems === 0 || unresolvedCount === 0,
+      ready: totalItems > 0 && unresolvedCount === 0,
       unresolvedCount,
       totalItems,
     });

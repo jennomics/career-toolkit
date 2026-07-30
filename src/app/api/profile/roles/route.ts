@@ -62,6 +62,39 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// PUT /api/profile/roles - Update a career role
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, period, organization, title, scope, highlights, sortOrder } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "id is required" },
+        { status: 400 }
+      );
+    }
+
+    const role = await prisma.careerRole.update({
+      where: { id },
+      data: {
+        ...(period !== undefined && { period }),
+        ...(organization !== undefined && { organization }),
+        ...(title !== undefined && { title }),
+        ...(scope !== undefined && { scope }),
+        ...(highlights !== undefined && { highlights }),
+        ...(sortOrder !== undefined && { sortOrder }),
+      },
+    });
+
+    return NextResponse.json(role);
+  } catch (err) {
+    console.error("PUT /api/profile/roles error:", err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
 // DELETE /api/profile/roles - Delete a career role by id
 export async function DELETE(request: NextRequest) {
   try {

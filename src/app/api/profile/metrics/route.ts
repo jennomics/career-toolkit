@@ -58,6 +58,36 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// PUT /api/profile/metrics - Update a metric
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, label, value, source } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "id is required" },
+        { status: 400 }
+      );
+    }
+
+    const metric = await prisma.profileMetric.update({
+      where: { id },
+      data: {
+        ...(label !== undefined && { label }),
+        ...(value !== undefined && { value }),
+        ...(source !== undefined && { source }),
+      },
+    });
+
+    return NextResponse.json(metric);
+  } catch (err) {
+    console.error("PUT /api/profile/metrics error:", err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
 // DELETE /api/profile/metrics - Delete a metric by id
 export async function DELETE(request: NextRequest) {
   try {
