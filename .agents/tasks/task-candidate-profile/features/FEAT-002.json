@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Create all API routes for the candidate profile feature. Routes: GET/PUT /api/profile, GET/POST/DELETE /api/profile/roles, GET/POST/PUT/DELETE /api/profile/stories, GET/POST/DELETE /api/profile/metrics, GET/POST/PUT/DELETE /api/profile/unresolved, GET/POST/DELETE /api/profile/writing-samples, GET /api/profile/generation-ready. Follow the exact pattern from src/app/api/jobs/route.ts.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/app/api/profile/route.ts with GET (fetch single profile with all relations included: roles ordered by sortOrder, stories, metrics, unresolvedItems, writingSamples) and PUT (upsert profile - create if none exists, update if found). Use prisma from @/lib/db. Wrap in try/catch with error in JSON body.",
     "Create src/app/api/profile/roles/route.ts with GET (list roles for profile, ordered by sortOrder), POST (create a new role linked to profile), DELETE (delete by id from query param). Include try/catch with error messages.",
