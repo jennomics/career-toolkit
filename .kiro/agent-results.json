@@ -3,12 +3,12 @@
     {
       "id": "schema-push-15",
       "command": "npx prisma db push && echo 'DONE: Experience tables created'",
-      "status": "success",
-      "stdout": "Datasource \"db\": PostgreSQL database \"neondb\", schema \"public\" at \"ep-tiny-brook-au73axd4-pooler.c-10.us-east-1.aws.neon.tech\"\n\nThe database is already in sync with the Prisma schema.\n\nDONE: Experience tables created\n",
-      "stderr": "Loaded Prisma config from prisma.config.ts.\n\nPrisma schema loaded from prisma/schema.prisma.\n",
-      "exitCode": 0,
-      "duration": 8522
+      "status": "error",
+      "stdout": "",
+      "stderr": "Failed to load config file \"/Users/jennalang/kiro/career-toolkit/prisma.config.ts\" as a TypeScript/JavaScript module. Error: Error: Cannot find module 'dotenv/config'\nRequire stack:\n- /Users/jennalang/kiro/career-toolkit/prisma.config.ts\n",
+      "exitCode": 1,
+      "duration": 1890
     }
   ],
-  "processedAt": "2026-07-30T01:43:01.197Z"
+  "processedAt": "2026-07-30T02:03:52.795Z"
 }
