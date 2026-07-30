@@ -25,457 +25,383 @@ async function main() {
   await prisma.careerRole.deleteMany({});
   await prisma.candidateProfile.deleteMany({});
 
-  // Create the CandidateProfile
+  // Create the CandidateProfile with Jenna's actual data
   const profile = await prisma.candidateProfile.create({
     data: {
-      name: "Jenna Lang",
-      location: "Pasadena, CA (open to Bay Area, Remote)",
-      phone: "(626) 676-1019",
-      email: "jenna.lang@gmail.com",
+      name: "Jenna Lang, PhD",
+      location: "Sacramento, CA",
+      phone: "916-690-5889",
+      email: "jennomics@gmail.com",
       linkedin: "linkedin.com/in/REDACTED_ALT_NAME",
       github: "github.com/jennomics",
-      currentTitle: "Director, AI & Data Products",
-      reportsTo: "VP/SVP Engineering or CTO",
+      currentTitle: "Senior Director, DNA Science R&D — AncestryDNA",
+      reportsTo: "Head of Product",
       positioningStatements: [
-        "I build the infrastructure that lets genomics companies stop talking about AI and actually ship it: production models, real-time pipelines, and platforms that make bench scientists self-sufficient.",
-        "My career has been one long answer to the question: How do you get a regulated, data-heavy industry to move at startup speed? I do it by combining deep bioinformatics fluency with modern ML/platform engineering so that science teams spend time on discovery, not plumbing.",
-        "I am the person you hire when your AI strategy is a slide deck and needs to become a product. I have done this at a 50-person startup (Freenome), a mid-scale platform (PetDNA/Wisdom Panel), and an enterprise data org (Illumina), each time standing up teams, shipping v1, and driving adoption.",
+        "I build decision environments — data platforms architected around the decisions they need to power, not around how data is easiest to store. When every team — science, clinical, product, executive — works from the same precision-grade, contextualized view, the organization stops debating what's true and starts deciding what to do.",
+        "I think big without losing operational grip. I connect what most organizations keep separate — wet lab biology, cloud-scale engineering, AI, regulatory reality, and executive strategy — and I build toward outcomes where every stakeholder sees their win in the solution. The result is momentum that holds.",
+        "20 years of building data infrastructure where the biology is complex, the data are vast, and the stakes are identity and human health.",
       ],
       selfDescribedStrengths: [
-        "Translating messy, regulated science into shippable AI products",
-        "Building and coaching cross-functional teams (ML + bio + eng) from zero",
-        "Designing platforms that abstract complexity so domain experts self-serve",
-        "Operating at startup speed inside large, risk-averse organizations",
-        "Communicating technical roadmaps to non-technical stakeholders (C-suite, commercial, regulatory)",
+        "Problem-solving and making connections between ideas, people, and goals",
+        "Thinks in graphs",
       ],
-      technicalInventory: `## ML/AI
-PyTorch, TensorFlow, scikit-learn, XGBoost, LightGBM, HuggingFace Transformers, LangChain, PEFT/LoRA, RLHF, GPT-4/Claude API integration, MLflow, Weights & Biases, SageMaker, Vertex AI
+      technicalInventory: `**Biological AI & genomics:** genomic foundation models, biological sequence modeling, multi-omics integration, variant analysis, metagenomics, phylogenomics, population genetics, relationship inference, pedigree modeling
 
-## Bioinformatics
-Nextflow/nf-core, WDL/Cromwell, GATK, BWA/Bowtie2, samtools/bcftools, htslib, Picard, VEP/SnpEff, STAR, Salmon, DESeq2, scanpy, Cell Ranger, IGV, Ensembl/NCBI APIs
+**AI/ML:** deep learning, fine-tuning, graph neural networks (GATv2 attention, heterogeneous GNNs), reinforcement learning, LLM agents and tooling, RAG, evaluation and benchmark design, MLOps, PyTorch, TensorFlow, scikit-learn, XGBoost
 
-## Data/Platform
-Spark, Databricks, Airflow, Prefect, dbt, Snowflake, BigQuery, Redshift, PostgreSQL, DynamoDB, Delta Lake, Kafka, Pulsar, Flink, Terraform, Kubernetes, Docker, ArgoCD, GitHub Actions, CircleCI
+**Data architecture:** data lake design (Lake Formation, Glue, Athena), governed data platforms, semantic layer design, ontology, data lineage, access control, Apache Iceberg
 
-## Languages & Frameworks
-Python, R, Scala, TypeScript, SQL, Go, Bash, Next.js, FastAPI, Flask, React, Node.js
+**Cloud & infrastructure:** AWS (SageMaker, Batch, Lambda, FSx, EMR, Bedrock), Docker, Nextflow, Kubernetes, GPU-accelerated computing, CI/CD, infrastructure as code
 
-## Accreditations
-AWS SAA-C03, GCP PDE, HIPAA/SOC2 audit experience`,
-      educationCredentials: `- MS Bioinformatics, Johns Hopkins University (2012)
-- BS Biology + CS minor, UCLA (2009)
-- AWS Solutions Architect - Associate (SAA-C03, 2023)
-- GCP Professional Data Engineer (2022)`,
-      recognitionPresence: `- Patent pending - 'Method for ancestry-informative marker selection in low-coverage WGS' (Wisdom Panel, filed 2021)
-- Published - 'Scalable variant calling pipeline for consumer genomics' - ASHG poster 2020
-- Conference talk - 'Production ML in regulated genomics' - MLOps Community Meetup 2023
-- Internal keynote - 'AI Transformation Roadmap' presented to Illumina SVP Engineering + CPO (2024)`,
+**Regulated environments:** HIPAA, GDPR, SaMD design controls, CLIA-adjacent data governance, research reproducibility, responsible AI policy authorship, dual-use risk governance
+
+**Languages:** Python, R, Bash, SQL, TypeScript, Perl
+
+**Recent hands-on build:** career-toolkit (github.com/jennomics/career-toolkit) — full-stack application shipped to production. Next.js, TypeScript, Prisma, Tailwind, CI workflows, deployed on Vercel. 183 commits. Built using agentic tooling and structured agent task specifications.`,
+      educationCredentials: `PhD, Microbiology & Bioinformatics — University of California, Davis
+MS, Quantitative Biology & Population Genetics — University of Texas, Arlington
+BS, Biology & Genetics — University of New Orleans
+
+**Executive education:**
+- MIT Sloan — Artificial Intelligence: Implications for Business Strategy (2024)
+- Women's executive leadership program — institution and year UNRESOLVED (see Unresolved Items)
+
+**Certifications:**
+- AWS Certified Solutions Architect – Professional
+- AWS Certified Solutions Architect – Associate
+- AWS Certified Machine Learning – Specialty`,
+      recognitionPresence: `- Patent U.S. 11,385,215 — microbial soil health metrics (Trace Genomics)
+- 20 peer-reviewed publications, 1,200+ citations
+- Invited speaker, NASA (2021)
+- Speaker, NVIDIA GTC
+- OpenFold consortium — brokered AWS entry with NVIDIA as co-founding partner
+- Wrote an EB-1B recommendation letter for a staff AI/ML engineer, demonstrating standing to evaluate research contributions at an international level`,
       operatingPrinciples: [
-        "Ship weekly, learn daily - velocity is a feature",
-        "Make the right thing the easy thing (platform > process docs)",
-        "Hire for slope, coach for altitude",
-        "Decisions are two-way doors until proven otherwise",
-        "If it is not in the DAG, it does not exist (observability first)",
-        "Protect the team calendar like you protect prod uptime",
+        "Do not reinvent the wheel — leverage existing mechanisms before creating new ones",
+        "Build to scale — prioritize developer experience and five-year business needs over quick fixes",
+        "Move fast on two-way-door decisions — do not evaluate every possible solution",
+        "Break down silos — prioritize collective improvement over protecting one team's way of working",
+        "Minimize undifferentiated heavy lifting — use managed services, prioritize science over infrastructure management",
       ],
-      writingStyle:
-        "Direct, concrete, evidence-first. Leads with the outcome or number, then explains the mechanism. Avoids buzzwords unless they are the industry-standard term. Uses first person sparingly and only for ownership. Comfortable with technical depth but defaults to the altitude appropriate for the audience. Humor is dry, rare, and never at anyone else\u2019s expense.",
-      selfDescribedPosture:
-        "Builder-leader. I am happiest (and most impactful) when I own a zero-to-one problem that requires both technical architecture and team-building. I do not want a pure people-management role; I need enough technical surface area to stay dangerous. At the same time, I have outgrown pure IC work: I want to multiply my output through a team of 5 to 15 senior ICs and leads.",
-      searchTargetLevel:
-        "Director or Sr. Director, Engineering / AI / Data Products. Open to VP title at a smaller company (Series B-C) if scope matches.",
-      searchGeography:
-        "Pasadena, CA (will not relocate). Open to: Bay Area hybrid (1-2x/month), fully remote US-based, or LA-based.",
+      writingStyle: "Direct and structurally organized. Opens with the decision, supports it afterward. Tiers work explicitly and states what is gating versus non-gating. Names her own misses in writing — her 2022 strategy review records flatly that she was too ambitious on timing and that the team ran on autopilot during PetDNA. Very few executives document that.",
+      selfDescribedPosture: "I think big and I'm willing to take on risk, even when success is not guaranteed. But I always de-risk.",
+      searchTargetLevel: "VP or executive director in computational biology, AI/ML, or life sciences. Currently also evaluating manager-level roles at frontier AI labs where the work is closer to the problem.",
+      searchGeography: "Sacramento-based. Bay Area hybrid acceptable if compensation justifies it. Relocation and heavy in-office requirements are a family decision, not a solo one.",
       searchCompanies: [
-        "Anthropic",
-        "Tempus AI",
-        "Illumina (different org)",
-        "Freenome (re-hire)",
-        "Color Health",
-        "Invitae (post-restructuring)",
-        "Recursion Pharmaceuticals",
-        "Grail / Galleri",
-        "Arc Institute",
-        "Insitro",
-        "Genentech (computational)",
-        "Scale AI (bio vertical)",
+        "Anthropic", "OpenAI", "NVIDIA", "Oracle Health & AI", "Eli Lilly",
+        "Myriad Genetics", "Insmed", "Veracyte", "Natera", "Revolution Medicines",
+        "Syner-G", "Radial/Astera", "Sequencing.com", "Travere Therapeutics",
       ],
-      searchFirms: [
-        "Sequoia Talent (genomics/AI)",
-        "True Search (life science tech)",
-        "Daversa Partners",
-      ],
+      searchFirms: ["Korn Ferry", "Spencer Stuart", "Slone Partners", "WittKieffer"],
       resumeOperatingRules: [
-        "Every bullet must pass the so-what test: quantified impact or named decision",
-        "No orphan bullets - each role needs 3-6 achievement lines",
-        "Verb-first construction (Designed, Built, Led, Shipped) - never starts with Responsible for",
-        "Technical depth is appropriate to the reader: for a hiring manager at Anthropic, include model architecture choices; for a VP Eng at Tempus, emphasize team/velocity/outcomes",
-        "One-page for most applications; two-page extended version available for roles that request it",
-        "The summary section is 2-3 sentences max and must name the level, domain, and signature outcome",
+        "Maximum honest advocacy",
+        "No fitness verdicts — do not tell her whether she is qualified, give her the material and let her decide",
+        "Gaps become one-time questions, answered once and added to this profile",
+        "The 30-year career spine leads; do not anchor the story to Ancestry",
       ],
-      knownGaps: `1. **No FAANG pedigree** - Reframe: breadth across regulated + startup + enterprise is rarer and more relevant for biotech AI.
-2. **Formal management tenure is 4 years** - But scope (30+ ICs, multi-team) is Director-equivalent; the titles lagged the scope at smaller companies.
-3. **No peer-reviewed first-author ML paper** - Offset with patent pending, ASHG poster, and shipped production models with measurable outcomes.
-4. **Scala/JVM depth is moderate** - Fine for Spark but would not claim principal-level JVM engineering.`,
-      personalBackground:
-        "First-generation college graduate; parents run a small landscaping business in Pomona. This shapes my bias toward pragmatic, ship-it culture over academic purity. I mentor two women-in-STEM undergrads through the Johns Hopkins alumni network. Outside work: competitive amateur baker (sourdough and French pastry), trail running in the San Gabriels, and a very opinionated corgi named Biscuit.",
+      knownGaps: `**Hands-on coding currency.** She has not been in production code in over a decade. She architects, directs, and unblocks. For roles that require reading and writing production code, the honest position is: point to career-toolkit as evidence she still builds, using agentic tooling rather than typing every line. Do not claim day-to-day coding.
+
+**Recent publication record.** Twenty publications and 1,200+ citations, but largely from the UC Davis era. For research-scientist roles that want recent end-to-end research she personally led, this is thin.
+
+**Drug discovery and therapeutics.** No experience. Her domains are consumer genomics, agricultural microbiome, and multi-omics health platforms. Roles requiring therapeutic hypothesis generation or drug development lifecycle experience are not a fit and should not be pursued.
+
+**Scope on manager-level applications.** She currently runs 26 people across three managers. Applying to a manager role is a visible step down and will be read as either a red flag or flight risk unless addressed directly. Her honest answer — that she wants to be closer to the work than a senior director role allows — is credible and should be stated rather than avoided.`,
+      personalBackground: "First-generation college graduate. National Merit Scholar. Only child of a single mother. Turned down UNC and Carnegie Mellon for a full ride at the University of New Orleans. Former competitive figure skater, ages 9–16. Walk-up song: \"Burning Down the House,\" Talking Heads.",
     },
   });
 
   console.log(`Created profile: ${profile.id}`);
 
-  // Career Roles (sorted most recent first, sortOrder 1=most recent)
+  // Career Roles - from Section 3 & 4 of the candidate profile
   const roles = [
     {
       sortOrder: 1,
-      period: "2023-Present",
-      organization: "Illumina",
-      title: "Director, AI & Data Products",
-      scope: "12-person team (ML engineers, data engineers, bioinformaticians). Reports to VP Engineering.",
+      period: "2022 – present",
+      organization: "AncestryDNA",
+      title: "Senior Director, DNA Science R&D",
+      scope: "26-person organization across three managers and three principal scientists. Full lifecycle from research through production-ready systems. Reports into the executive team.",
       highlights: [
-        "Built AI Products team from zero: hired 12 ICs across ML, data, and bio in 6 months",
-        "Shipped production ML models processing genomic data at scale with 99.97% uptime SLA",
-        "Drove $2.4M annual compute savings through pipeline optimization and infrastructure consolidation",
-        "Presented AI Transformation Roadmap to SVP Engineering and CPO, securing multi-year funding",
-        "Established MLOps practices: model registry, A/B testing framework, automated retraining pipelines",
-        "Led cross-functional collaboration with research, clinical, and commercial teams to align AI product roadmap",
+        "Leading development of a DNA foundation model — fine-tuning open-source genomic language models on 30 million REDACTED_FORBIDDEN_PHRASE_1",
+        "Directing graph neural network models for biological relationship inference, including directional link prediction (aunt vs. niece, grandparent vs. grandchild)",
+        "Directing an LLM research agent that helps genealogists analyze DNA match clusters using domain-specific tools, retrieval, contextual reasoning, and interactive visualization",
+        "Rebuilt the organization post-layoff from 11 to 26 engineers and scientists",
+        "Team satisfaction raised from 72 to 83",
+        "Manual maintenance reduced from ~75–80% of capacity to under 5–10%",
+        "Annual AWS R&D compute cost cut ~50% — from over $350K/year to $180K/year",
+        "Authored AncestryDNA's Responsible Use of AI policy",
+        "Established a Center of Excellence unifying reproducibility, ethics, and research governance",
+        "PetDNA: Concept to market in six months. Hit Year 1 revenue targets. First production generative AI deployment at Ancestry. Vendor relationships worth ~$30M in annual savings.",
+        "Just-in-time computation system serving real-time lookup across full 30M-customer REDACTED_FORBIDDEN_PHRASE_2",
+        "Governed DNA data lake design replacing legacy Cloud Data Vault",
       ],
     },
     {
       sortOrder: 2,
-      period: "2022-2023",
-      organization: "Illumina",
-      title: "Sr. Manager, ML Platform",
-      scope: "8-person platform team. Reports to Sr. Director Engineering.",
+      period: "2021 – 2022",
+      organization: "AncestryDNA",
+      title: "Director, Research & Bioinformatics",
+      scope: "Promoted within six months to sole leadership of the R&D organization.",
       highlights: [
-        "Designed and shipped internal ML platform serving 40+ data scientists across 3 business units",
-        "Achieved NPS 67 internal platform satisfaction score within first year of launch",
-        "Migrated 400+ pipelines from legacy infrastructure to nf-core/Nextflow in 9 months (vs. 24-month estimate)",
-        "Reduced mean time to production for ML models from 3 weeks to under 48 hours",
-        "Implemented cost observability layer saving $800K/year in unused cloud resources",
-        "Promoted to Director after 14 months based on scope expansion and team growth",
+        "Containerized and orchestrated all bioinformatics pipelines (Docker, Nextflow, AWS Batch)",
+        "Established four strategic priorities: Integrate, Automate, MLOps, Move to Managed",
+        "Rebuilt team culture following AncestryHealth wind-down layoffs",
       ],
     },
     {
       sortOrder: 3,
-      period: "2020-2022",
-      organization: "PetDNA (Wisdom Panel)",
-      title: "Lead Data Scientist / Acting Director",
-      scope: "6-person ML team + 3 contractors. Reports to CTO.",
+      period: "2020 – 2021",
+      organization: "Amazon Web Services",
+      title: "Worldwide Tech Leader, AI/ML — Healthcare & Life Sciences",
+      scope: "Principal technical advisor to pharmaceutical companies, biotechs, and academic medical centers worldwide.",
       highlights: [
-        "Built ML breed-identification system processing 500K+ samples/year with 98.2% accuracy",
-        "Filed patent for ancestry-informative marker selection in low-coverage WGS",
-        "Scaled data pipeline from 50K to 500K annual samples without additional headcount",
-        "Led company rebrand data migration (PetDNA to Wisdom Panel) with zero downtime",
-        "Shipped ethnicity/communities feature for underrepresented populations ahead of schedule",
-        "Managed $1.2M annual cloud budget, reducing per-sample cost by 40% through architecture redesign",
+        "Led a $2M multi-institution initiative to build an open-source alternative to AlphaFold",
+        "Brokered AWS entry into the OpenFold consortium with NVIDIA as co-founding partner",
+        "Authored Nextflow + AWS Batch reference architecture that became basis for AWS HealthOmics",
+        "Defined global AI/ML strategy and go-to-market investment for the segment",
       ],
     },
     {
       sortOrder: 4,
-      period: "2018-2020",
-      organization: "Freenome",
-      title: "Senior Bioinformatics Engineer",
-      scope: "IC reporting to VP Computational Biology. Collaborated with 15-person research team.",
+      period: "2019 – 2020",
+      organization: "Amazon Web Services",
+      title: "Senior Solutions Architect, AI/ML & Bioinformatics",
+      scope: null,
       highlights: [
-        "Rebuilt cfDNA analysis pipeline (SideView 2.0), cutting runtime by 70% and enabling 3x throughput",
-        "Designed variant-calling architecture that became the foundation for Freenome's clinical assay",
-        "Implemented automated QC framework catching 94% of sample-quality issues before analysis",
-        "Contributed to Series C fundraising materials with technical architecture documentation",
-        "Mentored 3 junior bioinformaticians, two of whom were promoted within 18 months",
+        "Designed compliant, scalable bioinformatics and ML platforms for biotech, pharma, and research customers",
+        "Accelerated cloud-native deep learning adoption for multi-omics and biomedical research",
       ],
     },
     {
       sortOrder: 5,
-      period: "2015-2018",
-      organization: "Illumina",
-      title: "Bioinformatics Scientist II",
-      scope: "IC in Clinical Genomics division. 4-person variant calling team.",
+      period: "2018 – 2019",
+      organization: "iCarbonX",
+      title: "Director, Bioinformatics & Product Development",
+      scope: "Managed globally distributed R&D teams across the US, China, and Israel.",
       highlights: [
-        "Developed 3x faster variant-calling pipeline adopted as default for clinical whole-genome sequencing",
-        "Published ASHG poster on scalable variant calling for consumer genomics",
-        "Built internal tool for automated pipeline benchmarking against truth sets (Genome in a Bottle)",
-        "Collaborated with regulatory team on FDA submission documentation for clinical-grade pipelines",
+        "Led end-to-end development of a HIPAA-compliant multimodal biomedical data platform under SaMD design controls",
+        "Delivered federated multi-omics analysis under strict data residency and compliance constraints",
       ],
     },
     {
       sortOrder: 6,
-      period: "2013-2015",
-      organization: "Children's Hospital Los Angeles",
-      title: "Bioinformatics Analyst",
-      scope: "Center for Personalized Medicine. Reports to Director of Bioinformatics.",
+      period: "2017 – 2018",
+      organization: "BioConsortia",
+      title: "Senior Bioinformatics Scientist",
+      scope: null,
       highlights: [
-        "Analyzed pediatric cancer genomes supporting clinical decision-making for 200+ patients",
-        "Built automated reporting pipeline reducing turnaround time from 5 days to 18 hours",
-        "Maintained HIPAA-compliant data infrastructure for genomic data storage and analysis",
-        "Trained clinical fellows on interpretation of genomic variants using IGV and custom visualization tools",
+        "Built ML models for microbial genomics — increased hit-to-lead success 5x",
+        "Raised microbe identification accuracy from 10% to 50%",
       ],
     },
     {
       sortOrder: 7,
-      period: "2012-2013",
-      organization: "Johns Hopkins APL",
-      title: "Research Associate (Bioinformatics)",
-      scope: "Biosurveillance division. 3-person computational team.",
+      period: "2016 – 2017",
+      organization: "Trace Genomics",
+      title: "Bioinformatics Scientist, Founding Employee",
+      scope: "Also functioned as early product lead.",
       highlights: [
-        "Developed metagenomic classification pipeline for environmental biosurveillance samples",
-        "Reduced false-positive rate by 60% through improved reference database curation",
-        "Contributed to DoD-funded pathogen detection project with classified deliverables",
+        "Sole author of the bioinformatics pipeline behind the first customer-facing soil microbiome diagnostic platform",
+        "Cornerstone patent: U.S. 11,385,215 — microbial soil health metrics",
       ],
     },
     {
       sortOrder: 8,
-      period: "2010-2012",
-      organization: "Johns Hopkins Bloomberg School of Public Health",
-      title: "Graduate Research Assistant",
-      scope: "Department of Biostatistics. Advisor: Dr. Sarah Mitchell.",
+      period: "2007 – 2016",
+      organization: "UC Davis",
+      title: "PhD Candidate, then Postdoctoral Researcher",
+      scope: "Computational biology research in microbial taxonomy and phylogenomics.",
       highlights: [
-        "Thesis: 'Statistical methods for ancestry inference from low-coverage sequencing data'",
-        "Implemented novel HMM-based ancestry caller achieving 95% concordance with high-coverage methods",
-        "TAed two semesters of Applied Genomic Data Analysis (60+ students per semester)",
+        "Co-PI on a $750K NIH grant",
+        "Led a multi-institute global research project",
+        "Supervised a 7-member team",
       ],
     },
     {
       sortOrder: 9,
-      period: "2008-2009",
-      organization: "UCLA Department of Human Genetics",
-      title: "Undergraduate Research Intern",
-      scope: "Population genetics lab. Part-time during senior year.",
+      period: "2001 – 2012",
+      organization: "Joint Genome Institute (DOE)",
+      title: "Senior Research Associate",
+      scope: null,
       highlights: [
-        "Assisted with GWAS data processing and quality control for Type 2 Diabetes study",
-        "Wrote Python scripts for automated SNP filtering and population stratification checks",
-        "Co-authored internal lab report on ancestry-informative marker panel design",
+        "Contributed to the Human Genome Project",
+        "Developed sequencing pipelines for high-throughput microbial and eukaryotic genomics",
+        "Self-taught Perl to move from bench science into bioinformatics",
       ],
     },
   ];
 
   for (const role of roles) {
-    await prisma.careerRole.create({
-      data: {
-        profileId: profile.id,
-        ...role,
-      },
-    });
+    await prisma.careerRole.create({ data: { profileId: profile.id, ...role } });
   }
   console.log(`Created ${roles.length} career roles`);
 
-  // Signature Stories
+  // Signature Stories - from Section 5
   const stories = [
     {
       title: "The Nextflow Migration",
-      situation:
-        "Illumina had 400+ bioinformatics pipelines spread across 6 different workflow engines, maintained by teams who had each chosen their own tooling over a decade. No shared infrastructure, no common monitoring, and a 24-month estimate from a previous failed consolidation attempt.",
-      obstacle:
-        "Pipeline owners were deeply attached to their existing tools. Each team had optimized their workflows for their specific use case and saw migration as risk with no upside. The previous attempt had failed because it tried to force everyone onto a single rigid template.",
-      action:
-        "Took a platform-product approach rather than a mandate approach. Built a migration toolkit that auto-converted 80% of pipeline logic to nf-core format, then offered white-glove migration support for the remaining 20%. Created a 'migration score' dashboard showing each team their technical debt cost in dollars/month. Ran weekly office hours and paired with resistant teams to show the benefits firsthand. Sequenced migrations by starting with teams who were already frustrated with their tooling.",
-      result:
-        "Completed full migration in 9 months (vs. 24-month estimate). 400+ pipelines running on nf-core with unified monitoring. $2.4M annual compute savings from shared infrastructure. Mean time to deploy new pipeline dropped from 2 weeks to 2 days. Platform NPS score of 67.",
-      whyItMatters:
-        "Demonstrates ability to drive large-scale technical change through influence rather than authority. Shows product thinking applied to internal platforms - treating internal engineers as customers rather than compliance targets.",
+      situation: "The PTER matching algorithm had been developed in 2019 and sat unimplemented for four years. Production Engineering estimated nine months of work. PTER was 20x more compute-efficient and enabled SideView. The production pipeline was brittle — logic tightly coupled to infrastructure.",
+      obstacle: "Production Engineering leadership insisted their pipeline was 'best in class' and demanded side-by-side benchmarks against Nextflow. The benchmark demand was a stall.",
+      action: "Refused to run the comparison. Brought in the Nextflow company for demos and free training. Worked with product leadership to prioritize SideView features PTER unlocked. Coupled PTER deployment to the Nextflow re-architecture. De-risked personally: learned the production pipeline, re-architected it, hired a contractor from her own budget, paid for the enterprise license, and had her own team process matching workloads to bridge the transition.",
+      result: "GA adopted Nextflow, modernized the pipeline, and shipped PTER and SideView — one of Ancestry's most important differentiating features. Reset how DNA Science and Engineering work together.",
+      whyItMatters: "This is technical judgment, political strategy, and personal risk-taking in one story. Most executives have one of the three.",
     },
     {
-      title: "PetDNA Breed Detection at Scale",
-      situation:
-        "PetDNA (later Wisdom Panel) needed to scale their ML breed-identification system from 50K samples/year to 500K+ to support a consumer product launch with a major retail partner. The existing system was a research prototype that required manual intervention for edge cases.",
-      obstacle:
-        "The ML model had been built for accuracy in controlled conditions but fell apart at scale: edge cases multiplied, compute costs grew linearly, and the manual QC step created a bottleneck that could not scale with volume. Additionally, the team was 3 people with no dedicated ML engineer.",
-      action:
-        "Redesigned the architecture from batch-processing to streaming, with automated QC gates at each stage. Built an ensemble model that routed easy cases (purebreds, common mixes) through a fast classifier and only sent ambiguous cases to the expensive deep model. Hired 3 contractors for data labeling and built an active-learning loop to continuously improve edge-case handling. Negotiated 40% cloud cost reduction through reserved instances and spot-instance architecture.",
-      result:
-        "System processed 500K+ samples/year with 98.2% accuracy and 40% lower per-sample cost. Zero manual intervention required for 95% of samples. Enabled the retail partnership launch on schedule. Filed patent for the ancestry-informative marker selection method.",
-      whyItMatters:
-        "Shows end-to-end ownership from ML architecture to infrastructure to business outcome. Demonstrates ability to scale a system 10x without proportional team or cost growth - the kind of efficiency thinking that matters at growth-stage companies.",
+      title: "PetDNA — 0 to 1 inside a public company",
+      situation: "Ancestry needed a new revenue stream. No dedicated team, budget, or timeline for PetDNA.",
+      obstacle: "Had to ship a new business line inside a public company with minimal resources. Core team ran on autopilot because her attention was elsewhere.",
+      action: "Single-Threaded Owner / Senior Technical Officer. Drove concept to market in six months. First production generative AI at Ancestry — automated all site image and text, AI translation and localization, a full social platform, two third-party integrations in under two months.",
+      result: "Hit Year 1 revenue targets. Vendor relationships worth ~$30M in annual savings.",
+      whyItMatters: "Demonstrates zero-to-one entrepreneurship inside a large, public company. Shows willingness to personally absorb scope and risk.",
     },
     {
-      title: "The AI Transformation No One Asked For",
-      situation:
-        "Illumina's genomics division had world-class sequencing hardware but was falling behind on the software/AI side. Competitors were shipping AI-powered analysis tools while Illumina's data products were still largely rule-based. There was no dedicated AI products team, no ML infrastructure, and no executive sponsor for an AI strategy.",
-      obstacle:
-        "Multiple previous proposals for AI investment had stalled in committee. Engineering leadership saw AI as 'research science' not ready for production. The existing bioinformatics teams were protective of their domain expertise and skeptical that ML could outperform hand-tuned algorithms. Budget was tight post-pandemic.",
-      action:
-        "Built a skunkworks proof-of-concept on nights and weekends using existing cloud credits: an ML model that outperformed the rule-based variant filter by 15% on truth-set benchmarks. Packaged results as a 3-page memo showing performance gain, projected compute savings, and competitive threat analysis. Presented to SVP Engineering and CPO jointly (not separately) to avoid the 'which budget' problem. Proposed a funded pilot: 3 people, 90 days, one production use case.",
-      result:
-        "Secured approval for 12-person AI Products team with multi-year funding commitment. Within first year, shipped 3 production ML models and established MLOps infrastructure. The team became a company-wide shared service, adopted by Clinical, Research, and Consumer divisions. Led to Director promotion.",
-      whyItMatters:
-        "Demonstrates entrepreneurial leadership within large organizations. Shows ability to build executive consensus without positional authority, and to derisk big bets through rapid prototyping. This is the zero-to-one team-building story.",
+      title: "The AI Transformation",
+      situation: "AI adoption was a strategic necessity for DNA Science but the team had no formal AI training program.",
+      obstacle: "Needed to transform a diverse team of scientists, engineers, and ML practitioners without disrupting product delivery.",
+      action: "Built a full AI training curriculum in early 2024 with differentiated learning paths by persona. Wrote the memo defining how every role's expectations would change.",
+      result: "100% AWS AI Practitioner certification org-wide, with specialized certifications for DNA Science Engineering and ML Science teams.",
+      whyItMatters: "Shows ability to drive cultural and capability transformation, not just technical change.",
     },
     {
-      title: "SideView 2.0",
-      situation:
-        "Freenome's cfDNA (cell-free DNA) analysis pipeline, SideView, was the core technology behind their cancer detection assay. As the company moved toward clinical validation, the pipeline needed to process 3x more samples without proportional cost increase, while maintaining the sensitivity required for early cancer detection.",
-      obstacle:
-        "The original pipeline was built for research throughput and had accumulated significant technical debt. It was monolithic, running on a single large instance per sample, with no parallelization at the analysis step level. Rewriting it risked introducing subtle bugs in a domain where false negatives have life-or-death consequences.",
-      action:
-        "Designed a modular architecture that decomposed the pipeline into independent analysis stages, each with its own validation test suite. Built a shadow-mode system that ran new and old pipelines in parallel on the same samples for 6 weeks, comparing results at every intermediate step. Implemented a custom DAG scheduler optimized for the uneven compute profile of cfDNA analysis (some steps are I/O-bound, others CPU-bound).",
-      result:
-        "70% runtime reduction while maintaining 100% concordance with the validated pipeline on 10,000 comparison samples. Enabled 3x throughput on existing infrastructure. Architecture became the foundation for Freenome's clinical assay submission. Zero production incidents in first 6 months post-launch.",
-      whyItMatters:
-        "Shows ability to modernize critical production systems without disruption. Demonstrates rigorous validation methodology appropriate for high-stakes domains - relevant for any company where model errors have real consequences (healthcare, finance, safety).",
+      title: "SideView 2.0 — the cost argument",
+      situation: "SV2 rollout required updating match labels. Three options cost $140K, $183K, and $650K — all required batch migration of up to 1.48 trillion rows across 30M customers.",
+      obstacle: "Three engineering leaders and an SVP had signed off on expensive approaches. The assumption that batch migration was required had not been challenged.",
+      action: "Proposed version-keyed match data hydrated lazily on customer login via the Match Calculator.",
+      result: "~$15K compute vs. $140K–$650K. No batch migration. Rollback as a flag flip. Aurora cost reduced from $80K/month to $20–32K/month.",
+      whyItMatters: "Demonstrates reading a cost model, finding the assumption everyone accepted, and reframing the problem. Directed at an SVP and three engineering leaders.",
     },
     {
-      title: "The Ethnicity/Communities Launch",
-      situation:
-        "Illumina's consumer genomics division needed to ship an ancestry product that served underrepresented populations - communities that existing products (23andMe, AncestryDNA) handled poorly due to reference panel bias. This was both a market opportunity and a DEI imperative.",
-      obstacle:
-        "Reference panels for underrepresented populations were sparse and lower-quality. Standard imputation methods performed poorly on low-coverage data from these populations. The product team wanted to launch in Q4 2017 for holiday sales, giving the technical team only 5 months. There was also sensitivity around how to communicate ancestry results for populations with histories of exploitation by genetics research.",
-      action:
-        "Partnered with population geneticists to curate expanded reference panels using publicly available datasets (1000 Genomes, HGDP, PAGE). Developed a novel marker-selection algorithm optimized for ancestry-informative SNPs in admixed populations. Worked with UX research and an external ethics advisory board to develop culturally sensitive result presentation. Built automated accuracy benchmarks stratified by population to catch bias in model updates.",
-      result:
-        "Shipped on schedule in Q4 2017. Launched with 30+ new population groups that competitors did not offer. Accuracy for underrepresented populations improved from 72% to 94%. Product received positive coverage in genetics community for responsible representation. Zero customer complaints related to cultural sensitivity in first year.",
-      whyItMatters:
-        "Demonstrates ability to ship products that balance technical innovation, ethical considerations, and business timelines. Shows cross-functional leadership across engineering, research, UX, and external stakeholders. Relevant for any company building AI products that affect diverse populations.",
+      title: "Ethnicity and Communities Automation",
+      situation: "Ethnicity updates and new community development were manual, expensive processes consuming months of effort.",
+      obstacle: "Each ethnicity update took 12 months. New community development required extensive manual work.",
+      action: "Built tooling with DNA Ops: automation of polygon creation, semi-automated community detection, community classification models on SageMaker.",
+      result: "Ethnicity update dev time: 12 months → 2 months. Community dev time: 80% reduction. Content team saved a month+ of manual effort per year.",
+      whyItMatters: "Shows systematic elimination of undifferentiated heavy lifting — a recurring career theme.",
     },
   ];
 
   for (const story of stories) {
-    await prisma.signatureStory.create({
-      data: {
-        profileId: profile.id,
-        ...story,
-      },
-    });
+    await prisma.signatureStory.create({ data: { profileId: profile.id, ...story } });
   }
   console.log(`Created ${stories.length} signature stories`);
 
-  // Profile Metrics
+  // Profile Metrics - from Section 6
   const metrics = [
-    { label: "Pipelines migrated to nf-core", value: "400+" },
-    { label: "Migration timeline (vs. 24-month estimate)", value: "9 months" },
-    { label: "Runtime reduction (SideView 2.0)", value: "70%" },
-    { label: "Samples/year processed (PetDNA)", value: "500K+" },
-    { label: "Annual compute savings (Illumina)", value: "$2.4M" },
-    { label: "ICs managed across 3 teams", value: "30+" },
-    { label: "Pipeline uptime (production SLA)", value: "99.97%" },
-    { label: "Patents filed (2 pending, 1 granted, 1 provisional)", value: "4" },
-    { label: "Team built from zero (AI Products)", value: "12-person" },
-    { label: "Throughput improvement (variant calling)", value: "3x" },
-    { label: "Internal platform satisfaction score (NPS)", value: "67" },
-    { label: "Mean time to production (ML models)", value: "< 48 hours" },
+    { label: "Organization size", value: "26 (3 managers, 3 principal scientists)" },
+    { label: "Organization rebuild", value: "11 → 26 post-layoff" },
+    { label: "Team satisfaction", value: "72 → 83" },
+    { label: "Feature delivery increase", value: "7x or 10x — UNRESOLVED" },
+    { label: "Features shipped", value: "4/year (2021) → 30+/year (2024)" },
+    { label: "Innovation vs. maintenance", value: "20% innovation (2021) → 90% innovation (current)" },
+    { label: "AWS spend reduction", value: "~50%; $350K+/yr → $180K/yr, held 2024–2025" },
+    { label: "PetDNA time to market", value: "6 months" },
+    { label: "PetDNA vendor savings", value: "~$30M annually" },
+    { label: "PTER compute efficiency", value: "20x" },
+    { label: "Ethnicity dev time", value: "12 months → 2 months" },
+    { label: "Community dev time", value: "80% reduction" },
+    { label: "BioConsortia hit-to-lead", value: "5x" },
+    { label: "Microbe ID accuracy", value: "10% → 50%" },
+    { label: "NIH grant (Co-PI)", value: "$750K" },
+    { label: "OpenFold initiative", value: "$2M multi-institution" },
+    { label: "DNA foundation model scale", value: "30M REDACTED_FORBIDDEN_PHRASE_1" },
+    { label: "Match database scale", value: "1.48 trillion rows, 30M customers" },
+    { label: "Publications", value: "20 peer-reviewed" },
+    { label: "Citations", value: "1,200+" },
   ];
 
   for (const metric of metrics) {
-    await prisma.profileMetric.create({
-      data: {
-        profileId: profile.id,
-        label: metric.label,
-        value: metric.value,
-      },
-    });
+    await prisma.profileMetric.create({ data: { profileId: profile.id, ...metric } });
   }
   console.log(`Created ${metrics.length} profile metrics`);
 
-  // Unresolved Items
+  // Unresolved Items - from Section 12
   const unresolvedItems = [
     {
-      section: "Career Timeline",
-      description:
-        "Illumina title discrepancy: LinkedIn says 'Director' but offer letter says 'Sr. Manager, promoted to Director' - need to confirm exact promotion date for resume timeline.",
-      optionA: "Use 'Director' throughout (matches current title and LinkedIn)",
-      optionB: "Show progression: 'Sr. Manager (2022-2023) -> Director (2023-Present)'",
-      priority: "high",
-    },
-    {
-      section: "Career Narrative",
-      description:
-        "Freenome departure framing: left for family reasons vs. left for Wisdom Panel opportunity - which narrative for which audience?",
-      optionA: "Family reasons (authentic, humanizing, but may raise concerns about commitment)",
-      optionB: "Opportunity-driven (emphasizes growth mindset, standard career narrative)",
-      priority: "medium",
-    },
-    {
-      section: "Branding",
-      description:
-        "PetDNA vs Wisdom Panel branding: company rebranded mid-tenure; which name to use on resume? Use both with note?",
-      optionA: "Use 'Wisdom Panel (formerly PetDNA)' consistently",
-      optionB: "Use 'PetDNA / Wisdom Panel' to show full tenure context",
-      priority: "low",
-    },
-    {
-      section: "Credentials",
-      description:
-        "Patent status: 'filed 2021' but current status unclear - granted? Still pending? Need to verify.",
-      optionA: "List as 'Patent pending' (safe, conservative)",
-      optionB: "Research actual status and update accordingly",
+      section: "Executive Education",
+      description: "Institution stated two different ways. A credential error is more damaging than a date error.",
+      optionA: "UC Berkeley — Women's Executive Leadership Program (2025)",
+      optionB: "Stanford Graduate School of Business — Executive Program in Women's Leadership Education (enrolled, 2026)",
       priority: "high",
     },
     {
       section: "Metrics",
-      description:
-        "Illumina AI Products team size: '12-person team' in some notes, '15-person team' in others - confirm actual headcount at peak.",
-      optionA: "Use '12-person team' (more conservative, defensible)",
-      optionB: "Use '12-15 person team' with note about contractors",
-      priority: "medium",
+      description: "Feature delivery multiplier differs across versions. Self-evaluation shows 4→30+ features = ~7.5x.",
+      optionA: "7x (April 2026 version)",
+      optionB: "10x (NVIDIA, Oracle, and general versions)",
+      priority: "high",
     },
     {
-      section: "Metrics",
-      description:
-        "SideView 2.0 metrics: '70% runtime reduction' vs '65% cost reduction' - are both accurate? Can we claim both?",
-      optionA: "Use only '70% runtime reduction' (most impressive, clearly measurable)",
-      optionB: "Claim both with different contexts (runtime for technical roles, cost for business roles)",
+      section: "Career Timeline",
+      description: "Career length undercounted. JGI start is 2001 = 25 years, not 20.",
+      optionA: "Keep '20+ years' (current resume language)",
+      optionB: "Correct to '25 years' (factually accurate)",
       priority: "medium",
     },
     {
       section: "Career Timeline",
-      description:
-        "Consumer ancestry launch date: was it Q3 or Q4 2017? Affects the 'shipped in X months' claim.",
-      optionA: "Use 'Q4 2017' (matches holiday sales narrative)",
-      optionB: "Verify exact date and adjust timeline claims accordingly",
-      priority: "low",
+      description: "JGI (2001–2012) and UC Davis (2007–2016) overlap by five years. Screeners flag unexplained overlaps.",
+      optionA: "Add note explaining concurrent positions during graduate study",
+      optionB: "Leave as-is and address only if asked",
+      priority: "medium",
     },
     {
-      section: "Legal/NDA",
-      description:
-        "Freenome - can she publicly reference the cfDNA work or is it under NDA? This affects which bullets she can use.",
-      optionA: "Use generic language: 'liquid biopsy analysis pipeline' without specifics",
-      optionB: "Reference only what is in public domain (patents, publications, press releases)",
+      section: "Career Timeline",
+      description: "UC Davis dates conflict: 2007–2016 vs. 2012–2016 (postdoc only) vs. ~2004–2014.",
+      optionA: "2007–2016 (PhD through postdoc, most common version)",
+      optionB: "Separate into PhD (2007–2012) and Postdoc (2012–2016)",
+      priority: "medium",
+    },
+    {
+      section: "Career Timeline",
+      description: "Ancestry start: most say Director 2021–2022 then Senior Director 2022–present. One says Senior Director from 2021.",
+      optionA: "Director 2021–2022, then Senior Director 2022–present",
+      optionB: "Senior Director from 2021",
+      priority: "medium",
+    },
+    {
+      section: "Titles",
+      description: "Title variations across versions for every role. Inconsistency across applications to the same company is a real risk.",
+      optionA: "Use titles from candidate profile Section 3 timeline (most comprehensive)",
+      optionB: "Use titles from most recent resume version submitted",
       priority: "high",
+    },
+    {
+      section: "Metrics",
+      description: "Customer scale figure varies: 25M, 29M, and 30M across documents. Pedigrees stated as 10M in one.",
+      optionA: "Use '30M' (highest, most recent)",
+      optionB: "Use 'over 25M' (conservative, always defensible)",
+      priority: "low",
     },
   ];
 
   for (const item of unresolvedItems) {
-    await prisma.unresolvedItem.create({
-      data: {
-        profileId: profile.id,
-        ...item,
-      },
-    });
+    await prisma.unresolvedItem.create({ data: { profileId: profile.id, ...item } });
   }
   console.log(`Created ${unresolvedItems.length} unresolved items`);
 
-  // Writing Sample - Anthropic Cover Letter
-  const coverLetterContent = `Dear Hiring Team,
-
-I build the infrastructure that lets AI-native companies stop talking about responsible scaling and actually ship it. Your Director of AI Products role is the intersection of everything I have spent the last decade doing: production ML systems, cross-functional team leadership, and making complex technical capabilities accessible to users who are not ML engineers.
-
-At Illumina, I stood up a 12-person AI Products team from zero and shipped production models that process genomic data at scale - 400+ pipelines migrated, $2.4M in annual compute savings, 99.97% uptime SLA. The translation challenge is similar to what Anthropic faces: how do you take cutting-edge model capabilities and turn them into products that real users trust, in a domain where errors have consequences?
-
-Three things I would bring on day one:
-
-1. A playbook for zero-to-one AI product teams in regulated, high-stakes domains. I have done this three times (Freenome, Wisdom Panel, Illumina) and know where the landmines are.
-
-2. Technical fluency across the stack. I can review model architecture decisions in the morning and present the product roadmap to the CPO in the afternoon. I do not need an interpreter between research and product.
-
-3. A bias toward shipping. My teams deploy to production in under 48 hours mean time. I believe velocity is a feature, and I build the platform guardrails that make speed safe.
-
-I am particularly drawn to Anthropic's approach to product development - the idea that safety and capability are not in tension but are the same problem. My experience building AI products in genomics (where a wrong variant call has real consequences) has given me deep respect for that framing.
-
-I would welcome the chance to discuss how my experience translates to your product challenges.
-
-Jenna Lang`;
-
+  // Writing Sample - Anthropic Cover Letter (actual text from Claude Opus)
   await prisma.writingSample.create({
     data: {
       profileId: profile.id,
-      title: "Anthropic Cover Letter",
-      content: coverLetterContent,
-      context:
-        "Written for a Director of AI Products role at Anthropic. Demonstrates voice, technical depth calibration, and narrative structure.",
+      title: "Anthropic Cover Letter — Manager, Applied AI Engineering",
+      context: "Written by Claude Opus for Manager, Applied AI Engineering, Beneficial Deployments (Life Sciences). Demonstrates: direct voice, vulnerability addressing (level mismatch, coding currency), strategic reframing against job description, connecting non-linear career dots.",
+      content: `I am applying for the Manager, Applied AI Engineering, Beneficial Deployments role for Life Sciences.
+
+I have spent 25 years at the point where biology meets computation — starting on the Human Genome Project at the Joint Genome Institute, and now leading a 26-person organization at AncestryDNA that spans ML engineering, research engineering, bioinformatics, and science. The through-line is not any one technology. It is getting scientific capability out of research and into systems that people actually use, inside organizations where the data are sensitive and the governance bar is real.
+
+That is the job described in this posting, and I have done a version of it before. At AWS I was the worldwide technical leader for AI/ML in healthcare and life sciences — forward-deployed with pharmaceutical companies, biotechs, and academic medical centers, working through what it actually takes to move AI from a promising demo into regulated production. I led a $2M multi-institution effort to build an open-source alternative to AlphaFold, aligning academic and public-sector partners around shared infrastructure. I carried what I learned in the field back to the service teams as roadmap input, and wrote the Nextflow and AWS Batch reference architecture that became foundational to AWS HealthOmics. Translating deployments into product direction is a loop I have run at scale.
+
+At Ancestry I have been on the other side of that relationship — the scientific organization trying to absorb AI. I authored and won executive approval for a three-year AI transformation strategy, rebuilt the team from 11 to 26 people, raised feature delivery sevenfold, and cut compute cost in half. My team now builds AI agents and tooling for scientific workflows: graph neural network models for biological relationship inference, and an LLM research agent that helps genealogists work through DNA match clusters using retrieval, domain tools, and contextual reasoning. I am currently leading development of a DNA foundation model fine-tuned on 30 million REDACTED_FORBIDDEN_PHRASE_1.
+
+The responsible deployment part of this role is not an afterthought for me. Consumer genetic data is a dual-use domain in the plainest sense — the same data that reunites families can be used to expose them. I wrote AncestryDNA's Responsible Use of AI policy and stood up a Center of Excellence for reproducibility, ethics, and research governance. Before that, I built a HIPAA-compliant multimodal platform at iCarbonX under SaMD design controls with teams split across the US and China and hard data-residency constraints. I know what it costs to do this properly and I would rather pay that cost than explain later why we did not.
+
+On the hands-on requirement: I am not the person merging pull requests day to day, and I will not claim otherwise. What I will say is that I still build. I recently shipped a full-stack application to production — Next.js, TypeScript, Prisma, CI, deployed — working through agentic tooling and structured agent task specifications rather than by typing every line. The repository is public at github.com/jennomics/career-toolkit. I think that is closer to how engineering leadership will work than the alternative, and I would rather show it than argue it.
+
+One thing worth naming directly: I am a Senior Director applying for a Manager role. That is deliberate. I have spent a significant share of the last few years fighting for my organization to be in the rooms where decisions get made, and less of it than I would like on the work itself. This role puts me back against the actual problem — deployed AI inside the world's leading scientific organizations — with a team small enough that I am in it rather than three layers above it. I am not looking for a title. I am looking for the work.`,
     },
   });
-  console.log("Created 1 writing sample");
+  console.log("Created 1 writing sample (Anthropic cover letter)");
 
-  console.log("\nSeed complete!");
+  console.log("\\nSeed complete!");
 }
 
 main()
