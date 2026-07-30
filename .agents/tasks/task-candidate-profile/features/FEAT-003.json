@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "Build the /profile page UI with collapsible sections, inline editing, unresolved items warning banner, and writing samples management. The page should be fully accessible with ARIA labels, keyboard navigation, and semantic HTML. Follow the patterns from src/app/page.tsx and src/app/phrases/page.tsx.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/app/profile/page.tsx as a 'use client' page. Add navigation link in the header back to / and to /phrases. Fetch profile data from GET /api/profile on mount.",
     "Build a CollapsibleSection component (either inline or in src/components/CollapsibleSection.tsx) that takes a title, optional badge/count, and children. Must use button with aria-expanded, aria-controls, and proper keyboard handling.",
