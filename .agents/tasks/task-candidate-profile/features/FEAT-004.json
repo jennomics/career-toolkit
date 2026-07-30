@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "chore",
   "description": "Create the seed script at prisma/seed-profile.ts that pre-populates ALL of Jenna Lang's candidate profile data. Uses individual creates (NOT createMany). The script should be runnable via `npx tsx prisma/seed-profile.ts`.",
-  "status": "pending",
+  "status": "completed",
   "steps": [
     "Create prisma/seed-profile.ts that imports PrismaClient from @/generated/prisma/client and PrismaPg from @prisma/adapter-pg. Initialize client with adapter using process.env.POSTGRES_URL.",
     "Create the CandidateProfile record with all of Jenna Lang's data: name='Jenna Lang', location='Pasadena, CA (open to Bay Area, Remote)', phone='(626) 676-1019', email='jenna.lang@gmail.com', linkedin='linkedin.com/in/REDACTED_ALT_NAME', github='github.com/jennomics', currentTitle='Director, AI & Data Products', reportsTo='VP/SVP Engineering or CTO'",
@@ -45,5 +45,5 @@
     "Run `npm run build` and confirm it completes without errors (validates TypeScript compilation including the seed script if it uses project paths)"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Seed script compiles successfully via tsx. Without a database URL it throws the expected 'No database URL found' error at runtime, confirming the script loads, parses, and reaches the connection logic without TypeScript or syntax issues. npm run build passes cleanly. The script uses delete-then-create pattern for idempotency (deleteMany on all related tables in reverse dependency order before creating fresh data)."
 }
