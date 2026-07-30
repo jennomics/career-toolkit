@@ -1,5 +1,4 @@
 {
-  "url": "https://differences-arising-mustang-adds.trycloudflare.com",
-  "startedAt": "2026-07-30T02:03:46.122Z",
-  "host": "LANGs-MacBook-Pro.local"
+  "url": null,
+  "stoppedAt": "2026-07-30T17:58:25.061Z"
 }
