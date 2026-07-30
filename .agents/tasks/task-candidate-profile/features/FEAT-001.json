@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Add Candidate Profile schema models to Prisma and generate the client. Add all 6 new models (CandidateProfile, CareerRole, SignatureStory, ProfileMetric, UnresolvedItem, WritingSample) with proper relations and indexes.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Add CandidateProfile model to prisma/schema.prisma with fields: id (cuid), name, location, phone, email, linkedin, github, currentTitle, reportsTo, positioningStatements (String[]), selfDescribedStrengths (String[]), technicalInventory (String), educationCredentials (String), recognitionPresence (String), operatingPrinciples (String[]), writingStyle (String), selfDescribedPosture (String), searchTargetLevel (String), searchGeography (String), searchCompanies (String[]), searchFirms (String[]), resumeOperatingRules (String[]), knownGaps (String), personalBackground (String), createdAt, updatedAt. Include relations to CareerRole, SignatureStory, ProfileMetric, UnresolvedItem, WritingSample.",
     "Add CareerRole model with id, profileId (relation to CandidateProfile with onDelete: Cascade), period, organization, title, scope (String?), highlights (String[]), sortOrder (Int). Add @@index([profileId]).",
@@ -23,5 +23,5 @@
     "Run `npx prisma validate` and confirm the schema is valid"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "dotenv package was missing from dependencies - installed it to allow prisma.config.ts to load. prisma validate and prisma generate both pass. npm run build succeeds with no TypeScript errors."
 }
