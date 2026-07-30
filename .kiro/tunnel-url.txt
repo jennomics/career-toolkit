@@ -1,5 +1,4 @@
 {
-  "url": "https://beaver-anderson-yukon-skiing.trycloudflare.com",
-  "startedAt": "2026-07-30T01:42:59.396Z",
-  "host": "LANGs-MacBook-Pro.local"
+  "url": null,
+  "stoppedAt": "2026-07-30T01:50:40.801Z"
 }
