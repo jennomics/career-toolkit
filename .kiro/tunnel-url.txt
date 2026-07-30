@@ -1,5 +1,4 @@
 {
-  "url": "https://characteristic-bent-adopted-rainbow.trycloudflare.com",
-  "startedAt": "2026-07-29T02:14:00.268Z",
-  "host": "LANGs-MacBook-Pro.local"
+  "url": null,
+  "stoppedAt": "2026-07-30T01:38:38.343Z"
 }
