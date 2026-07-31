@@ -1,5 +1,4 @@
 {
-  "url": "https://johns-lightbox-allowance-originally.trycloudflare.com",
-  "startedAt": "2026-07-30T18:08:39.612Z",
-  "host": "LANGs-MacBook-Pro.local"
+  "url": null,
+  "stoppedAt": "2026-07-31T15:52:02.972Z"
 }
