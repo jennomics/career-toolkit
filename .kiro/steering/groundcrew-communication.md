@@ -1,113 +1,293 @@
 # Groundcrew Communication Pattern
 
-## Problem Statement
+## Overview
 
-Phase 2 used git commits to `.kiro/agent-commands.json` as a communication channel between Kiro (cloud) and Groundcrew (local). This caused:
-- Race conditions (both writing to the same branch simultaneously)
-- Branch pollution (merge commits, divergent histories)
-- Neon branch limits (each branch attempt created a preview DB)
-- Slow feedback loop (30s poll interval + git overhead)
+Groundcrew is a smart proxy + API server that runs locally on the developer's machine. It exposes a cloudflared tunnel for remote access, manages multiple projects with lazy dev servers, and provides a command execution interface -- all through a single HTTP API on port 4747.
 
-## New Design: API-First Communication
-
-### Architecture
+## Architecture
 
 ```
-┌─────────┐       HTTPS        ┌──────────┐      localhost:4747      ┌────────────┐
-│  Kiro   │ ──── push code ──→ │  GitHub  │ ←── poll (git fetch) ── │ Groundcrew │
-│ (cloud) │                     │          │                          │  (local)   │
-│         │ ──── POST ────────→ │ /api/gc  │ ←── GET status ──────── │            │
-└─────────┘       webhook       └──────────┘                          └────────────┘
+┌─────────┐       HTTPS (tunnel)       ┌──────────────────────────┐       localhost       ┌─────────────────┐
+│  Kiro   │ ──────────────────────────→ │   Groundcrew API Server  │ ──── proxy ─────────→ │  Dev Servers    │
+│ (cloud) │                             │   (localhost:4747)        │                       │  (lazy start)   │
+└─────────┘                             └──────────────────────────┘                       └─────────────────┘
+                                                    │
+                                                    ├── /_gc/commands   (execute shell commands)
+                                                    ├── /_gc/status     (health + metadata)
+                                                    ├── /_gc/projects   (manage projects)
+                                                    └── /_gc/proxy/:project/*  (route to dev servers)
 ```
 
-### Option A: Vercel Webhook Relay (Recommended)
-
-Kiro pushes code to GitHub → Vercel deploys → Groundcrew polls the deployed app's `/api/gc/commands` endpoint for pending tasks.
-
-**Advantages:**
-- No direct local access needed from cloud
-- Works through NAT/firewalls
-- Commands survive groundcrew restarts
-- Results visible in production
-
-**Endpoints (in career-toolkit app):**
+### Communication Flow
 
 ```
-POST /api/gc/commands     — Kiro creates a command (auth: bearer token)
-GET  /api/gc/commands     — Groundcrew polls for pending commands
-POST /api/gc/results      — Groundcrew reports command results
-GET  /api/gc/status       — Dashboard: what's running, what finished
+Kiro (cloud) --> HTTPS tunnel URL (*.trycloudflare.com) --> groundcrew API (localhost:4747) --> project dev servers
 ```
 
-**Command lifecycle:**
-1. `pending` → command created by Kiro
-2. `running` → groundcrew picks it up
-3. `success` / `failed` → groundcrew reports result
+The cloudflared tunnel points to the groundcrew API port (4747), not to individual dev servers. All routing is explicit through the `/_gc/proxy/:project/*` endpoint.
 
-**Schema (stored in Neon, same DB):**
-```prisma
-model AgentCommand {
-  id          String   @id @default(cuid())
-  command     String   // shell command or action name
-  description String?  // human-readable purpose
-  status      String   @default("pending") // pending, running, success, failed
-  stdout      String?  // command output
-  stderr      String?  // error output
-  exitCode    Int?
-  duration    Int?     // ms
-  source      String   @default("kiro") // who created it
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+## Endpoints
+
+### `GET /` - Status Page
+
+Content-negotiated root endpoint:
+- **Browsers** (Accept: text/html): Returns a dark-themed HTML status page
+- **Agents** (Accept: application/json): Returns JSON status identical to `/_gc/status`
+
+### `GET /_gc/status` - JSON Status
+
+Returns server health and metadata.
+
+**Response:**
+
+```json
+{
+  "version": "0.1.0",
+  "uptime": 3421,
+  "tunnelUrl": "https://abc123.trycloudflare.com",
+  "projects": [
+    {
+      "name": "career-toolkit",
+      "path": "/home/user/career-toolkit",
+      "status": "serving",
+      "devPort": 3000
+    }
+  ],
+  "commandCount": 12
 }
 ```
 
-### Option B: File-Based (Simpler, No Schema Change)
+### `GET /_gc/commands` - List Commands
 
-Keep the `.kiro/agent-commands.json` format but change the transport:
-- Groundcrew watches `main` branch only (not feat/job-library)
-- Commands are part of normal feature PRs — when merged, groundcrew picks them up
-- Results written to a local-only file (not committed back)
+Returns stored commands. Supports optional status filtering.
 
-**Disadvantage:** Still tied to git timing. Groundcrew can't act until code is merged.
+**Query params:**
+- `?status=pending|running|success|failed` (optional filter)
 
-### Recommendation
+**Response:**
 
-**Start with Option A** — it's cleaner, faster, and eliminates git as a communication channel entirely. The schema addition is tiny and the endpoints are simple CRUD.
+```json
+{
+  "commands": [
+    {
+      "id": "cmd_abc123",
+      "command": "npm run build",
+      "description": "Rebuild the project after dependency update",
+      "status": "success",
+      "source": "kiro",
+      "stdout": "Build completed in 2.3s",
+      "stderr": "",
+      "exitCode": 0,
+      "duration": 2300,
+      "createdAt": "2025-01-15T10:30:00.000Z",
+      "updatedAt": "2025-01-15T10:30:02.300Z"
+    }
+  ]
+}
+```
 
-### Migration Steps
+### `POST /_gc/commands` - Submit a Command
 
-1. Add `AgentCommand` model to schema.prisma
-2. Create `/api/gc/*` endpoints (commands + results + status)
-3. Add auth token check (simple bearer token, shared secret in env)
-4. Update groundcrew to poll `/api/gc/commands` instead of watching `.kiro/agent-commands.json`
-5. Remove `.kiro/agent-commands.json` and `.kiro/agent-results.json` from git tracking
-6. Eventually: add a small status widget to the UI (shows active commands)
+Submits a command for asynchronous execution.
 
-### Auth
+**Request:**
 
-- Groundcrew uses a shared secret: `GC_AUTH_TOKEN` env var
-- Kiro includes it as a Bearer token when creating commands
-- Simple, sufficient for a single-user app
+```json
+{
+  "command": "npm run build",
+  "description": "Rebuild after dependency changes",
+  "source": "kiro"
+}
+```
 
-### Polling vs. Webhook
+**Response (202 Accepted):**
 
-Groundcrew already polls git every 5s. Polling `/api/gc/commands` every 5s is:
-- Lighter weight than git fetch
-- Returns structured JSON (not git diffs)
-- Doesn't create branch history
-- Can be made real-time later with SSE/WebSocket if needed
+```json
+{
+  "id": "cmd_abc123",
+  "command": "npm run build",
+  "description": "Rebuild after dependency changes",
+  "status": "pending",
+  "source": "kiro",
+  "createdAt": "2025-01-15T10:30:00.000Z"
+}
+```
 
-## Implementation Priority
+**Example curl:**
 
-This is a **design doc only** for Phase 3. Implementation is Phase 4 work:
-1. Schema + endpoints
-2. Groundcrew client update
-3. Remove old git-based communication files
-4. Optional: status widget in UI
+```bash
+curl -X POST https://abc123.trycloudflare.com/_gc/commands \
+  -H "Content-Type: application/json" \
+  -d '{"command": "npm run build", "description": "Rebuild project", "source": "kiro"}'
+```
 
-## Key Rules Going Forward
+### `GET /_gc/projects` - List Projects
 
-- **Never commit to feat/job-library** — that branch is legacy
-- **All feature code goes to new branches → PR → merge to main**
-- **Groundcrew pulls from main** (the deployed branch)
-- **Commands go through the API**, not through git commits
+Returns all managed projects with their current status.
+
+**Response:**
+
+```json
+{
+  "projects": [
+    {
+      "name": "career-toolkit",
+      "path": "/home/user/career-toolkit",
+      "devCommand": "npm run dev",
+      "devPort": 3000,
+      "status": "idle"
+    }
+  ]
+}
+```
+
+### `POST /_gc/projects` - Add a Project
+
+Registers a new project for management.
+
+**Request:**
+
+```json
+{
+  "path": "/home/user/career-toolkit",
+  "name": "career-toolkit",
+  "devCommand": "npm run dev",
+  "devPort": 3000
+}
+```
+
+Only `path` is required. `name` defaults to the directory basename. `devCommand` and `devPort` are auto-detected if not provided.
+
+**Response (201 Created):**
+
+```json
+{
+  "name": "career-toolkit",
+  "path": "/home/user/career-toolkit",
+  "devCommand": "npm run dev",
+  "devPort": 3000,
+  "status": "idle"
+}
+```
+
+**Example curl:**
+
+```bash
+curl -X POST https://abc123.trycloudflare.com/_gc/projects \
+  -H "Content-Type: application/json" \
+  -d '{"path": "/home/user/career-toolkit"}'
+```
+
+### `DELETE /_gc/projects/:name` - Remove a Project
+
+Removes a project from management. Stops its dev server if running.
+
+**Response (200 OK):**
+
+```json
+{
+  "removed": "career-toolkit"
+}
+```
+
+**Example curl:**
+
+```bash
+curl -X DELETE https://abc123.trycloudflare.com/_gc/projects/career-toolkit
+```
+
+### `ALL /_gc/proxy/:project/*` - Proxy to Dev Server
+
+Routes any HTTP method to the named project's dev server. If the dev server is not running, it starts lazily (first request triggers startup, waits for health check, then proxies).
+
+**Example curl:**
+
+```bash
+# Proxy a GET request to the career-toolkit dev server
+curl https://abc123.trycloudflare.com/_gc/proxy/career-toolkit/api/jobs
+
+# Proxy a POST request
+curl -X POST https://abc123.trycloudflare.com/_gc/proxy/career-toolkit/api/jobs \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Software Engineer"}'
+```
+
+## Command Lifecycle
+
+1. **Submit**: `POST /_gc/commands` with `{command, description, source}`
+2. **Pending**: Command is queued, returns immediately with status `pending`
+3. **Running**: Groundcrew picks up the command and begins execution
+4. **Complete**: Status updates to `success` or `failed` with stdout, stderr, exitCode, and duration
+5. **Poll**: `GET /_gc/commands?status=running` to check progress, or `GET /_gc/commands` for all
+
+Commands are stored locally in `~/.groundcrew/commands.json` with:
+- Rolling maximum of 50 commands
+- 24-hour maximum age
+- Auto-purge on each write (oldest/expired removed first)
+
+## Request Tracing
+
+Every request to groundcrew receives an `X-Correlation-ID` header in the response. This ID is auto-generated per request and appears in logs for end-to-end tracing.
+
+## Dev Server Lifecycle
+
+Dev servers are managed lazily:
+- **Start on demand**: First proxy request to `/_gc/proxy/:project/*` triggers startup
+- **Health check**: Groundcrew waits for the dev server port to respond before proxying
+- **Idle timeout**: Servers stop after 30 minutes of inactivity (configurable)
+- **Always watched**: Git polling continues regardless of dev server state
+
+## Configuration
+
+Stored at `~/.groundcrew/config.json`:
+
+```json
+{
+  "apiPort": 4747,
+  "projects": [
+    {
+      "name": "career-toolkit",
+      "path": "/home/user/career-toolkit",
+      "devCommand": "npm run dev",
+      "devPort": 3000
+    }
+  ]
+}
+```
+
+## CLI Usage
+
+```bash
+# Start groundcrew (reads config, starts API server + tunnel)
+groundcrew start
+
+# Add a project
+groundcrew add /path/to/project
+
+# Remove a project
+groundcrew remove career-toolkit
+
+# Override API port
+groundcrew start --api-port 8080
+```
+
+## Key Design Decisions
+
+- **No Vercel relay** -- communication goes directly through the cloudflared tunnel
+- **No git-based command passing** -- commands are HTTP POST/GET, not committed files
+- **No database schema** -- commands stored in local JSON, not Prisma/Neon
+- **No branch pollution** -- tunnel URL is not committed to git
+- **Single tunnel** -- one tunnel to port 4747 serves all projects through explicit proxy routing
+- **Lazy dev servers** -- start on first proxy request, stop after idle timeout
+- **Multiple projects** -- one groundcrew instance manages all local projects
+
+## Integration with Kiro
+
+When Kiro needs to interact with the local development environment:
+
+1. Use the tunnel URL (available via `/_gc/status`) to reach groundcrew
+2. Submit commands via `POST /_gc/commands` for shell operations
+3. Access dev server previews via `/_gc/proxy/:project/*`
+4. Check project status via `GET /_gc/projects`
+
+All communication is stateless HTTP. No persistent connections, no WebSockets, no polling loops required (though polling `/_gc/commands` for results is the expected pattern).
