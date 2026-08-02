@@ -43,6 +43,8 @@ next-env.d.ts
 
 /src/generated/prisma
 
+# Private seed data (contains real PII - stays local only)
+prisma/seed-profile.ts
 
 # SQLite database (legacy, no longer used)
 dev.db
