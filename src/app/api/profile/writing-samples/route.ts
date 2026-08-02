@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 const MAX_WRITING_SAMPLES = 5;
 
@@ -19,8 +20,8 @@ export async function GET() {
     return NextResponse.json(samples);
   } catch (err) {
     console.error("GET /api/profile/writing-samples error:", err);
-    const message = err instanceof Error ? err.message : "Failed to fetch writing samples";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -69,8 +70,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(sample, { status: 201 });
   } catch (err) {
     console.error("POST /api/profile/writing-samples error:", err);
-    const message = err instanceof Error ? err.message : "Failed to create writing sample";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -91,7 +92,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("DELETE /api/profile/writing-samples error:", err);
-    const message = err instanceof Error ? err.message : "Failed to delete writing sample";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

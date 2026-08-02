@@ -7,6 +7,7 @@ import {
   getVoiceGuidance,
   checkGenerationReady,
 } from "@/lib/profile-context";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -409,9 +410,7 @@ Generate a strategically positioned executive resume for the target role. Transf
     });
   } catch (err) {
     console.error("POST /api/resume/generate error:", err);
-    return NextResponse.json(
-      { error: "Failed to generate resume", details: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
-    );
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

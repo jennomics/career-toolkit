@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 // GET /api/profile/generation-ready - Check if profile is ready for resume generation
 export async function GET() {
@@ -44,7 +45,7 @@ export async function GET() {
     });
   } catch (err) {
     console.error("GET /api/profile/generation-ready error:", err);
-    const message = err instanceof Error ? err.message : "Failed to check generation readiness";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

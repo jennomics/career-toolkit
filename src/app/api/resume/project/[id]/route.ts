@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -27,8 +28,8 @@ export async function GET(
     return NextResponse.json({ ...project, job });
   } catch (err) {
     console.error("GET /api/resume/project/[id] error:", err);
-    const message = err instanceof Error ? err.message : "Failed to fetch project";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -76,8 +77,8 @@ export async function PATCH(
     return NextResponse.json(project);
   } catch (err) {
     console.error("PATCH /api/resume/project/[id] error:", err);
-    const message = err instanceof Error ? err.message : "Failed to update project";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -100,7 +101,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("DELETE /api/resume/project/[id] error:", err);
-    const message = err instanceof Error ? err.message : "Failed to delete project";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

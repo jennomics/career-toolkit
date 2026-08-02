@@ -3,6 +3,7 @@ import {
   getProfileContext,
   formatProfileForCoverLetter,
 } from "@/lib/profile-context";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -125,7 +126,7 @@ ${resumeDraft?.slice(0, 3000) || "Not provided"}`;
     return NextResponse.json({ coverLetter });
   } catch (err) {
     console.error("POST cover-letter error:", err);
-    const message = err instanceof Error ? err.message : "Failed to generate cover letter";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

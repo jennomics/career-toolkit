@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -44,10 +45,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ commands, count: commands.length });
   } catch (err) {
     console.error("GET /api/gc/commands error:", err);
-    return NextResponse.json(
-      { error: "Failed to fetch commands", details: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
-    );
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -85,10 +84,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
     console.error("POST /api/gc/commands error:", err);
-    return NextResponse.json(
-      { error: "Failed to create command", details: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
-    );
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -129,9 +126,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json(updated);
   } catch (err) {
     console.error("PATCH /api/gc/commands error:", err);
-    return NextResponse.json(
-      { error: "Failed to update command", details: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
-    );
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

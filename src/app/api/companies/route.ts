@@ -3,6 +3,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { normalizeCompanyName } from "@/lib/normalize-company";
 import { slugify } from "@/lib/slugify";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 // GET /api/companies - List all companies with job counts
 export async function GET() {
@@ -19,10 +20,8 @@ export async function GET() {
     return NextResponse.json(companies);
   } catch (err) {
     console.error("GET /api/companies error:", err);
-    return NextResponse.json(
-      { error: "Failed to fetch companies" },
-      { status: 500 }
-    );
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -89,7 +88,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (err) {
     console.error("POST /api/companies error:", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

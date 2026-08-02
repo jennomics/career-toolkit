@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { normalizeSkillName, categorizeSkill, normalizeAndCategorizeWithFallback } from "@/lib/skill-taxonomy";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 // POST /api/skills/normalize - Normalize skill records
 // By default, only processes records where normalizedName is null (incremental).
@@ -183,7 +184,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     console.error("POST /api/skills/normalize error:", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

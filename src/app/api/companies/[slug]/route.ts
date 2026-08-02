@@ -3,6 +3,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { normalizeCompanyName } from "@/lib/normalize-company";
 import { slugify } from "@/lib/slugify";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 // GET /api/companies/[slug] - Fetch a single company by slug with jobs and skills breakdown
 export async function GET(
@@ -61,10 +62,8 @@ export async function GET(
     });
   } catch (err) {
     console.error("GET /api/companies/[slug] error:", err);
-    return NextResponse.json(
-      { error: "Failed to fetch company" },
-      { status: 500 }
-    );
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -146,8 +145,8 @@ export async function PATCH(
     return NextResponse.json(updated);
   } catch (err) {
     console.error("PATCH /api/companies/[slug] error:", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -184,7 +183,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("DELETE /api/companies/[slug] error:", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

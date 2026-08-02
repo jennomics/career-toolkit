@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { normalizeSkillName, getAliases } from "@/lib/skill-taxonomy";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -183,9 +184,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     console.error("POST /api/resume/coverage error:", err);
-    return NextResponse.json(
-      { error: "Failed to calculate coverage", details: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
-    );
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

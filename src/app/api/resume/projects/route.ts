@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 // GET /api/resume/projects?companySlug=xxx - Get resume projects for a company's jobs
 export async function GET(request: NextRequest) {
@@ -56,9 +57,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(projects);
   } catch (err) {
     console.error("GET /api/resume/projects error:", err);
-    return NextResponse.json(
-      { error: "Failed to fetch resume projects" },
-      { status: 500 }
-    );
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

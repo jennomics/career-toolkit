@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -125,12 +126,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error("[phrases] Failed:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to load phrases",
-        details: error instanceof Error ? error.message : String(error),
-      },
-      { status: 500 }
-    );
+    const requestId = generateRequestId();
+    return formatErrorResponse(error, requestId);
   }
 }

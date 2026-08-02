@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 /**
  * GET /api/companies/duplicates
@@ -60,9 +61,7 @@ export async function GET() {
     return NextResponse.json(duplicateGroups);
   } catch (err) {
     console.error("GET /api/companies/duplicates error:", err);
-    return NextResponse.json(
-      { error: "Failed to find duplicate companies" },
-      { status: 500 }
-    );
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

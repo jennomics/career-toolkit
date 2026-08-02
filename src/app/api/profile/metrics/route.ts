@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 // GET /api/profile/metrics - List all profile metrics
 export async function GET() {
@@ -16,8 +17,8 @@ export async function GET() {
     return NextResponse.json(metrics);
   } catch (err) {
     console.error("GET /api/profile/metrics error:", err);
-    const message = err instanceof Error ? err.message : "Failed to fetch metrics";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -54,8 +55,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(metric, { status: 201 });
   } catch (err) {
     console.error("POST /api/profile/metrics error:", err);
-    const message = err instanceof Error ? err.message : "Failed to create metric";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -84,8 +85,8 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(metric);
   } catch (err) {
     console.error("PUT /api/profile/metrics error:", err);
-    const message = err instanceof Error ? err.message : "Failed to update metric";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -106,7 +107,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("DELETE /api/profile/metrics error:", err);
-    const message = err instanceof Error ? err.message : "Failed to delete metric";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
