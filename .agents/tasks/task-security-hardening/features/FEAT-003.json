@@ -1,0 +1,25 @@
+{
+  "id": "FEAT-003",
+  "type": "chore",
+  "description": "Remove schema-push.yml, replace with migrations workflow",
+  "status": "pending",
+  "steps": [
+    "Delete .github/workflows/schema-push.yml",
+    "Create .github/workflows/migrate.yml with: (a) trigger on push to main (only when prisma/migrations/** changes), (b) checkout, setup node 22, npm ci, prisma generate, (c) run 'npx prisma migrate deploy' with POSTGRES_URL from secrets, (d) NO --accept-data-loss anywhere",
+    "Update README.md 'Getting Started' section to reference 'npx prisma migrate dev' for local development instead of 'db push'",
+    "Verify no other files reference --accept-data-loss or 'db push' (grep the repo)"
+  ],
+  "acceptance_criteria": [
+    ".github/workflows/schema-push.yml no longer exists",
+    ".github/workflows/migrate.yml exists with prisma migrate deploy (no --accept-data-loss)",
+    "No file in the repo contains --accept-data-loss",
+    "README.md references prisma migrate dev for local setup"
+  ],
+  "verification": [
+    "source /root/.nvm/nvm.sh && nvm use 22 && cd /projects/sandbox/career-toolkit && ! test -f .github/workflows/schema-push.yml && echo 'schema-push.yml deleted'",
+    "source /root/.nvm/nvm.sh && nvm use 22 && cd /projects/sandbox/career-toolkit && test -f .github/workflows/migrate.yml && echo 'migrate.yml exists'",
+    "source /root/.nvm/nvm.sh && nvm use 22 && cd /projects/sandbox/career-toolkit && ! grep -r 'accept-data-loss' . --include='*.yml' --include='*.yaml' --include='*.ts' --include='*.js' && echo 'No accept-data-loss references'"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

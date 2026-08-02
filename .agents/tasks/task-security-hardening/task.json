@@ -1,0 +1,7 @@
+{
+  "task_id": "task-security-hardening",
+  "task_description": "Security hardening: auth + demo mode, API authorization, LLM protection, remove schema-push, fix error leaks, add MIT license, add test suite with Vitest",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004", "FEAT-005"],
+  "blocked_reason": null
+}

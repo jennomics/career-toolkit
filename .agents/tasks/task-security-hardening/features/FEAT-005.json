@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-005",
+  "type": "feat",
+  "description": "Focused test suite covering core logic, auth, and demo mode",
+  "status": "pending",
+  "steps": [
+    "Create src/lib/__tests__/parse-skills.test.ts testing parseSkills(): (a) extracts known skills from job description text, (b) handles empty input, (c) does not double-count skills, (d) is case-insensitive. Import directly from src/lib/parse-skills.ts.",
+    "Create src/lib/__tests__/skill-taxonomy.test.ts testing: (a) normalizeSkillName maps aliases to canonical names (e.g., 'reactjs' -> 'React'), (b) categorizeSkill returns correct category/subcategory, (c) normalizeAndCategorize works end-to-end, (d) unknown skills return original name unchanged. Import from src/lib/skill-taxonomy.ts.",
+    "Create src/lib/__tests__/normalize-company.test.ts testing normalizeCompanyName(): (a) strips ', Inc.', ', LLC', ' Corporation' etc., (b) preserves display name casing, (c) returns correct normalizedName (lowercase), (d) handles edge cases (empty string, already clean). Import from src/lib/normalize-company.ts.",
+    "Create src/lib/__tests__/slugify.test.ts testing slugify(): (a) lowercases, (b) replaces spaces with hyphens, (c) removes special characters, (d) deduplicates consecutive hyphens, (e) trims leading/trailing hyphens. Import from src/lib/slugify.ts.",
+    "Create src/lib/__tests__/llm-parse-job.test.ts testing LLM result validation: (a) mock the OpenAI SDK to return valid JSON, verify llmParseJob returns correct structure, (b) mock OpenAI to return invalid structure, verify it throws with 'LLM returned invalid structure', (c) mock OpenAI to return empty content, verify it throws 'No response from LLM', (d) verify it throws when OPENAI_API_KEY is not set. Use vi.mock('openai').",
+    "Create src/lib/__tests__/api-error.test.ts testing formatErrorResponse(): (a) returns standardized shape with code, message, requestId, (b) never includes stack traces, (c) never includes raw error messages for unknown errors, (d) correctly maps known error codes.",
+    "Create src/lib/__tests__/auth.test.ts testing: (a) requireAuth returns 401 when no token provided, (b) requireAuth succeeds when correct token is in Authorization header, (c) isDemoMode returns true when DEMO_MODE=true, (d) rejectMutationInDemo returns 403 for POST in demo mode, (e) rejectMutationInDemo allows GET in demo mode.",
+    "Create src/lib/__tests__/rate-limit.test.ts testing: (a) allows requests under the limit, (b) returns 429 when limit exceeded, (c) resets after window expires.",
+    "Create src/lib/__tests__/llm-guard.test.ts testing: (a) rejects input over MAX_INPUT_LENGTH, (b) concurrency semaphore limits parallel executions, (c) cost logger formats correctly.",
+    "Update .github/workflows/ci.yml to add a 'test' job that runs 'npx vitest run' after lint-and-build job passes. The test job should: checkout, setup node 22, npm ci, prisma generate, then run npx vitest run.",
+    "Run npx vitest run to confirm all tests pass"
+  ],
+  "acceptance_criteria": [
+    "All test files exist under src/lib/__tests__/",
+    "Tests cover: parse-skills regex extraction, skill taxonomy normalization, company normalization, slug generation, LLM result validation, API error formatting, auth middleware, rate limiting, LLM guards",
+    "npx vitest run passes all tests",
+    ".github/workflows/ci.yml includes a test job",
+    "Tests exercise actual code paths and would fail if the implementation were reverted"
+  ],
+  "verification": [
+    "source /root/.nvm/nvm.sh && nvm use 22 && cd /projects/sandbox/career-toolkit && npx vitest run",
+    "source /root/.nvm/nvm.sh && nvm use 22 && cd /projects/sandbox/career-toolkit && POSTGRES_URL=postgresql://p:p@localhost:5432/p npm run build"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

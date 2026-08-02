@@ -1,0 +1,20 @@
+{
+  "id": "FEAT-004",
+  "type": "docs",
+  "description": "Add MIT license file",
+  "status": "pending",
+  "steps": [
+    "Create LICENSE file at project root with MIT license text, copyright 2024-2025, holder name from package.json or git config (use 'jennomics' as the copyright holder based on the GitHub org name)",
+    "Add 'license': 'MIT' field to package.json if not already present"
+  ],
+  "acceptance_criteria": [
+    "LICENSE file exists at project root with valid MIT license text",
+    "package.json has license field set to 'MIT'"
+  ],
+  "verification": [
+    "source /root/.nvm/nvm.sh && nvm use 22 && cd /projects/sandbox/career-toolkit && test -f LICENSE && head -3 LICENSE",
+    "source /root/.nvm/nvm.sh && nvm use 22 && cd /projects/sandbox/career-toolkit && node -e \"const p=require('./package.json'); console.log(p.license)\""
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
