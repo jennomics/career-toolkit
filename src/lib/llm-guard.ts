@@ -16,6 +16,14 @@ export const CONCURRENCY_LIMIT = 3;
 export const DAILY_BUDGET_USD = 5.0;
 
 // --- Daily budget tracking ---
+//
+// NOTE: This is a best-effort heuristic. The in-memory dailySpend counter
+// resets on every process restart or serverless cold start. In a serverless
+// deployment (e.g., Vercel Edge/Serverless), each function invocation may
+// start with totalUsd = 0. For a hard budget ceiling, a persistent store
+// (e.g., database row or Redis) would be needed. For this single-tenant app,
+// in-memory tracking provides reasonable protection against runaway costs
+// during a single server session.
 
 interface DailySpend {
   date: string; // YYYY-MM-DD in UTC

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError, notFoundError } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -39,13 +39,13 @@ export async function POST(request: NextRequest) {
     const { jobId } = body;
 
     if (!jobId) {
-      return NextResponse.json({ error: "jobId is required" }, { status: 400 });
+      return validationError("jobId is required");
     }
 
     // Verify job exists
     const job = await prisma.job.findUnique({ where: { id: jobId } });
     if (!job) {
-      return NextResponse.json({ error: "Job not found" }, { status: 404 });
+      return notFoundError("Job not found");
     }
 
     const project = await prisma.resumeProject.create({

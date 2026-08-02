@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
+import { guardedLLMCall } from "@/lib/guarded-llm";
 
 export const dynamic = "force-dynamic";
 
@@ -18,10 +19,7 @@ export async function POST(request: NextRequest) {
     const { description } = body;
 
     if (!description || typeof description !== "string" || description.length < 20) {
-      return NextResponse.json(
-        { error: "description (string, 20+ chars) is required" },
-        { status: 400 }
-      );
+      return validationError("description (string, 20+ chars) is required");
     }
 
     // Get all user's saved keywords with frequency
@@ -42,10 +40,7 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.OPENAI_API_KEY;
     if (apiKey) {
       try {
-        const OpenAI = (await import("openai")).default;
-        const openai = new OpenAI({ apiKey });
-
-        const response = await openai.chat.completions.create({
+        const content = await guardedLLMCall({
           model: "gpt-4o-mini",
           temperature: 0.1,
           messages: [
@@ -55,16 +50,13 @@ export async function POST(request: NextRequest) {
             },
             { role: "user", content: description },
           ],
-          response_format: { type: "json_object" },
+          jsonMode: true,
         });
 
-        const content = response.choices[0]?.message?.content;
-        if (content) {
-          const parsed = JSON.parse(content);
-          jdKeywords = parsed.keywords || [];
-        }
+        const parsed = JSON.parse(content);
+        jdKeywords = parsed.keywords || [];
       } catch {
-        // LLM failed — fall back to regex
+        // LLM failed or budget exceeded - fall back to regex
       }
     }
 

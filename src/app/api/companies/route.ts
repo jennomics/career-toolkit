@@ -3,7 +3,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { normalizeCompanyName } from "@/lib/normalize-company";
 import { slugify } from "@/lib/slugify";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
 
 // GET /api/companies - List all companies with job counts
 export async function GET() {
@@ -32,10 +32,7 @@ export async function POST(request: NextRequest) {
     const { name, notes, dreamCompany } = body;
 
     if (!name || !name.trim()) {
-      return NextResponse.json(
-        { error: "Company name is required" },
-        { status: 400 }
-      );
+      return validationError("Company name is required");
     }
 
     const { displayName, normalizedName } = normalizeCompanyName(name);
@@ -48,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     if (existing) {
       return NextResponse.json(
-        { error: "A company with this name already exists", existing },
+        { error: { code: "VALIDATION_ERROR", message: "A company with this name already exists", requestId: generateRequestId() }, existing },
         { status: 409 }
       );
     }
@@ -83,7 +80,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: "Could not generate a unique slug" },
+      { error: { code: "INTERNAL_ERROR", message: "Could not generate a unique slug", requestId: generateRequestId() } },
       { status: 500 }
     );
   } catch (err) {

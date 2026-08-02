@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -27,24 +27,21 @@ function authenticate(request: NextRequest): boolean {
 export async function POST(request: NextRequest) {
   try {
     if (!authenticate(request)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: { code: "UNAUTHORIZED", message: "Unauthorized", requestId: crypto.randomUUID() } },
+        { status: 401 }
+      );
     }
 
     const body = await request.json();
     const { id, status, stdout, stderr, exitCode, duration } = body;
 
     if (!id || !status) {
-      return NextResponse.json(
-        { error: "id and status are required" },
-        { status: 400 }
-      );
+      return validationError("id and status are required");
     }
 
     if (!["success", "failed"].includes(status)) {
-      return NextResponse.json(
-        { error: "status must be 'success' or 'failed'" },
-        { status: 400 }
-      );
+      return validationError("status must be 'success' or 'failed'");
     }
 
     const updated = await prisma.agentCommand.update({
@@ -75,7 +72,10 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     if (!authenticate(request)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: { code: "UNAUTHORIZED", message: "Unauthorized", requestId: crypto.randomUUID() } },
+        { status: 401 }
+      );
     }
 
     const { searchParams } = new URL(request.url);

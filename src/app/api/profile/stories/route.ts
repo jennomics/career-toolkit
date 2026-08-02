@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError, notFoundError } from "@/lib/api-error";
 
 // GET /api/profile/stories - List all signature stories
 export async function GET() {
@@ -29,18 +29,12 @@ export async function POST(request: NextRequest) {
     const { title, situation, obstacle, action, result, whyItMatters } = body;
 
     if (!title || !situation || !obstacle || !action || !result || !whyItMatters) {
-      return NextResponse.json(
-        { error: "All story fields are required: title, situation, obstacle, action, result, whyItMatters" },
-        { status: 400 }
-      );
+      return validationError("All story fields are required: title, situation, obstacle, action, result, whyItMatters");
     }
 
     const profile = await prisma.candidateProfile.findFirst();
     if (!profile) {
-      return NextResponse.json(
-        { error: "No profile exists. Create a profile first." },
-        { status: 404 }
-      );
+      return notFoundError("No profile exists. Create a profile first.");
     }
 
     const story = await prisma.signatureStory.create({
@@ -70,10 +64,7 @@ export async function PUT(request: NextRequest) {
     const { id, title, situation, obstacle, action, result, whyItMatters } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { error: "Story id is required" },
-        { status: 400 }
-      );
+      return validationError("Story id is required");
     }
 
     const story = await prisma.signatureStory.update({
@@ -103,10 +94,7 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json(
-        { error: "Story id is required" },
-        { status: 400 }
-      );
+      return validationError("Story id is required");
     }
 
     await prisma.signatureStory.delete({ where: { id } });

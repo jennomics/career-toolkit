@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const { content, type, filename } = body;
 
     if (!content) {
-      return NextResponse.json({ error: "content is required" }, { status: 400 });
+      return validationError("content is required");
     }
 
     // Convert content to styled HTML for PDF-like output

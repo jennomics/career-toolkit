@@ -3,7 +3,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { normalizeCompanyName } from "@/lib/normalize-company";
 import { slugify } from "@/lib/slugify";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, notFoundError } from "@/lib/api-error";
 
 // GET /api/companies/[slug] - Fetch a single company by slug with jobs and skills breakdown
 export async function GET(
@@ -27,10 +27,7 @@ export async function GET(
     });
 
     if (!company) {
-      return NextResponse.json(
-        { error: "Company not found" },
-        { status: 404 }
-      );
+      return notFoundError("Company not found");
     }
 
     // Aggregate skills from all jobs for this company
@@ -82,10 +79,7 @@ export async function PATCH(
     });
 
     if (!company) {
-      return NextResponse.json(
-        { error: "Company not found" },
-        { status: 404 }
-      );
+      return notFoundError("Company not found");
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -132,7 +126,7 @@ export async function PATCH(
       }
 
       return NextResponse.json(
-        { error: "Could not generate a unique slug" },
+        { error: { code: "INTERNAL_ERROR", message: "Could not generate a unique slug", requestId: generateRequestId() } },
         { status: 500 }
       );
     }
@@ -163,10 +157,7 @@ export async function DELETE(
     });
 
     if (!company) {
-      return NextResponse.json(
-        { error: "Company not found" },
-        { status: 404 }
-      );
+      return notFoundError("Company not found");
     }
 
     // Unlink all jobs from this company (set companyId to null)

@@ -113,6 +113,11 @@ The app will be available at `http://localhost:3000`.
 |----------|----------|-------------|
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `OPENAI_API_KEY` | No | Enables GPT-powered extraction and recommendations |
+| `AUTH_SECRET` | No | Bearer token for API authentication. When set, all API routes (except GET /api/health) require `Authorization: Bearer <token>` |
+| `SERVICE_TOKEN` | No | Separate bearer token for sentinel/integrity POST endpoints. These routes skip AUTH_SECRET and only check SERVICE_TOKEN |
+| `DEMO_MODE` | No | Set to `"true"` to enable demo mode (server-side). Blocks all mutations with 403, mocks LLM calls |
+| `NEXT_PUBLIC_DEMO_MODE` | No | Set to `"true"` to show the demo banner in the UI (client-side). **Must be set alongside `DEMO_MODE` for the full demo experience** |
+| `GC_AUTH_TOKEN` | No | Bearer token for Groundcrew agent communication endpoints |
 
 ## Design Decisions
 
@@ -120,3 +125,5 @@ The app will be available at `http://localhost:3000`.
 - **Prisma over raw SQL** -- Type safety and migration tooling outweigh the minor performance overhead for this workload.
 - **GPT-4o-mini for extraction, GPT-4o for generation** -- Extraction is a structured task where the smaller model performs well; resume writing benefits from the larger model's fluency.
 - **150+ hardcoded skill mappings** -- LLM normalization is non-deterministic. A curated mapping table ensures consistency for common skills while the LLM handles the long tail.
+- **In-memory LLM budget tracking** -- The daily spend limit ($5/day default) is tracked in process memory. It resets on cold starts/restarts, making it a best-effort heuristic rather than a hard ceiling. For a single-tenant serverless deployment this provides reasonable cost protection without requiring external state.
+- **Dual DEMO_MODE variables** -- `DEMO_MODE` (server-side) controls mutation rejection and LLM mocking. `NEXT_PUBLIC_DEMO_MODE` (client-side) controls the UI banner. Both must be set to `"true"` for the full demo experience. This split is required by Next.js's client/server environment boundary.

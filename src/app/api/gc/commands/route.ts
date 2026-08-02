@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +29,10 @@ function authenticate(request: NextRequest): boolean {
 export async function GET(request: NextRequest) {
   try {
     if (!authenticate(request)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: { code: "UNAUTHORIZED", message: "Unauthorized", requestId: crypto.randomUUID() } },
+        { status: 401 }
+      );
     }
 
     const { searchParams } = new URL(request.url);
@@ -59,17 +62,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     if (!authenticate(request)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: { code: "UNAUTHORIZED", message: "Unauthorized", requestId: crypto.randomUUID() } },
+        { status: 401 }
+      );
     }
 
     const body = await request.json();
     const { command, description } = body;
 
     if (!command || typeof command !== "string") {
-      return NextResponse.json(
-        { error: "command (string) is required" },
-        { status: 400 }
-      );
+      return validationError("command (string) is required");
     }
 
     const created = await prisma.agentCommand.create({
@@ -98,24 +101,21 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     if (!authenticate(request)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: { code: "UNAUTHORIZED", message: "Unauthorized", requestId: crypto.randomUUID() } },
+        { status: 401 }
+      );
     }
 
     const body = await request.json();
     const { id, status } = body;
 
     if (!id || !status) {
-      return NextResponse.json(
-        { error: "id and status are required" },
-        { status: 400 }
-      );
+      return validationError("id and status are required");
     }
 
     if (!["running", "pending"].includes(status)) {
-      return NextResponse.json(
-        { error: "status must be 'running' or 'pending'" },
-        { status: 400 }
-      );
+      return validationError("status must be 'running' or 'pending'");
     }
 
     const updated = await prisma.agentCommand.update({

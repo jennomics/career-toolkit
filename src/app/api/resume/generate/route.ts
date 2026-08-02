@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import OpenAI from "openai";
 import {
   getProfileContext,
   formatProfileForResume,
   getVoiceGuidance,
   checkGenerationReady,
 } from "@/lib/profile-context";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
+import { guardedLLMCall } from "@/lib/guarded-llm";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -109,21 +109,14 @@ export async function POST(request: NextRequest) {
     const isGenericMode = mode === "generic";
 
     if (!isGenericMode && (!targetRole || typeof targetRole !== "string")) {
-      return NextResponse.json(
-        { error: "targetRole (string) is required for targeted mode" },
-        { status: 400 }
-      );
+      return validationError("targetRole (string) is required for targeted mode");
     }
 
     // ─── Check generation readiness (unresolved profile items) ──────────────────
     const readiness = await checkGenerationReady();
     if (!readiness.ready) {
-      return NextResponse.json(
-        {
-          error: `Cannot generate resume: ${readiness.unresolvedCount} unresolved profile item(s) need resolution before generation.`,
-          unresolvedCount: readiness.unresolvedCount,
-        },
-        { status: 400 }
+      return validationError(
+        `Cannot generate resume: ${readiness.unresolvedCount} unresolved profile item(s) need resolution before generation.`
       );
     }
 
@@ -180,10 +173,7 @@ export async function POST(request: NextRequest) {
 
     // Must have at least experience OR jobs
     if (jobs.length === 0 && experiences.length === 0) {
-      return NextResponse.json(
-        { error: "No experience or jobs saved yet. Add your work history or some job descriptions first." },
-        { status: 400 }
-      );
+      return validationError("No experience or jobs saved yet. Add your work history or some job descriptions first.");
     }
 
     // ─── Collect all keywords with frequency (from both sources) ────────────────
@@ -359,7 +349,6 @@ Generate a strategically positioned executive resume for the target role. Transf
     }
 
     // ─── LLM generation ─────────────────────────────────────────────────────────
-    const openai = new OpenAI({ apiKey });
     let systemPrompt = isGenericMode ? GENERIC_SYSTEM_PROMPT : SYSTEM_PROMPT;
 
     // Inject profile voice guidance and operating rules into system prompt
@@ -376,23 +365,15 @@ Generate a strategically positioned executive resume for the target role. Transf
       finalUserPrompt = `${profileResumeContext}\n\n---\n\n${userPrompt}`;
     }
 
-    const response = await openai.chat.completions.create({
+    const content = await guardedLLMCall({
       model: "gpt-4o-mini",
       temperature: 0.3,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: finalUserPrompt },
       ],
-      response_format: { type: "json_object" },
+      jsonMode: true,
     });
-
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      return NextResponse.json(
-        { error: "No response from LLM" },
-        { status: 500 }
-      );
-    }
 
     const resume = JSON.parse(content);
 

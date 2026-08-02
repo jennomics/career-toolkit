@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError, notFoundError } from "@/lib/api-error";
 
 // GET /api/resume/projects?companySlug=xxx - Get resume projects for a company's jobs
 export async function GET(request: NextRequest) {
@@ -9,10 +9,7 @@ export async function GET(request: NextRequest) {
     const companySlug = searchParams.get("companySlug");
 
     if (!companySlug) {
-      return NextResponse.json(
-        { error: "companySlug query parameter is required" },
-        { status: 400 }
-      );
+      return validationError("companySlug query parameter is required");
     }
 
     // Find the company and its job IDs
@@ -26,10 +23,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!company) {
-      return NextResponse.json(
-        { error: "Company not found" },
-        { status: 404 }
-      );
+      return notFoundError("Company not found");
     }
 
     const jobIds = company.jobs.map((j) => j.id);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, notFoundError } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,7 @@ export async function GET(
 
     const project = await prisma.resumeProject.findUnique({ where: { id } });
     if (!project) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      return notFoundError("Project not found");
     }
 
     // Also fetch the associated job details
@@ -46,7 +46,7 @@ export async function PATCH(
 
     const existing = await prisma.resumeProject.findUnique({ where: { id } });
     if (!existing) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      return notFoundError("Project not found");
     }
 
     const {
@@ -94,7 +94,7 @@ export async function DELETE(
 
     const existing = await prisma.resumeProject.findUnique({ where: { id } });
     if (!existing) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      return notFoundError("Project not found");
     }
 
     await prisma.resumeProject.delete({ where: { id } });

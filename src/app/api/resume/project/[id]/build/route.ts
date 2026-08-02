@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getProfileContext } from "@/lib/profile-context";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, notFoundError, validationError } from "@/lib/api-error";
+import { guardedLLMCall } from "@/lib/guarded-llm";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -34,7 +35,7 @@ export async function POST(
     // Get the project
     const project = await prisma.resumeProject.findUnique({ where: { id } });
     if (!project) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      return notFoundError("Project not found");
     }
 
     // Get the target job
@@ -43,7 +44,7 @@ export async function POST(
       include: { skills: true, responsibilities: true },
     });
     if (!job) {
-      return NextResponse.json({ error: "Associated job not found" }, { status: 404 });
+      return notFoundError("Associated job not found");
     }
 
     // Get user's experience
@@ -58,10 +59,7 @@ export async function POST(
     }
 
     if (experiences.length === 0) {
-      return NextResponse.json(
-        { error: "No experience roles found. Add your work history first." },
-        { status: 400 }
-      );
+      return validationError("No experience roles found. Add your work history first.");
     }
 
     // Build the prompt for GPT-4o
@@ -104,9 +102,6 @@ Highlights:
 ${highlights || "  (none)"}`;
     }).join("\n\n");
 
-    const OpenAI = (await import("openai")).default;
-    const openai = new OpenAI({ apiKey });
-
     // Fetch candidate profile for strategic context
     let profileContext = "";
     try {
@@ -114,14 +109,12 @@ ${highlights || "  (none)"}`;
       if (profile) {
         const parts: string[] = [];
 
-        // Positioning to guide narrative
         if (profile.positioningStatements.length > 0) {
           parts.push(
             `CANDIDATE POSITIONING (use to guide which highlights best support the strategic narrative):\n${profile.positioningStatements.map((s) => `- ${s}`).join("\n")}`
           );
         }
 
-        // Signature stories for prioritization
         if (profile.signatureStories.length > 0) {
           const stories = profile.signatureStories.map(
             (s) => `- "${s.title}": ${s.result} (Why: ${s.whyItMatters})`
@@ -131,7 +124,6 @@ ${highlights || "  (none)"}`;
           );
         }
 
-        // Metrics for reference
         if (profile.profileMetrics.length > 0) {
           const metrics = profile.profileMetrics.map(
             (m) => `- ${m.label}: ${m.value}`
@@ -149,7 +141,7 @@ ${highlights || "  (none)"}`;
       console.error("Profile fetch error in build (non-blocking):", err);
     }
 
-    const response = await openai.chat.completions.create({
+    const content = await guardedLLMCall({
       model: "gpt-4o",
       temperature: 0.3,
       messages: [
@@ -188,13 +180,8 @@ Only include roles that are strategically relevant to the target position. Omit 
           content: `${jobContext}\n\n---\n\nCandidate's Experience:\n\n${experienceContext}${profileContext}\n\nWhich highlights should be on the resume for this specific job?`,
         },
       ],
-      response_format: { type: "json_object" },
+      jsonMode: true,
     });
-
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      return NextResponse.json({ error: "No response from LLM" }, { status: 500 });
-    }
 
     const parsed = JSON.parse(content);
 

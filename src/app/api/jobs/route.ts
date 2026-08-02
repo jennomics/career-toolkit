@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { normalizeAndCategorize, normalizeAndCategorizeWithFallback } from "@/lib/skill-taxonomy";
 import { normalizeCompanyName } from "@/lib/normalize-company";
 import { slugify } from "@/lib/slugify";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
 
 // GET /api/jobs - List all jobs with optional search/filter
 export async function GET(request: NextRequest) {
@@ -78,10 +78,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     if (!title || !company || !description) {
-      return NextResponse.json(
-        { error: "Title, company, and description are required" },
-        { status: 400 }
-      );
+      return validationError("Title, company, and description are required");
     }
 
     // Store corrections where extracted value differs from what user saved

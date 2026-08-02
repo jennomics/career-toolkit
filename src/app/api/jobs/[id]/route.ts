@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, notFoundError } from "@/lib/api-error";
 
 // GET /api/jobs/:id - Get a single job
 export async function GET(
@@ -16,7 +16,7 @@ export async function GET(
     });
 
     if (!job) {
-      return NextResponse.json({ error: "Job not found" }, { status: 404 });
+      return notFoundError("Job not found");
     }
 
     return NextResponse.json(job);

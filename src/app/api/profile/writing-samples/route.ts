@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
 
 const MAX_WRITING_SAMPLES = 5;
 
@@ -32,16 +32,13 @@ export async function POST(request: NextRequest) {
     const { title, content, context } = body;
 
     if (!title || !content) {
-      return NextResponse.json(
-        { error: "Title and content are required" },
-        { status: 400 }
-      );
+      return validationError("Title and content are required");
     }
 
     const profile = await prisma.candidateProfile.findFirst();
     if (!profile) {
       return NextResponse.json(
-        { error: "No profile exists. Create a profile first." },
+        { error: { code: "NOT_FOUND", message: "No profile exists. Create a profile first.", requestId: crypto.randomUUID() } },
         { status: 404 }
       );
     }
@@ -52,10 +49,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingCount >= MAX_WRITING_SAMPLES) {
-      return NextResponse.json(
-        { error: `Maximum of ${MAX_WRITING_SAMPLES} writing samples allowed. Delete one before adding another.` },
-        { status: 400 }
-      );
+      return validationError(`Maximum of ${MAX_WRITING_SAMPLES} writing samples allowed. Delete one before adding another.`);
     }
 
     const sample = await prisma.writingSample.create({
@@ -82,10 +76,7 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json(
-        { error: "Sample id is required" },
-        { status: 400 }
-      );
+      return validationError("Sample id is required");
     }
 
     await prisma.writingSample.delete({ where: { id } });

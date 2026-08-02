@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError, notFoundError } from "@/lib/api-error";
 
 // GET /api/profile/roles - List all career roles
 export async function GET() {
@@ -30,18 +30,12 @@ export async function POST(request: NextRequest) {
     const { period, organization, title, scope, highlights, sortOrder } = body;
 
     if (!period || !organization || !title) {
-      return NextResponse.json(
-        { error: "Period, organization, and title are required" },
-        { status: 400 }
-      );
+      return validationError("Period, organization, and title are required");
     }
 
     const profile = await prisma.candidateProfile.findFirst();
     if (!profile) {
-      return NextResponse.json(
-        { error: "No profile exists. Create a profile first." },
-        { status: 404 }
-      );
+      return notFoundError("No profile exists. Create a profile first.");
     }
 
     const role = await prisma.careerRole.create({
@@ -71,10 +65,7 @@ export async function PUT(request: NextRequest) {
     const { id, period, organization, title, scope, highlights, sortOrder } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { error: "Role id is required" },
-        { status: 400 }
-      );
+      return validationError("Role id is required");
     }
 
     const role = await prisma.careerRole.update({
@@ -104,10 +95,7 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json(
-        { error: "Role id is required" },
-        { status: 400 }
-      );
+      return validationError("Role id is required");
     }
 
     await prisma.careerRole.delete({ where: { id } });
