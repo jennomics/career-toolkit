@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 /**
  * PATCH /api/phrases/:id
@@ -36,9 +37,9 @@ export async function PATCH(
 
     return NextResponse.json(updated);
   } catch (err) {
+    const requestId = generateRequestId();
     console.error("PATCH /api/phrases/[id] error:", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -56,8 +57,8 @@ export async function DELETE(
     await prisma.jobResponsibility.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (err) {
+    const requestId = generateRequestId();
     console.error("DELETE /api/phrases/[id] error:", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return formatErrorResponse(err, requestId);
   }
 }

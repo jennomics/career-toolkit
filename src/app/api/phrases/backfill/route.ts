@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300; // 5 minutes for processing many jobs
@@ -115,14 +116,9 @@ export async function POST(request: Request) {
           : `Done! All jobs have skills and phrases extracted.`,
     });
   } catch (error) {
+    const requestId = generateRequestId();
     console.error("[phrases/backfill] Failed:", error);
-    return NextResponse.json(
-      {
-        error: "Backfill failed",
-        details: error instanceof Error ? error.message : String(error),
-      },
-      { status: 500 }
-    );
+    return formatErrorResponse(error, requestId);
   }
 }
 
@@ -160,9 +156,7 @@ export async function GET() {
           : "All jobs have been parsed!",
     });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to check status", details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    const requestId = generateRequestId();
+    return formatErrorResponse(error, requestId);
   }
 }

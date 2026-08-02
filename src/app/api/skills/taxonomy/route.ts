@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getTaxonomy, normalizeSkillName } from "@/lib/skill-taxonomy";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 // GET /api/skills/taxonomy - Returns full taxonomy tree with counts
 export async function GET() {
@@ -90,8 +91,8 @@ export async function GET() {
       },
     });
   } catch (err) {
+    const requestId = generateRequestId();
     console.error("GET /api/skills/taxonomy error:", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return formatErrorResponse(err, requestId);
   }
 }
