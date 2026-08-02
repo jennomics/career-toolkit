@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getProfileContext } from "@/lib/profile-context";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -105,6 +106,48 @@ ${highlights || "  (none)"}`;
     const OpenAI = (await import("openai")).default;
     const openai = new OpenAI({ apiKey });
 
+    // Fetch candidate profile for strategic context
+    let profileContext = "";
+    try {
+      const profile = await getProfileContext();
+      if (profile) {
+        const parts: string[] = [];
+
+        // Positioning to guide narrative
+        if (profile.positioningStatements.length > 0) {
+          parts.push(
+            `CANDIDATE POSITIONING (use to guide which highlights best support the strategic narrative):\n${profile.positioningStatements.map((s) => `- ${s}`).join("\n")}`
+          );
+        }
+
+        // Signature stories for prioritization
+        if (profile.signatureStories.length > 0) {
+          const stories = profile.signatureStories.map(
+            (s) => `- "${s.title}": ${s.result} (Why: ${s.whyItMatters})`
+          );
+          parts.push(
+            `SIGNATURE STORIES (prioritize highlights that connect to these proven impact narratives):\n${stories.join("\n")}`
+          );
+        }
+
+        // Metrics for reference
+        if (profile.profileMetrics.length > 0) {
+          const metrics = profile.profileMetrics.map(
+            (m) => `- ${m.label}: ${m.value}`
+          );
+          parts.push(
+            `QUANTIFIED ACHIEVEMENTS (reference these when ranking highlights):\n${metrics.join("\n")}`
+          );
+        }
+
+        if (parts.length > 0) {
+          profileContext = `\n\n---\n\nCANDIDATE PROFILE CONTEXT:\n${parts.join("\n\n")}`;
+        }
+      }
+    } catch (err) {
+      console.error("Profile fetch error in build (non-blocking):", err);
+    }
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       temperature: 0.3,
@@ -141,7 +184,7 @@ Only include roles that are strategically relevant to the target position. Omit 
         },
         {
           role: "user",
-          content: `${jobContext}\n\n---\n\nCandidate's Experience:\n\n${experienceContext}\n\nWhich highlights should be on the resume for this specific job?`,
+          content: `${jobContext}\n\n---\n\nCandidate's Experience:\n\n${experienceContext}${profileContext}\n\nWhich highlights should be on the resume for this specific job?`,
         },
       ],
       response_format: { type: "json_object" },

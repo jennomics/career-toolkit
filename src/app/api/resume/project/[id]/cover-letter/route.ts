@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  getProfileContext,
+  formatProfileForCoverLetter,
+} from "@/lib/profile-context";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -32,13 +36,41 @@ export async function POST(request: NextRequest) {
     const OpenAI = (await import("openai")).default;
     const openai = new OpenAI({ apiKey });
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      temperature: 0.4,
-      messages: [
-        {
-          role: "system",
-          content: `You are an elite executive cover letter strategist ($500+ level). Write a compelling half-page cover letter (exactly 250-300 words) that reads as a strategic pitch, not a form letter.
+    // Fetch candidate profile for cover letter context
+    let profileCoverLetterContext = "";
+    let voiceSystemAddition = "";
+    let writingSampleReference = "";
+
+    try {
+      const profile = await getProfileContext();
+      if (profile) {
+        profileCoverLetterContext = formatProfileForCoverLetter(profile, {
+          title: jobTitle,
+          company,
+          description: jobDescription,
+        });
+
+        // Extract voice guidance for system prompt
+        if (profile.writingStyle) {
+          voiceSystemAddition = `\n\nVOICE GUIDANCE: ${profile.writingStyle}`;
+          if (profile.selfDescribedPosture) {
+            voiceSystemAddition += `\nCommunication Posture: ${profile.selfDescribedPosture}`;
+          }
+        }
+
+        // Add writing sample as tone reference
+        if (profile.writingSamples.length > 0) {
+          const sample = profile.writingSamples[0];
+          const truncated = sample.content.slice(0, 500);
+          const suffix = sample.content.length > 500 ? "..." : "";
+          writingSampleReference = `\n\nWrite in this voice. Here is an example of how this person writes cover letters:\n${truncated}${suffix}`;
+        }
+      }
+    } catch (err) {
+      console.error("Profile fetch error in cover-letter (non-blocking):", err);
+    }
+
+    const systemContent = `You are an elite executive cover letter strategist ($500+ level). Write a compelling half-page cover letter (exactly 250-300 words) that reads as a strategic pitch, not a form letter.
 
 Your cover letter philosophy:
 - Opening: Lead with a powerful value proposition that immediately signals why you are THE candidate. Never open with "I am writing to apply for..." or any generic opener. Start with impact.
@@ -54,19 +86,33 @@ Critical rules:
 - Use the company name and role title naturally in the text.
 - No cliches: "passionate about," "team player," "fast-paced environment," "excited to apply" are banned.
 
-Return the cover letter as plain text (no JSON wrapping). Start with "Dear Hiring Manager," and end with a professional sign-off.`,
-        },
-        {
-          role: "user",
-          content: `Target role: ${jobTitle} at ${company}
+Return the cover letter as plain text (no JSON wrapping). Start with "Dear Hiring Manager," and end with a professional sign-off.${voiceSystemAddition}${writingSampleReference}`;
+
+    let userContent = `Target role: ${jobTitle} at ${company}
 
 Job Description (key parts):
 ${jobDescription?.slice(0, 2000) || "Not provided"}
 
 My resume highlights:
-${resumeDraft?.slice(0, 3000) || "Not provided"}
+${resumeDraft?.slice(0, 3000) || "Not provided"}`;
 
-Write a half-page cover letter for this role.`,
+    if (profileCoverLetterContext) {
+      userContent += `\n\n---\n\nCANDIDATE PROFILE CONTEXT:\n${profileCoverLetterContext}`;
+    }
+
+    userContent += `\n\nWrite a half-page cover letter for this role.`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      temperature: 0.4,
+      messages: [
+        {
+          role: "system",
+          content: systemContent,
+        },
+        {
+          role: "user",
+          content: userContent,
         },
       ],
     });

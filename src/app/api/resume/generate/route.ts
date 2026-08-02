@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import OpenAI from "openai";
+import {
+  getProfileContext,
+  formatProfileForResume,
+  getVoiceGuidance,
+  checkGenerationReady,
+} from "@/lib/profile-context";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -106,6 +112,34 @@ export async function POST(request: NextRequest) {
         { error: "targetRole (string) is required for targeted mode" },
         { status: 400 }
       );
+    }
+
+    // ─── Check generation readiness (unresolved profile items) ──────────────────
+    const readiness = await checkGenerationReady();
+    if (!readiness.ready) {
+      return NextResponse.json(
+        {
+          error: `Cannot generate resume: ${readiness.unresolvedCount} unresolved profile item(s) need resolution before generation.`,
+          unresolvedCount: readiness.unresolvedCount,
+        },
+        { status: 400 }
+      );
+    }
+
+    // ─── Fetch candidate profile context ────────────────────────────────────────
+    const profile = await getProfileContext();
+    let profileResumeContext = "";
+    let profileVoiceGuidance = "";
+    let profileOperatingRules = "";
+
+    if (profile) {
+      profileResumeContext = formatProfileForResume(profile);
+      profileVoiceGuidance = getVoiceGuidance(profile) || "";
+      if (profile.resumeOperatingRules.length > 0) {
+        profileOperatingRules = profile.resumeOperatingRules
+          .map((r) => `- ${r}`)
+          .join("\n");
+      }
     }
 
     // ─── Fetch user's experience ────────────────────────────────────────────────
@@ -325,14 +359,28 @@ Generate a strategically positioned executive resume for the target role. Transf
 
     // ─── LLM generation ─────────────────────────────────────────────────────────
     const openai = new OpenAI({ apiKey });
-    const systemPrompt = isGenericMode ? GENERIC_SYSTEM_PROMPT : SYSTEM_PROMPT;
+    let systemPrompt = isGenericMode ? GENERIC_SYSTEM_PROMPT : SYSTEM_PROMPT;
+
+    // Inject profile voice guidance and operating rules into system prompt
+    if (profileVoiceGuidance) {
+      systemPrompt += `\n\n${profileVoiceGuidance}\n\nIMPORTANT: Match this writing style in the resume output. The tone, word choice, and cadence should feel like the candidate wrote it themselves.`;
+    }
+    if (profileOperatingRules) {
+      systemPrompt += `\n\nRESUME OPERATING RULES (strictly follow these):\n${profileOperatingRules}`;
+    }
+
+    // Inject profile context into user prompt
+    let finalUserPrompt = userPrompt;
+    if (profileResumeContext) {
+      finalUserPrompt = `${profileResumeContext}\n\n---\n\n${userPrompt}`;
+    }
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.3,
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
+        { role: "user", content: finalUserPrompt },
       ],
       response_format: { type: "json_object" },
     });
