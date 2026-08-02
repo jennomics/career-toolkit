@@ -2,7 +2,7 @@
   "id": "FEAT-005",
   "type": "feat",
   "description": "Focused test suite covering core logic, auth, and demo mode",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/lib/__tests__/parse-skills.test.ts testing parseSkills(): (a) extracts known skills from job description text, (b) handles empty input, (c) does not double-count skills, (d) is case-insensitive. Import directly from src/lib/parse-skills.ts.",
     "Create src/lib/__tests__/skill-taxonomy.test.ts testing: (a) normalizeSkillName maps aliases to canonical names (e.g., 'reactjs' -> 'React'), (b) categorizeSkill returns correct category/subcategory, (c) normalizeAndCategorize works end-to-end, (d) unknown skills return original name unchanged. Import from src/lib/skill-taxonomy.ts.",
