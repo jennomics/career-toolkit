@@ -172,6 +172,12 @@ export default async function DashboardPage() {
             >
               Companies
             </Link>
+            <Link
+              href="/profile"
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Profile
+            </Link>
           </nav>
         </div>
       </header>
@@ -326,6 +332,21 @@ export default async function DashboardPage() {
               </p>
               <p className="text-xs text-gray-400 mt-2">
                 Track companies, view jobs by company, and build targeted resumes
+              </p>
+            </Link>
+
+            <Link
+              href="/profile"
+              className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group"
+            >
+              <h3 className="text-base font-semibold text-gray-900 group-hover:text-purple-600">
+                Candidate Profile
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Your complete career narrative
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
+                Positioning, stories, metrics, and resume-writer context
               </p>
             </Link>
           </div>
