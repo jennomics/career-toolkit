@@ -1,0 +1,27 @@
+{
+  "id": "FEAT-001",
+  "type": "chore",
+  "description": "Environment setup - install Vitest and verify baseline build passes",
+  "status": "in_progress",
+  "steps": [
+    "Run: source /root/.nvm/nvm.sh && nvm use 22 && cd /projects/sandbox/career-toolkit && npm install",
+    "Run: npx prisma generate to ensure generated client exists",
+    "Run: POSTGRES_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder npm run build to confirm baseline build passes",
+    "Install vitest and @vitest/coverage-v8 as dev dependencies: npm install -D vitest @vitest/coverage-v8",
+    "Create vitest.config.ts at project root with path aliases matching tsconfig (@ -> src/), test environment 'node', include pattern 'src/**/*.test.ts'",
+    "Add 'test' script to package.json: 'vitest run', add 'test:watch' script: 'vitest'",
+    "Run npm run lint to confirm no lint issues introduced"
+  ],
+  "acceptance_criteria": [
+    "npm run build succeeds with placeholder POSTGRES_URL",
+    "vitest.config.ts exists with correct path alias configuration",
+    "package.json has test and test:watch scripts",
+    "npx vitest run exits cleanly (0 tests found is acceptable at this stage)"
+  ],
+  "verification": [
+    "source /root/.nvm/nvm.sh && nvm use 22 && cd /projects/sandbox/career-toolkit && POSTGRES_URL=postgresql://p:p@localhost:5432/p npm run build",
+    "source /root/.nvm/nvm.sh && nvm use 22 && cd /projects/sandbox/career-toolkit && npx vitest run"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
