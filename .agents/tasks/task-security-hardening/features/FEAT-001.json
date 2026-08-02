@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "chore",
   "description": "Environment setup - install Vitest and verify baseline build passes",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Run: source /root/.nvm/nvm.sh && nvm use 22 && cd /projects/sandbox/career-toolkit && npm install",
     "Run: npx prisma generate to ensure generated client exists",
@@ -23,5 +23,5 @@
     "source /root/.nvm/nvm.sh && nvm use 22 && cd /projects/sandbox/career-toolkit && npx vitest run"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Pre-existing lint error in src/app/profile/page.tsx (react-hooks/set-state-in-effect) - not introduced by this change. Vitest config uses passWithNoTests to exit cleanly when no test files exist. Vite shows a deprecation warning about ESM in CommonJS but it is non-blocking."
 }
