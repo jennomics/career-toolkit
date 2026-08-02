@@ -35,7 +35,7 @@ This confirms: correct branch, latest code, .env present, schema intact.
 
 - v0.4.0 is a smart proxy on port 4747 with lazy dev servers
 - Git polling + post-pull tasks run automatically (npm install, prisma generate, restart)
-- `prisma db push` is NOT automatic (risk of data loss) — send as explicit command
+- `prisma migrate deploy` runs automatically via CI when migrations change -- never use `db push` in production
 - Seed scripts are NOT automatic — send as explicit command
 - Always use groundcrew commands instead of asking the user to run terminal commands
 - Auth: Bearer token on all mutating routes

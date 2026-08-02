@@ -237,7 +237,7 @@ export default function ExperiencePage() {
               The Experience tables haven&apos;t been created in your database yet. Run this command in your career-toolkit directory:
             </p>
             <code className="block bg-amber-100 text-amber-900 px-3 py-2 rounded text-sm font-mono">
-              npx prisma db push
+              npx prisma migrate dev
             </code>
             <p className="text-xs text-amber-600 mt-2">
               This only needs to be done once. After that, this page will work normally.

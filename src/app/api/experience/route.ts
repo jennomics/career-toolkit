@@ -200,10 +200,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(experience, { status: 201 });
   } catch (err) {
-    // Table doesn't exist — tell user to run prisma db push
+    // Table doesn't exist — tell user to run prisma migrate dev
     if (isTableMissingError(err)) {
       return NextResponse.json(
-        { error: "Database setup required. Run: npx prisma db push" },
+        { error: "Database setup required. Run: npx prisma migrate dev" },
         { status: 503 }
       );
     }

@@ -110,4 +110,4 @@ OPENAI_API_KEY=sk-...                  # Required for LLM extraction, falls back
 - Next.js Turbopack: stray package-lock.json in parent dirs confuses root detection → .env not loaded
 - After schema changes: must run `prisma generate` AND restart dev server (hot reload doesn't catch it)
 - Vercel: do NOT use output: "standalone" — breaks API routes
-- Vercel: do NOT put `prisma db push` in the build command — use the manual schema-push workflow
+- Vercel: do NOT put `prisma db push` in the build command — use `prisma migrate deploy` in the deploy-migrations workflow

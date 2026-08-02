@@ -2,7 +2,7 @@
   "commands": [
     {
       "id": "schema-push-15",
-      "command": "npx prisma db push && echo 'DONE: Experience tables created'",
+      "command": "npx prisma migrate dev --name experience_tables && echo 'DONE: Experience tables created'",
       "description": "Create Experience, ExperienceSkill, ExperienceHighlight tables in Neon"
     }
   ],
