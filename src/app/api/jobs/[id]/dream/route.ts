@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 // PATCH /api/jobs/:id/dream - Toggle dream company/job status
 export async function PATCH(
@@ -51,8 +52,8 @@ export async function PATCH(
 
     return NextResponse.json(job);
   } catch (err) {
+    const requestId = generateRequestId();
     console.error("PATCH /api/jobs/[id]/dream error:", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return formatErrorResponse(err, requestId);
   }
 }
