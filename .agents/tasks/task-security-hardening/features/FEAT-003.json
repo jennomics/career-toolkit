@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "chore",
   "description": "Remove schema-push.yml, replace with migrations workflow",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Delete .github/workflows/schema-push.yml",
     "Create .github/workflows/migrate.yml with: (a) trigger on push to main (only when prisma/migrations/** changes), (b) checkout, setup node 22, npm ci, prisma generate, (c) run 'npx prisma migrate deploy' with POSTGRES_URL from secrets, (d) NO --accept-data-loss anywhere",
@@ -21,5 +21,5 @@
     "source /root/.nvm/nvm.sh && nvm use 22 && cd /projects/sandbox/career-toolkit && ! grep -r 'accept-data-loss' . --include='*.yml' --include='*.yaml' --include='*.ts' --include='*.js' && echo 'No accept-data-loss references'"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All source/workflow files cleaned of db push and --accept-data-loss references. Remaining mentions in .kiro/retros and .agents/tasks/ are historical documentation only. README now explicitly warns against using db push. The steering files were updated to reference the new migrations workflow."
 }
