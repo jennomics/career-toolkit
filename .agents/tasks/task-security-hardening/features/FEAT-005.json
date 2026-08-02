@@ -2,7 +2,7 @@
   "id": "FEAT-005",
   "type": "feat",
   "description": "Focused test suite covering core logic, auth, and demo mode",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create src/lib/__tests__/parse-skills.test.ts testing parseSkills(): (a) extracts known skills from job description text, (b) handles empty input, (c) does not double-count skills, (d) is case-insensitive. Import directly from src/lib/parse-skills.ts.",
     "Create src/lib/__tests__/skill-taxonomy.test.ts testing: (a) normalizeSkillName maps aliases to canonical names (e.g., 'reactjs' -> 'React'), (b) categorizeSkill returns correct category/subcategory, (c) normalizeAndCategorize works end-to-end, (d) unknown skills return original name unchanged. Import from src/lib/skill-taxonomy.ts.",
@@ -28,5 +28,5 @@
     "source /root/.nvm/nvm.sh && nvm use 22 && cd /projects/sandbox/career-toolkit && POSTGRES_URL=postgresql://p:p@localhost:5432/p npm run build"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 89 tests pass across 9 test files. The OpenAI mock required using a class syntax (not vi.fn().mockImplementation) for proper constructor support. Vitest 4.1.10 shows a warning about native config loader but works correctly. Build still passes with POSTGRES_URL placeholder."
 }
