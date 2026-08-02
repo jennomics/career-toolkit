@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 // GET /api/profile/roles - List all career roles
 export async function GET() {
@@ -17,8 +18,8 @@ export async function GET() {
     return NextResponse.json(roles);
   } catch (err) {
     console.error("GET /api/profile/roles error:", err);
-    const message = err instanceof Error ? err.message : "Failed to fetch roles";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -58,8 +59,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(role, { status: 201 });
   } catch (err) {
     console.error("POST /api/profile/roles error:", err);
-    const message = err instanceof Error ? err.message : "Failed to create role";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -91,8 +92,8 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(role);
   } catch (err) {
     console.error("PUT /api/profile/roles error:", err);
-    const message = err instanceof Error ? err.message : "Failed to update role";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -113,7 +114,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("DELETE /api/profile/roles error:", err);
-    const message = err instanceof Error ? err.message : "Failed to delete role";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

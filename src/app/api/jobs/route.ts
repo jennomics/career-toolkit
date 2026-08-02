@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { normalizeAndCategorize, normalizeAndCategorizeWithFallback } from "@/lib/skill-taxonomy";
 import { normalizeCompanyName } from "@/lib/normalize-company";
 import { slugify } from "@/lib/slugify";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 // GET /api/jobs - List all jobs with optional search/filter
 export async function GET(request: NextRequest) {
@@ -60,7 +61,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(jobs);
   } catch (err) {
     console.error("GET /api/jobs error:", err);
-    return NextResponse.json({ error: "Failed to fetch jobs" }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -241,7 +243,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(job, { status: 201 });
   } catch (err) {
     console.error("POST /api/jobs error:", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

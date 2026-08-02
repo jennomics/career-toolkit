@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { normalizeCompanyName } from "@/lib/normalize-company";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 interface JobForDuplication {
   id: string;
@@ -117,9 +118,7 @@ export async function GET() {
     return NextResponse.json(duplicateGroups);
   } catch (err) {
     console.error("GET /api/jobs/duplicates error:", err);
-    return NextResponse.json(
-      { error: "Failed to find duplicate jobs" },
-      { status: 500 }
-    );
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

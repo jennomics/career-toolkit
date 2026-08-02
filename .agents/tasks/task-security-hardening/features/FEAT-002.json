@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Auth middleware, demo mode infrastructure, error formatting, and LLM protection - core security layer",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/lib/auth.ts with: (a) requireAuth() function that checks for a bearer token (AUTH_SECRET env var) and returns 401 if missing/invalid, (b) requireServiceToken() function that checks for SERVICE_TOKEN env var for sentinel/integrity routes, (c) isDemoMode() function that checks DEMO_MODE env var, (d) rejectMutationInDemo() function that returns 403 with message 'Mutations are disabled in demo mode' if DEMO_MODE=true and request is POST/PUT/PATCH/DELETE",
     "Create src/lib/api-error.ts with: (a) ApiError class extending Error with code, statusCode, and requestId fields, (b) formatErrorResponse(err, requestId) function that returns { error: { code: string, message: string, requestId: string } } - never leaking internal details, stack traces, SQL errors. Map known codes (VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, RATE_LIMITED, INTERNAL_ERROR). For unknown errors in production, always return generic 'An internal error occurred'",

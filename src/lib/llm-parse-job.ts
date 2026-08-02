@@ -1,4 +1,14 @@
 import OpenAI from "openai";
+import { isDemoMode } from "./auth";
+import {
+  validateInputLength,
+  llmSemaphore,
+  createAbortSignal,
+  logLLMCost,
+  MAX_OUTPUT_TOKENS,
+  checkDailyBudget,
+} from "./llm-guard";
+import { ApiError } from "./api-error";
 
 export interface LLMParsedJob {
   title: string;
@@ -42,36 +52,86 @@ Return JSON only, no markdown fencing. Example format:
 }`;
 
 export async function llmParseJob(rawText: string): Promise<LLMParsedJob> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  // In demo mode, return a mock response
+  if (isDemoMode()) {
+    return {
+      title: "Demo Software Engineer",
+      company: "Demo Corp",
+      location: "Remote",
+      keywords: ["TypeScript", "React", "Node.js"],
+      phrases: [
+        {
+          text: "Build scalable applications",
+          category: "responsibility",
+          keywords: ["TypeScript"],
+        },
+      ],
+    };
+  }
 
+  // Validate input length
+  validateInputLength(rawText);
+
+  // Check daily budget
+  const budget = checkDailyBudget();
+  if (!budget.allowed) {
+    throw new ApiError(
+      `Daily LLM budget exceeded ($${budget.spent.toFixed(2)}/$${budget.limit.toFixed(2)})`,
+      "RATE_LIMITED",
+      429
+    );
+  }
+
+  const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error("OPENAI_API_KEY not set in environment");
   }
 
   const openai = new OpenAI({ apiKey });
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 0.1,
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: rawText },
-    ],
-    response_format: { type: "json_object" },
-  });
+  // Acquire concurrency semaphore
+  await llmSemaphore.acquire();
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0.1,
+      max_tokens: MAX_OUTPUT_TOKENS,
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: rawText },
+      ],
+      response_format: { type: "json_object" },
+    }, { signal: createAbortSignal() });
 
-  const content = response.choices[0]?.message?.content;
+    const content = response.choices[0]?.message?.content;
 
-  if (!content) {
-    throw new Error("No response from LLM");
+    if (!content) {
+      throw new Error("No response from LLM");
+    }
+
+    // Log cost
+    if (response.usage) {
+      logLLMCost(
+        "gpt-4o-mini",
+        response.usage.prompt_tokens,
+        response.usage.completion_tokens
+      );
+    }
+
+    const parsed = JSON.parse(content) as LLMParsedJob;
+
+    // Validate basic structure
+    if (
+      !parsed.title ||
+      !parsed.company ||
+      !Array.isArray(parsed.keywords) ||
+      !Array.isArray(parsed.phrases)
+    ) {
+      throw new Error("LLM returned invalid structure");
+    }
+
+    return parsed;
+  } finally {
+    llmSemaphore.release();
   }
-
-  const parsed = JSON.parse(content) as LLMParsedJob;
-
-  // Validate basic structure
-  if (!parsed.title || !parsed.company || !Array.isArray(parsed.keywords) || !Array.isArray(parsed.phrases)) {
-    throw new Error("LLM returned invalid structure");
-  }
-
-  return parsed;
 }

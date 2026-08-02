@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -151,10 +152,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     console.error("POST /api/resume/gap-analysis error:", err);
-    return NextResponse.json(
-      { error: "Gap analysis failed", details: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
-    );
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 

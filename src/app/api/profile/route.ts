@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 const profileIncludes = {
   careerRoles: { orderBy: { sortOrder: "asc" as const } },
@@ -23,8 +24,8 @@ export async function GET() {
     return NextResponse.json(profile);
   } catch (err) {
     console.error("GET /api/profile error:", err);
-    const message = err instanceof Error ? err.message : "Failed to fetch profile";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -112,7 +113,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(profile);
   } catch (err) {
     console.error("PUT /api/profile error:", err);
-    const message = err instanceof Error ? err.message : "Failed to upsert profile";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

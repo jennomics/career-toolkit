@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +73,7 @@ ${htmlBody}
     });
   } catch (err) {
     console.error("POST export-pdf error:", err);
-    const message = err instanceof Error ? err.message : "Export failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

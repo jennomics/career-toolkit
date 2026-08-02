@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { normalizeAndCategorize, normalizeAndCategorizeWithFallback } from "@/lib/skill-taxonomy";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 /**
  * Check if a Prisma error is a "table does not exist" error.
@@ -38,8 +39,8 @@ export async function GET(
       return NextResponse.json({ error: TABLE_MISSING_MSG }, { status: 503 });
     }
     console.error("GET /api/experience/[id] error:", err);
-    const message = err instanceof Error ? err.message : "Failed to fetch experience";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -189,8 +190,8 @@ export async function PATCH(
       return NextResponse.json({ error: TABLE_MISSING_MSG }, { status: 503 });
     }
     console.error("PATCH /api/experience/[id] error:", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -216,7 +217,7 @@ export async function DELETE(
       return NextResponse.json({ error: TABLE_MISSING_MSG }, { status: 503 });
     }
     console.error("DELETE /api/experience/[id] error:", err);
-    const message = err instanceof Error ? err.message : "Failed to delete experience";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -97,7 +98,7 @@ Improve this bullet to be more impactful and better aligned with the target job.
     });
   } catch (err) {
     console.error("POST /api/resume/project/[id]/improve error:", err);
-    const message = err instanceof Error ? err.message : "Failed to improve bullet";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

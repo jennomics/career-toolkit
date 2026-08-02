@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import OpenAI from "openai";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -359,9 +360,7 @@ Generate a resume optimized for ${company.name} that maximizes fit across all th
     });
   } catch (err) {
     console.error("POST /api/resume/generate-company error:", err);
-    return NextResponse.json(
-      { error: "Failed to generate resume", details: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
-    );
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

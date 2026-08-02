@@ -3,6 +3,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { normalizeCompanyName } from "@/lib/normalize-company";
 import { slugify } from "@/lib/slugify";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 // POST /api/companies/sync - Generate companies from existing job data
 export async function POST() {
@@ -124,7 +125,7 @@ export async function POST() {
     return NextResponse.json({ created, linked, errors });
   } catch (err) {
     console.error("POST /api/companies/sync error:", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }

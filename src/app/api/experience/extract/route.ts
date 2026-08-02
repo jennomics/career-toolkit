@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -92,8 +93,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(extracted);
   } catch (err) {
     console.error("POST /api/experience/extract error:", err);
-    const message = err instanceof Error ? err.message : "Failed to extract experience";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 

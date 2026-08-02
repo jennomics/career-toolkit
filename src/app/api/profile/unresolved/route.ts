@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
 
 // GET /api/profile/unresolved - List all unresolved items
 export async function GET() {
@@ -16,8 +17,8 @@ export async function GET() {
     return NextResponse.json(items);
   } catch (err) {
     console.error("GET /api/profile/unresolved error:", err);
-    const message = err instanceof Error ? err.message : "Failed to fetch unresolved items";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -56,8 +57,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(item, { status: 201 });
   } catch (err) {
     console.error("POST /api/profile/unresolved error:", err);
-    const message = err instanceof Error ? err.message : "Failed to create unresolved item";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -85,8 +86,8 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(item);
   } catch (err) {
     console.error("PUT /api/profile/unresolved error:", err);
-    const message = err instanceof Error ? err.message : "Failed to resolve item";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
 
@@ -107,7 +108,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("DELETE /api/profile/unresolved error:", err);
-    const message = err instanceof Error ? err.message : "Failed to delete unresolved item";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const requestId = generateRequestId();
+    return formatErrorResponse(err, requestId);
   }
 }
