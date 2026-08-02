@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { normalizeAndCategorize, normalizeAndCategorizeWithFallback } from "@/lib/skill-taxonomy";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, notFoundError, validationError, serviceUnavailableError } from "@/lib/api-error";
 
 /**
  * Check if a Prisma error is a "table does not exist" error.
@@ -30,13 +30,13 @@ export async function GET(
     });
 
     if (!experience) {
-      return NextResponse.json({ error: "Experience not found" }, { status: 404 });
+      return notFoundError("Experience not found");
     }
 
     return NextResponse.json(experience);
   } catch (err) {
     if (isTableMissingError(err)) {
-      return NextResponse.json({ error: TABLE_MISSING_MSG }, { status: 503 });
+      return serviceUnavailableError(TABLE_MISSING_MSG);
     }
     console.error("GET /api/experience/[id] error:", err);
     const requestId = generateRequestId();
@@ -71,7 +71,7 @@ export async function PATCH(
     // Verify the experience exists
     const existing = await prisma.experience.findUnique({ where: { id } });
     if (!existing) {
-      return NextResponse.json({ error: "Experience not found" }, { status: 404 });
+      return notFoundError("Experience not found");
     }
 
     // Validate dates if provided
@@ -79,7 +79,7 @@ export async function PATCH(
     if (startDate) {
       start = new Date(startDate);
       if (isNaN(start.getTime())) {
-        return NextResponse.json({ error: "Invalid start date" }, { status: 400 });
+        return validationError("Invalid start date");
       }
     }
 
@@ -92,14 +92,11 @@ export async function PATCH(
       } else {
         end = new Date(endDate);
         if (isNaN(end.getTime())) {
-          return NextResponse.json({ error: "Invalid end date" }, { status: 400 });
+          return validationError("Invalid end date");
         }
         const effectiveStart = start || existing.startDate;
         if (end < effectiveStart) {
-          return NextResponse.json(
-            { error: "End date cannot be before start date" },
-            { status: 400 }
-          );
+          return validationError("End date cannot be before start date");
         }
       }
     }
@@ -187,7 +184,7 @@ export async function PATCH(
     return NextResponse.json(experience);
   } catch (err) {
     if (isTableMissingError(err)) {
-      return NextResponse.json({ error: TABLE_MISSING_MSG }, { status: 503 });
+      return serviceUnavailableError(TABLE_MISSING_MSG);
     }
     console.error("PATCH /api/experience/[id] error:", err);
     const requestId = generateRequestId();
@@ -206,7 +203,7 @@ export async function DELETE(
     // Verify it exists
     const existing = await prisma.experience.findUnique({ where: { id } });
     if (!existing) {
-      return NextResponse.json({ error: "Experience not found" }, { status: 404 });
+      return notFoundError("Experience not found");
     }
 
     await prisma.experience.delete({ where: { id } });
@@ -214,7 +211,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (err) {
     if (isTableMissingError(err)) {
-      return NextResponse.json({ error: TABLE_MISSING_MSG }, { status: 503 });
+      return serviceUnavailableError(TABLE_MISSING_MSG);
     }
     console.error("DELETE /api/experience/[id] error:", err);
     const requestId = generateRequestId();

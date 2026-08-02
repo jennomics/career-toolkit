@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError, notFoundError } from "@/lib/api-error";
 
 // GET /api/profile/metrics - List all profile metrics
 export async function GET() {
@@ -29,18 +29,12 @@ export async function POST(request: NextRequest) {
     const { label, value, source } = body;
 
     if (!label || !value) {
-      return NextResponse.json(
-        { error: "Label and value are required" },
-        { status: 400 }
-      );
+      return validationError("Label and value are required");
     }
 
     const profile = await prisma.candidateProfile.findFirst();
     if (!profile) {
-      return NextResponse.json(
-        { error: "No profile exists. Create a profile first." },
-        { status: 404 }
-      );
+      return notFoundError("No profile exists. Create a profile first.");
     }
 
     const metric = await prisma.profileMetric.create({
@@ -67,10 +61,7 @@ export async function PUT(request: NextRequest) {
     const { id, label, value, source } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { error: "Metric id is required" },
-        { status: 400 }
-      );
+      return validationError("Metric id is required");
     }
 
     const metric = await prisma.profileMetric.update({
@@ -97,10 +88,7 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json(
-        { error: "Metric id is required" },
-        { status: 400 }
-      );
+      return validationError("Metric id is required");
     }
 
     await prisma.profileMetric.delete({ where: { id } });

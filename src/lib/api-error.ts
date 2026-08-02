@@ -61,3 +61,55 @@ export function formatErrorResponse(err: unknown, requestId: string): NextRespon
     { status: 500 }
   );
 }
+
+/**
+ * Returns a standardized validation error response.
+ * Use this instead of inline `{ error: "string" }` responses for consistency.
+ */
+export function validationError(message: string, requestId?: string): NextResponse {
+  const id = requestId || generateRequestId();
+  return NextResponse.json(
+    {
+      error: {
+        code: VALIDATION_ERROR,
+        message,
+        requestId: id,
+      },
+    },
+    { status: 400 }
+  );
+}
+
+/**
+ * Returns a standardized not-found error response.
+ */
+export function notFoundError(message: string, requestId?: string): NextResponse {
+  const id = requestId || generateRequestId();
+  return NextResponse.json(
+    {
+      error: {
+        code: NOT_FOUND,
+        message,
+        requestId: id,
+      },
+    },
+    { status: 404 }
+  );
+}
+
+/**
+ * Returns a standardized service unavailable error response.
+ */
+export function serviceUnavailableError(message: string, requestId?: string): NextResponse {
+  const id = requestId || generateRequestId();
+  return NextResponse.json(
+    {
+      error: {
+        code: "SERVICE_UNAVAILABLE",
+        message,
+        requestId: id,
+      },
+    },
+    { status: 503 }
+  );
+}

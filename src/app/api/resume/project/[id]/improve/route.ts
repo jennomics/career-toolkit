@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
+import { guardedLLMCall } from "@/lib/guarded-llm";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -25,24 +26,10 @@ export async function POST(request: NextRequest) {
     const { bullet, jobTitle, jobDescription, roleTitle, company } = body;
 
     if (!bullet || !jobTitle) {
-      return NextResponse.json(
-        { error: "bullet and jobTitle are required" },
-        { status: 400 }
-      );
+      return validationError("bullet and jobTitle are required");
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "No OpenAI API key configured" },
-        { status: 503 }
-      );
-    }
-
-    const OpenAI = (await import("openai")).default;
-    const openai = new OpenAI({ apiKey });
-
-    const response = await openai.chat.completions.create({
+    const content = await guardedLLMCall({
       model: "gpt-4o",
       temperature: 0.4,
       messages: [
@@ -83,13 +70,8 @@ Original: "${bullet}"
 Improve this bullet to be more impactful and better aligned with the target job.`,
         },
       ],
-      response_format: { type: "json_object" },
+      jsonMode: true,
     });
-
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      return NextResponse.json({ error: "No response from LLM" }, { status: 500 });
-    }
 
     const parsed = JSON.parse(content);
     return NextResponse.json({

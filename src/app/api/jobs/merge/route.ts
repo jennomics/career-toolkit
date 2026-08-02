@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError, notFoundError } from "@/lib/api-error";
 
 /**
  * POST /api/jobs/merge
@@ -16,10 +16,7 @@ export async function POST(request: NextRequest) {
     const { keepId, deleteIds } = await request.json();
 
     if (!keepId || !deleteIds || !Array.isArray(deleteIds) || deleteIds.length === 0) {
-      return NextResponse.json(
-        { error: "keepId and deleteIds[] are required" },
-        { status: 400 }
-      );
+      return validationError("keepId and deleteIds[] are required");
     }
 
     // Verify the keep job exists
@@ -29,10 +26,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!keepJob) {
-      return NextResponse.json(
-        { error: "Keep job not found" },
-        { status: 404 }
-      );
+      return notFoundError("Keep job not found");
     }
 
     // Delete the duplicate jobs (skills/responsibilities cascade via onDelete: Cascade)

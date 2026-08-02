@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { normalizeAndCategorize, normalizeAndCategorizeWithFallback } from "@/lib/skill-taxonomy";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError, serviceUnavailableError } from "@/lib/api-error";
 
 /**
  * Check if a Prisma error is a "table does not exist" error.
@@ -94,35 +94,23 @@ export async function POST(request: NextRequest) {
     } = body;
 
     if (!title || !company || !startDate) {
-      return NextResponse.json(
-        { error: "Title, company, and start date are required" },
-        { status: 400 }
-      );
+      return validationError("Title, company, and start date are required");
     }
 
     // Validate dates
     const start = new Date(startDate);
     if (isNaN(start.getTime())) {
-      return NextResponse.json(
-        { error: "Invalid start date" },
-        { status: 400 }
-      );
+      return validationError("Invalid start date");
     }
 
     let end: Date | null = null;
     if (endDate && !isCurrent) {
       end = new Date(endDate);
       if (isNaN(end.getTime())) {
-        return NextResponse.json(
-          { error: "Invalid end date" },
-          { status: 400 }
-        );
+        return validationError("Invalid end date");
       }
       if (end < start) {
-        return NextResponse.json(
-          { error: "End date cannot be before start date" },
-          { status: 400 }
-        );
+        return validationError("End date cannot be before start date");
       }
     }
 
@@ -200,12 +188,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(experience, { status: 201 });
   } catch (err) {
-    // Table doesn't exist — tell user to run prisma migrate dev
+    // Table doesn't exist - tell user to run prisma migrate dev
     if (isTableMissingError(err)) {
-      return NextResponse.json(
-        { error: "Database setup required. Run: npx prisma migrate dev" },
-        { status: 503 }
-      );
+      return serviceUnavailableError("Database setup required. Run: npx prisma migrate dev");
     }
     console.error("POST /api/experience error:", err);
     const requestId = generateRequestId();

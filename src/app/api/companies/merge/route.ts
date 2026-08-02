@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError, notFoundError } from "@/lib/api-error";
 
 /**
  * POST /api/companies/merge
@@ -16,10 +16,7 @@ export async function POST(request: NextRequest) {
     const { keepId, mergeIds } = await request.json();
 
     if (!keepId || !mergeIds || !Array.isArray(mergeIds) || mergeIds.length === 0) {
-      return NextResponse.json(
-        { error: "keepId and mergeIds[] are required" },
-        { status: 400 }
-      );
+      return validationError("keepId and mergeIds[] are required");
     }
 
     // Verify the keep company exists
@@ -28,10 +25,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!keepCompany) {
-      return NextResponse.json(
-        { error: "Keep company not found" },
-        { status: 404 }
-      );
+      return notFoundError("Keep company not found");
     }
 
     // Move all jobs from mergeIds to keepId using Promise.allSettled

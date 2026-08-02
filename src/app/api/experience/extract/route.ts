@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
+import { guardedLLMCall } from "@/lib/guarded-llm";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -65,19 +66,13 @@ export async function POST(request: NextRequest) {
       } else if (pastedText && pastedText.trim().length > 20) {
         resumeText = pastedText.trim();
       } else {
-        return NextResponse.json(
-          { error: "Please upload a file or paste resume text" },
-          { status: 400 }
-        );
+        return validationError("Please upload a file or paste resume text");
       }
     } else {
       // JSON body with text
       const body = await request.json();
       if (!body.text || body.text.trim().length < 20) {
-        return NextResponse.json(
-          { error: "Resume text must be at least 20 characters" },
-          { status: 400 }
-        );
+        return validationError("Resume text must be at least 20 characters");
       }
       resumeText = body.text.trim();
     }
@@ -153,23 +148,15 @@ async function extractWithLLM(resumeText: string): Promise<{
     };
   }
 
-  const OpenAI = (await import("openai")).default;
-  const openai = new OpenAI({ apiKey });
-
-  const response = await openai.chat.completions.create({
+  const content = await guardedLLMCall({
     model: "gpt-4o-mini",
     temperature: 0.1,
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: `Here is the resume text to parse:\n\n${resumeText}` },
     ],
-    response_format: { type: "json_object" },
+    jsonMode: true,
   });
-
-  const content = response.choices[0]?.message?.content;
-  if (!content) {
-    throw new Error("No response from LLM");
-  }
 
   const parsed = JSON.parse(content);
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError, notFoundError } from "@/lib/api-error";
 
 // GET /api/profile/unresolved - List all unresolved items
 export async function GET() {
@@ -29,18 +29,12 @@ export async function POST(request: NextRequest) {
     const { section, description, optionA, optionB, priority } = body;
 
     if (!section || !description || !optionA || !optionB || !priority) {
-      return NextResponse.json(
-        { error: "Section, description, optionA, optionB, and priority are required" },
-        { status: 400 }
-      );
+      return validationError("Section, description, optionA, optionB, and priority are required");
     }
 
     const profile = await prisma.candidateProfile.findFirst();
     if (!profile) {
-      return NextResponse.json(
-        { error: "No profile exists. Create a profile first." },
-        { status: 404 }
-      );
+      return notFoundError("No profile exists. Create a profile first.");
     }
 
     const item = await prisma.unresolvedItem.create({
@@ -69,10 +63,7 @@ export async function PUT(request: NextRequest) {
     const { id, resolution } = body;
 
     if (!id || !resolution) {
-      return NextResponse.json(
-        { error: "Item id and resolution are required" },
-        { status: 400 }
-      );
+      return validationError("Item id and resolution are required");
     }
 
     const item = await prisma.unresolvedItem.update({
@@ -98,10 +89,7 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json(
-        { error: "Item id is required" },
-        { status: 400 }
-      );
+      return validationError("Item id is required");
     }
 
     await prisma.unresolvedItem.delete({ where: { id } });

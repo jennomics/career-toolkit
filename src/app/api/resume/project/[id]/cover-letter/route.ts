@@ -3,7 +3,8 @@ import {
   getProfileContext,
   formatProfileForCoverLetter,
 } from "@/lib/profile-context";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
+import { guardedLLMCall } from "@/lib/guarded-llm";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -20,22 +21,8 @@ export async function POST(request: NextRequest) {
     const { jobTitle, company, jobDescription, resumeDraft } = body;
 
     if (!jobTitle || !company) {
-      return NextResponse.json(
-        { error: "jobTitle and company are required" },
-        { status: 400 }
-      );
+      return validationError("jobTitle and company are required");
     }
-
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "No OpenAI API key configured" },
-        { status: 503 }
-      );
-    }
-
-    const OpenAI = (await import("openai")).default;
-    const openai = new OpenAI({ apiKey });
 
     // Fetch candidate profile for cover letter context
     let profileCoverLetterContext = "";
@@ -103,25 +90,15 @@ ${resumeDraft?.slice(0, 3000) || "Not provided"}`;
 
     userContent += `\n\nWrite a half-page cover letter for this role.`;
 
-    const response = await openai.chat.completions.create({
+    const coverLetter = await guardedLLMCall({
       model: "gpt-4o",
       temperature: 0.4,
       messages: [
-        {
-          role: "system",
-          content: systemContent,
-        },
-        {
-          role: "user",
-          content: userContent,
-        },
+        { role: "system", content: systemContent },
+        { role: "user", content: userContent },
       ],
+      jsonMode: false,
     });
-
-    const coverLetter = response.choices[0]?.message?.content;
-    if (!coverLetter) {
-      return NextResponse.json({ error: "No response from LLM" }, { status: 500 });
-    }
 
     return NextResponse.json({ coverLetter });
   } catch (err) {

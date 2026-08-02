@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import OpenAI from "openai";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError, notFoundError } from "@/lib/api-error";
+import { guardedLLMCall } from "@/lib/guarded-llm";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -98,17 +98,11 @@ export async function POST(request: NextRequest) {
     const { companySlug, jobId, mode = "generic" } = body;
 
     if (!companySlug || typeof companySlug !== "string") {
-      return NextResponse.json(
-        { error: "companySlug (string) is required" },
-        { status: 400 }
-      );
+      return validationError("companySlug (string) is required");
     }
 
     if (mode === "targeted" && !jobId) {
-      return NextResponse.json(
-        { error: "jobId is required for targeted mode" },
-        { status: 400 }
-      );
+      return validationError("jobId is required for targeted mode");
     }
 
     // Fetch company with jobs
@@ -126,10 +120,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!company) {
-      return NextResponse.json(
-        { error: "Company not found" },
-        { status: 404 }
-      );
+      return notFoundError("Company not found");
     }
 
     // Fetch user's experience
@@ -164,10 +155,7 @@ export async function POST(request: NextRequest) {
       : company.jobs;
 
     if (relevantJobs.length === 0 && experiences.length === 0) {
-      return NextResponse.json(
-        { error: "No jobs or experience data available for this company." },
-        { status: 400 }
-      );
+      return validationError("No jobs or experience data available for this company.");
     }
 
     // Collect keywords from company jobs
@@ -322,26 +310,17 @@ Generate a resume optimized for ${company.name} that maximizes fit across all th
     }
 
     // LLM generation
-    const openai = new OpenAI({ apiKey });
     const systemPrompt = mode === "targeted" ? COMPANY_TARGETED_PROMPT : COMPANY_GENERIC_PROMPT;
 
-    const response = await openai.chat.completions.create({
+    const content = await guardedLLMCall({
       model: "gpt-4o-mini",
       temperature: 0.3,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      response_format: { type: "json_object" },
+      jsonMode: true,
     });
-
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      return NextResponse.json(
-        { error: "No response from LLM" },
-        { status: 500 }
-      );
-    }
 
     const resume = JSON.parse(content);
 

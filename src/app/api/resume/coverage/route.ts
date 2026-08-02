@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { normalizeSkillName, getAliases } from "@/lib/skill-taxonomy";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -96,10 +96,7 @@ export async function POST(request: NextRequest) {
     const { resumeContent } = body;
 
     if (!resumeContent || typeof resumeContent !== "string") {
-      return NextResponse.json(
-        { error: "resumeContent (string) is required" },
-        { status: 400 }
-      );
+      return validationError("resumeContent (string) is required");
     }
 
     // Fetch all saved jobs with their skills
@@ -109,10 +106,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (jobs.length === 0) {
-      return NextResponse.json(
-        { error: "No saved jobs to evaluate against. Add some job descriptions first." },
-        { status: 400 }
-      );
+      return validationError("No saved jobs to evaluate against. Add some job descriptions first.");
     }
 
     // Normalize the resume content for matching

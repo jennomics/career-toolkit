@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
 
 /**
  * PATCH /api/phrases/:id
@@ -20,10 +20,7 @@ export async function PATCH(
     const { text, category, keywords } = body;
 
     if (!text && !category && !keywords) {
-      return NextResponse.json(
-        { error: "At least one of text, category, or keywords is required" },
-        { status: 400 }
-      );
+      return validationError("At least one of text, category, or keywords is required");
     }
 
     const updated = await prisma.jobResponsibility.update({
