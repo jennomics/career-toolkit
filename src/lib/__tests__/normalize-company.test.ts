@@ -32,17 +32,16 @@ describe("normalizeCompanyName", () => {
     expect(result.normalizedName).toBe("deepmind");
   });
 
-  it("strips ' Company' suffix", () => {
-    const result = normalizeCompanyName("Ford Motor Company");
-    expect(result.displayName).toBe("Ford Motor");
-    expect(result.normalizedName).toBe("ford motor");
+  it("preserves 'Company' when part of brand name", () => {
+    const result = normalizeCompanyName("McKinsey & Company");
+    expect(result.displayName).toBe("McKinsey & Company");
+    expect(result.normalizedName).toBe("mckinsey & company");
   });
 
-  it("preserves original casing in displayName", () => {
-    const result = normalizeCompanyName("McKinsey & Company");
-    expect(result.displayName).toBe("McKinsey &");
-    // normalizedName is lowercase
-    expect(result.normalizedName).toBe("mckinsey &");
+  it("preserves 'Company' in Ford Motor Company", () => {
+    const result = normalizeCompanyName("Ford Motor Company");
+    expect(result.displayName).toBe("Ford Motor Company");
+    expect(result.normalizedName).toBe("ford motor company");
   });
 
   it("returns lowercase normalizedName", () => {

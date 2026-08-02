@@ -11,7 +11,8 @@
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
-    "seed:profile": "tsx prisma/seed-profile.ts",
+    "seed:demo": "tsx prisma/seed-demo.ts",
+    "seed:private": "tsx prisma/seed-profile.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

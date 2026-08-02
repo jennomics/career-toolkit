@@ -7,7 +7,7 @@ export default function DemoBanner() {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-amber-100 border-b border-amber-300 px-4 py-2 text-center text-sm font-medium text-amber-900">
-      Demo Mode - Read Only. Data is synthetic. Mutations are disabled.
+      This is a read-only demo with synthetic data. Mutations are disabled.
     </div>
   );
 }

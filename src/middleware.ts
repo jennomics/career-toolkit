@@ -20,6 +20,11 @@ function isLLMRoute(pathname: string): boolean {
     /^\/api\/resume\/project\/[^/]+\/(build|improve|cover-letter)$/.test(pathname);
 }
 
+/** Service routes that require SERVICE_TOKEN authentication. */
+function isServiceRoute(pathname: string, method: string): boolean {
+  return method === "POST" && (pathname === "/api/sentinel" || pathname === "/api/integrity");
+}
+
 /** Returns a client identifier for rate limiting (IP-based). */
 function getClientKey(request: NextRequest): string {
   return (
@@ -33,83 +38,16 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const method = request.method.toUpperCase();
 
-  // a. GET /api/health - always pass through (public)
+  // 1. Health check - always pass through (public, no rate limiting)
   if (pathname === "/api/health" && method === "GET") {
     return NextResponse.next();
   }
 
   const requestId = crypto.randomUUID();
 
-  // b. Service token check for sentinel and integrity POST requests.
-  //    These routes skip AUTH_SECRET and only require SERVICE_TOKEN.
-  if (method === "POST" && (pathname === "/api/sentinel" || pathname === "/api/integrity")) {
-    const serviceToken = process.env.SERVICE_TOKEN;
-    if (serviceToken) {
-      const authHeader = request.headers.get("authorization");
-      const token = authHeader?.replace(/^Bearer\s+/i, "") || "";
-
-      if (token !== serviceToken) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "UNAUTHORIZED",
-              message: "Invalid or missing service token",
-              requestId,
-            },
-          },
-          { status: 401 }
-        );
-      }
-    }
-    // Service routes pass through after token check (no AUTH_SECRET required)
-    return NextResponse.next();
-  }
-
-  // c. Demo mode
-  if (process.env.DEMO_MODE === "true") {
-    // Allow all GET requests in demo mode
-    if (method === "GET") {
-      return NextResponse.next();
-    }
-
-    // Reject POST/PUT/PATCH/DELETE with 403
-    if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "FORBIDDEN",
-            message: "Mutations are disabled in demo mode",
-            requestId,
-          },
-        },
-        { status: 403 }
-      );
-    }
-
-    return NextResponse.next();
-  }
-
-  // d. Not demo mode - check AUTH_SECRET if configured
-  const authSecret = process.env.AUTH_SECRET;
-  if (authSecret) {
-    const authHeader = request.headers.get("authorization");
-    const token = authHeader?.replace(/^Bearer\s+/i, "") || "";
-
-    if (token !== authSecret) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Invalid or missing authorization token",
-            requestId,
-          },
-        },
-        { status: 401 }
-      );
-    }
-  }
-
-  // e. Rate limiting
+  // 2. Rate limiting FIRST - before any auth or mode checks
+  //    This protects against brute-force attacks on auth endpoints,
+  //    abuse of demo mode, and service route flooding.
   const clientKey = getClientKey(request);
   const rateLimiter = isLLMRoute(pathname) ? llmRateLimiter : generalRateLimiter;
   const result = rateLimiter.checkRateLimit(clientKey);
@@ -131,5 +69,69 @@ export function middleware(request: NextRequest) {
     );
   }
 
+  // 3. Service routes - require SERVICE_TOKEN, fail CLOSED when not set
+  if (isServiceRoute(pathname, method)) {
+    const serviceToken = process.env.SERVICE_TOKEN;
+
+    // Fail closed: if SERVICE_TOKEN is not configured, reject all service requests
+    if (!serviceToken) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Service token not configured",
+            requestId,
+          },
+        },
+        { status: 401 }
+      );
+    }
+
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.replace(/^Bearer\s+/i, "") || "";
+
+    if (token !== serviceToken) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Invalid or missing service token",
+            requestId,
+          },
+        },
+        { status: 401 }
+      );
+    }
+
+    // Valid service token - allow through
+    return NextResponse.next();
+  }
+
+  // 4. Demo mode - allow reads, block mutations
+  if (process.env.DEMO_MODE === "true") {
+    if (method === "GET") {
+      return NextResponse.next();
+    }
+
+    // Block all mutations in demo mode
+    if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "FORBIDDEN",
+            message: "Mutations are disabled in demo mode",
+            requestId,
+          },
+        },
+        { status: 403 }
+      );
+    }
+
+    return NextResponse.next();
+  }
+
+  // 5. Normal (private) mode - app is open behind Vercel Deployment Protection
+  //    No application-level auth for browser requests. The deployment itself
+  //    is protected at the infrastructure level (Vercel password gate / SSO).
   return NextResponse.next();
 }
