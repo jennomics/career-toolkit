@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "docs",
   "description": "Add MIT license file",
-  "status": "pending",
+  "status": "completed",
   "steps": [
     "Create LICENSE file at project root with MIT license text, copyright 2024-2025, holder name from package.json or git config (use 'jennomics' as the copyright holder based on the GitHub org name)",
     "Add 'license': 'MIT' field to package.json if not already present"
