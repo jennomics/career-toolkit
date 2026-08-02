@@ -102,6 +102,9 @@ npx prisma migrate dev
 npm run dev
 ```
 
+> **Note:** Always use `npx prisma migrate dev` for local schema changes.
+> Never use `prisma db push` -- it bypasses the migration history and can cause data loss in shared environments.
+
 The app will be available at `http://localhost:3000`.
 
 ### Environment Variables

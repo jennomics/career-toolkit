@@ -14,7 +14,7 @@ function isTableMissingError(err: unknown): boolean {
   return false;
 }
 
-const TABLE_MISSING_MSG = "Database setup required. Run: npx prisma db push";
+const TABLE_MISSING_MSG = "Database setup required. Run: npx prisma migrate dev";
 
 // GET /api/experience/[id] - Get a single experience entry
 export async function GET(

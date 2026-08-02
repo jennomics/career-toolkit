@@ -281,7 +281,7 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
     }
 
     if (savedCount === 0) {
-      setError("Failed to save any entries. The database may need setup (npx prisma db push).");
+      setError("Failed to save any entries. The database may need setup (npx prisma migrate dev).");
       setStep("review");
     } else {
       handleReset();

@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "chore",
   "description": "Remove schema-push.yml, replace with migrations workflow",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Delete .github/workflows/schema-push.yml",
     "Create .github/workflows/migrate.yml with: (a) trigger on push to main (only when prisma/migrations/** changes), (b) checkout, setup node 22, npm ci, prisma generate, (c) run 'npx prisma migrate deploy' with POSTGRES_URL from secrets, (d) NO --accept-data-loss anywhere",

@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       checks.push({
         name: "schema_sync",
         status: "fail",
-        message: `Missing tables: ${missing.join(", ")}. Run 'prisma db push' to sync.`,
+        message: `Missing tables: ${missing.join(", ")}. Run 'npx prisma migrate dev' to sync.`,
         details: { expected: expectedTables, found: tableNames, missing },
       });
     } else {
