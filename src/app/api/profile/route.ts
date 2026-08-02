@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { formatErrorResponse, generateRequestId } from "@/lib/api-error";
+import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
 
 const profileIncludes = {
   careerRoles: { orderBy: { sortOrder: "asc" as const } },
@@ -61,10 +61,7 @@ export async function PUT(request: NextRequest) {
     } = body;
 
     if (!name) {
-      return NextResponse.json(
-        { error: "Name is required" },
-        { status: 400 }
-      );
+      return validationError("Name is required");
     }
 
     const data = {
