@@ -117,18 +117,24 @@ export async function POST(request: NextRequest) {
         return { name: s, normalizedName, category };
       });
 
-      // Second pass: LLM fallback for skills not in taxonomy (async, non-blocking)
+      // Second pass: LLM fallback for skills not in taxonomy (async, batched)
       try {
         const unknownSkills = skillsWithTaxonomy.filter((s) => !s.category);
         if (unknownSkills.length > 0) {
-          const llmResults = await Promise.allSettled(
-            unknownSkills.map((s) => normalizeAndCategorizeWithFallback(s.name))
-          );
+          // Batch into groups of 3 to respect the concurrency semaphore
+          const BATCH_SIZE = 3;
           let idx = 0;
-          for (const skill of skillsWithTaxonomy) {
-            if (!skill.category) {
-              const result = llmResults[idx];
-              if (result.status === "fulfilled" && result.value.category) {
+          for (let i = 0; i < unknownSkills.length; i += BATCH_SIZE) {
+            const batch = unknownSkills.slice(i, i + BATCH_SIZE);
+            const llmResults = await Promise.allSettled(
+              batch.map((s) => normalizeAndCategorizeWithFallback(s.name))
+            );
+            for (const result of llmResults) {
+              // Find the corresponding skill in the original array
+              const skill = skillsWithTaxonomy.find(
+                (s) => !s.category && s.name === unknownSkills[idx].name
+              );
+              if (skill && result.status === "fulfilled" && result.value.category) {
                 skill.normalizedName = result.value.normalizedName;
                 skill.category = result.value.category;
               }

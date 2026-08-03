@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
 /**
+ * Auth utility helpers.
+ *
+ * NOTE: The middleware (src/middleware.ts) reimplements auth logic directly
+ * for performance and fail-closed semantics. These utilities remain available
+ * for route-level auth checks and are used by llm-parse-job.ts (isDemoMode).
+ * They can also serve as the foundation for future session-based auth if needed.
+ */
+
+/**
  * Checks if the request has a valid Bearer token matching AUTH_SECRET.
  * Returns null if valid, or a 401 NextResponse if invalid.
  */

@@ -1,129 +1,79 @@
 # Career Toolkit
 
-A full-stack AI-powered career management platform exploring how LLMs can augment the job search workflow -- from parsing unstructured job descriptions into structured data, to generating targeted resumes with gap analysis and coverage scoring.
-
-Built as an engineering exercise in applied NLP, data normalization, and thoughtful full-stack architecture.
-
-## Why This Exists
-
-Job descriptions are unstructured text. Resumes are unstructured text. The gap between "what a company needs" and "what I've done" is a classification problem that LLMs handle well. This project explores that intersection:
-
-- Can GPT reliably extract structured skill/responsibility data from free-text job postings?
-- Can a hierarchical taxonomy normalize 150+ skill variants into a coherent graph?
-- Can coverage scoring quantify resume-to-job fit across multiple target roles?
-- What does graceful degradation look like when the LLM is unavailable?
+An AI-powered career management platform that parses unstructured job descriptions into structured data, normalizes skills through a hierarchical taxonomy, and generates targeted resumes with gap analysis and coverage scoring.
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
 | Framework | Next.js 16 (App Router) |
-| Language | TypeScript, React 19 |
+| Language | TypeScript 5, React 19 |
 | Database | PostgreSQL (Neon) via Prisma 7 |
 | AI/NLP | OpenAI GPT-4o / GPT-4o-mini |
 | Styling | Tailwind CSS 4 |
-| Architecture | Server Components + API routes, local-first cloud bridge |
+| Testing | Vitest (89 tests) |
+
+## Deployment Model
+
+**Private deployment** uses Vercel Deployment Protection (password gate or SSO) to restrict access at the infrastructure level. No application-level auth is needed for the owner's browser sessions.
+
+**Public demo** runs with `DEMO_MODE=true` connected to a separate synthetic database (`DEMO_DATABASE_URL`). All mutations are blocked at the middleware layer, and LLM calls are mocked. The demo database is validated to be different from the private database at startup.
+
+## LLM Protection
+
+All LLM calls route through a centralized `guardedLLMCall` wrapper that enforces:
+
+- **Concurrency semaphore** (max 3 concurrent calls)
+- **Daily budget tracking** ($5/day default, best-effort in-memory)
+- **Request timeout** (30s abort signal)
+- **Input validation** (15K character limit)
+- **Rate limiting** at the middleware layer (stricter limits for LLM routes)
+
+The system degrades gracefully when no API key is configured or when the budget is exhausted.
 
 ## Features
 
-**Job Intelligence Pipeline** -- Paste a raw job description; GPT extracts title, company, skills, responsibilities, and qualifications into structured records. Regex fallback ensures the system works without an API key.
+- **Job Intelligence Pipeline** - Paste a raw job description; GPT extracts structured data. Regex fallback works without an API key.
+- **Hierarchical Skill Taxonomy** - 150+ manual mappings normalize skill variants with LLM fallback for unknown skills.
+- **Resume Builder** - Six-step wizard with gap analysis, highlight recommendations, and cover letter generation.
+- **Generic Resume Mode** - Optimizes a single resume for coverage across all saved jobs.
+- **Company Workspaces** - Per-company views with scoped jobs, skills, and application tracking.
+- **Experience Management** - Work history with resume upload (PDF/DOCX extraction).
+- **Interactive De-duplication** - Detects company name variants and duplicate postings.
 
-**Hierarchical Skill Taxonomy** -- Auto-normalizes skill variants (e.g., "React.js", "ReactJS", "React" all resolve to one canonical entry). 150+ manual mappings with LLM fallback for unknown skills. Categorizes into hard/soft skills with subcategories.
+## Getting Started
 
-**Resume Builder** -- Six-step guided wizard with gap analysis, highlight recommendations, bullet improvement suggestions, and cover letter generation. Supports both job-targeted and generic resume modes.
+```bash
+npm install
+cp .env.example .env
+# Edit .env with your POSTGRES_URL and optionally OPENAI_API_KEY
 
-**Generic Resume Mode** -- Optimizes a single resume for maximum coverage across all saved jobs. Coverage scoring shows percentage match per role.
+npx prisma migrate deploy
+npm run dev
+```
 
-**Company Workspaces** -- Dedicated per-company views with scoped jobs, aggregated skills, resume tools, intelligence notes, and application tracking.
+The app runs at `http://localhost:3000`.
 
-**Experience Management** -- Work history with highlights, metrics, and keyword tagging. Resume upload with automated content extraction (PDF and DOCX).
+## Testing
 
-**Interactive De-duplication** -- Detects company name variants and duplicate job postings, with an interactive merge workflow.
-
-**Dream Company/Job Tracking** -- Flag priority targets with visual indicators for focused job search strategy.
-
-## Architecture Highlights
-
-- **Lazy-initialized Prisma client** -- Proxy pattern ensures the database client is only instantiated at query time, avoiding issues with Next.js static generation and serverless cold starts.
-- **Graceful LLM degradation** -- Every AI-powered feature has a regex/heuristic fallback. The system is fully functional without an OpenAI API key (just less accurate).
-- **Incremental skill normalization** -- Only processes new/unmatched records, avoiding redundant LLM calls on the existing corpus.
-- **Server/Client component split** -- Dashboard and read-heavy pages use Server Components; interactive features (wizard, dedup tool) use Client Components with optimistic updates.
-- **Local-first cloud bridge** -- A local development agent enables zero-downtime development with offline-first data patterns.
-- **Health monitoring** -- Sentinel and integrity endpoints for system observability.
+```bash
+npm test          # Run all 89 tests
+npm run test:watch # Watch mode
+```
 
 ## Project Structure
 
 ```
 src/
-  app/
-    page.tsx                  -- Dashboard (Server Component)
-    jobs/page.tsx             -- Job library with search/filter
-    experience/page.tsx       -- Work history management
-    skills/page.tsx           -- Taxonomy browser
-    resume/page.tsx           -- Resume tools overview
-    resume/build/page.tsx     -- 6-step resume wizard
-    companies/page.tsx        -- Companies index
-    company/[slug]/page.tsx   -- Company workspace
-    dedup/page.tsx            -- De-duplication tool
-    phrases/page.tsx          -- Resume phrase library
-    api/                      -- API routes
-  components/                 -- Shared React components
-  lib/
-    db.ts                     -- Prisma client (lazy proxy pattern)
-    skill-taxonomy.ts         -- Taxonomy engine + normalization
-    llm-parse-job.ts          -- GPT-powered extraction
-    parse-job.ts              -- Regex fallback parser
+  app/           - Next.js App Router pages and API routes
+  components/    - Shared React components
+  lib/           - Core logic (db, taxonomy, LLM, guards, rate limiting)
 prisma/
-  schema.prisma               -- Database schema (PostgreSQL)
+  schema.prisma  - Database schema (17 models)
+  migrations/    - SQL migration history
+  seed-demo.ts   - Demo database seeder (fictional persona)
 ```
 
-## Getting Started
+## Environment Variables
 
-### Prerequisites
-
-- Node.js 18+
-- PostgreSQL database (or a [Neon](https://neon.tech) project)
-- OpenAI API key (optional -- system degrades gracefully without it)
-
-### Setup
-
-```bash
-# Install dependencies
-npm install
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your DATABASE_URL and optionally OPENAI_API_KEY
-
-# Run database migrations
-npx prisma migrate dev
-
-# Start development server
-npm run dev
-```
-
-> **Note:** Always use `npx prisma migrate dev` for local schema changes.
-> Never use `prisma db push` -- it bypasses the migration history and can cause data loss in shared environments.
-
-The app will be available at `http://localhost:3000`.
-
-### Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `OPENAI_API_KEY` | No | Enables GPT-powered extraction and recommendations |
-| `AUTH_SECRET` | No | Bearer token for API authentication. When set, all API routes (except GET /api/health) require `Authorization: Bearer <token>` |
-| `SERVICE_TOKEN` | No | Separate bearer token for sentinel/integrity POST endpoints. These routes skip AUTH_SECRET and only check SERVICE_TOKEN |
-| `DEMO_MODE` | No | Set to `"true"` to enable demo mode (server-side). Blocks all mutations with 403, mocks LLM calls |
-| `NEXT_PUBLIC_DEMO_MODE` | No | Set to `"true"` to show the demo banner in the UI (client-side). **Must be set alongside `DEMO_MODE` for the full demo experience** |
-| `GC_AUTH_TOKEN` | No | Bearer token for Groundcrew agent communication endpoints |
-
-## Design Decisions
-
-- **No auth layer** -- This is a single-tenant tool, not a SaaS product. Adding auth would be straightforward but unnecessary for the use case.
-- **Prisma over raw SQL** -- Type safety and migration tooling outweigh the minor performance overhead for this workload.
-- **GPT-4o-mini for extraction, GPT-4o for generation** -- Extraction is a structured task where the smaller model performs well; resume writing benefits from the larger model's fluency.
-- **150+ hardcoded skill mappings** -- LLM normalization is non-deterministic. A curated mapping table ensures consistency for common skills while the LLM handles the long tail.
-- **In-memory LLM budget tracking** -- The daily spend limit ($5/day default) is tracked in process memory. It resets on cold starts/restarts, making it a best-effort heuristic rather than a hard ceiling. For a single-tenant serverless deployment this provides reasonable cost protection without requiring external state.
-- **Dual DEMO_MODE variables** -- `DEMO_MODE` (server-side) controls mutation rejection and LLM mocking. `NEXT_PUBLIC_DEMO_MODE` (client-side) controls the UI banner. Both must be set to `"true"` for the full demo experience. This split is required by Next.js's client/server environment boundary.
+See `.env.example` for the full list with descriptions.

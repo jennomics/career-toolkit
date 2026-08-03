@@ -367,23 +367,19 @@ export function normalizeAndCategorize(raw: string): {
  * LLM fallback: categorize an unknown skill using GPT-4o-mini.
  * Returns the canonical name and category string, or null on failure.
  * This function is designed to never throw - all errors are caught internally.
+ * Routes through guardedLLMCall for concurrency, budget, timeout, and input validation.
  */
 export async function categorizeSkilLWithLLM(
   skillName: string
 ): Promise<{ normalizedName: string; category: string } | null> {
   try {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return null;
-    }
+    const { guardedLLMCall } = await import("./guarded-llm");
 
-    const OpenAI = (await import("openai")).default;
-    const openai = new OpenAI({ apiKey });
-
-    const response = await openai.chat.completions.create({
+    const content = await guardedLLMCall({
       model: "gpt-4o-mini",
       temperature: 0,
-      max_tokens: 150,
+      maxTokens: 150,
+      jsonMode: true,
       messages: [
         {
           role: "system",
@@ -404,9 +400,6 @@ If the skill doesn't fit neatly, pick the closest subcategory. Always provide a 
         },
       ],
     });
-
-    const content = response.choices[0]?.message?.content?.trim();
-    if (!content) return null;
 
     const parsed = JSON.parse(content);
     if (parsed.canonicalName && parsed.category && parsed.subcategory) {

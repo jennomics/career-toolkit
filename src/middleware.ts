@@ -107,8 +107,22 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 4. Demo mode - allow reads, block mutations
+  // 4. Demo mode - allow reads, block mutations, block gc routes entirely
   if (process.env.DEMO_MODE === "true") {
+    // Block groundcrew command history in demo mode (exposes internal state)
+    if (pathname.startsWith("/api/gc/")) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "FORBIDDEN",
+            message: "Groundcrew routes are disabled in demo mode",
+            requestId,
+          },
+        },
+        { status: 403 }
+      );
+    }
+
     if (method === "GET") {
       return NextResponse.next();
     }

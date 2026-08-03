@@ -2,15 +2,14 @@ import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-const connectionString =
-  process.env.POSTGRES_URL ||
-  process.env.POSTGRES_PRISMA_URL ||
-  process.env.DATABASE_URL;
-
+const connectionString = process.env.DEMO_DATABASE_URL;
 if (!connectionString) {
-  console.error(
-    "No database URL found. Set POSTGRES_URL or POSTGRES_PRISMA_URL in .env"
-  );
+  console.error("DEMO_DATABASE_URL is required for the demo seed. Set it in your environment.");
+  process.exit(1);
+}
+const privateUrls = [process.env.POSTGRES_URL, process.env.POSTGRES_PRISMA_URL, process.env.DATABASE_URL].filter(Boolean);
+if (privateUrls.includes(connectionString)) {
+  console.error("DEMO_DATABASE_URL must be different from your private database URL.");
   process.exit(1);
 }
 

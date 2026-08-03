@@ -18,6 +18,20 @@ function getConnectionString(): string {
         "Set DEMO_DATABASE_URL to a PostgreSQL connection string for the demo database."
       );
     }
+
+    // Verify DEMO_DATABASE_URL is not the same as any private database URL
+    const privateUrls = [
+      process.env.POSTGRES_URL,
+      process.env.POSTGRES_PRISMA_URL,
+      process.env.DATABASE_URL,
+    ].filter(Boolean);
+    if (privateUrls.includes(demoUrl)) {
+      throw new Error(
+        "DEMO_DATABASE_URL must be different from your private database URL. " +
+        "Using the same URL would expose real data in demo mode."
+      );
+    }
+
     return demoUrl;
   }
 
