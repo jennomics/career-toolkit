@@ -304,6 +304,20 @@ describe("Claims API - PATCH /api/claims/[id]", () => {
     expect(data.error.message).toContain("At least one field");
   });
 
+  it("rejects statement changes via PATCH", async () => {
+    mockClaim.findUnique.mockResolvedValue({ id: "1" });
+
+    const req = makeRequest("http://localhost/api/claims/1", {
+      method: "PATCH",
+      body: JSON.stringify({ statement: "updated" }),
+    });
+    const res = await patchClaim(req as never, makeParams("1") as never);
+    const data = await res.json();
+    expect(res.status).toBe(400);
+    expect(data.error.code).toBe("VALIDATION_ERROR");
+    expect(data.error.message).toContain("Statement changes are not allowed via PATCH");
+  });
+
   it("validates category", async () => {
     mockClaim.findUnique.mockResolvedValue({ id: "1" });
 
@@ -330,11 +344,13 @@ describe("Claims API - PATCH /api/claims/[id]", () => {
     expect(data.error.message).toContain("Invalid status");
   });
 
-  it("updates fields successfully", async () => {
+  it("updates status and category successfully", async () => {
     mockClaim.findUnique.mockResolvedValue({ id: "1" });
     mockClaim.update.mockResolvedValue({
       id: "1",
-      statement: "updated",
+      statement: "original",
+      status: "verified",
+      category: "numeric",
       artifacts: [],
       negativeAssertions: [],
       corrections: [],
@@ -342,12 +358,12 @@ describe("Claims API - PATCH /api/claims/[id]", () => {
 
     const req = makeRequest("http://localhost/api/claims/1", {
       method: "PATCH",
-      body: JSON.stringify({ statement: "updated" }),
+      body: JSON.stringify({ status: "verified" }),
     });
     const res = await patchClaim(req as never, makeParams("1") as never);
     const data = await res.json();
     expect(res.status).toBe(200);
-    expect(data.statement).toBe("updated");
+    expect(data.status).toBe("verified");
   });
 });
 
@@ -541,6 +557,63 @@ describe("Claims API - POST /api/claims/[id]/correct", () => {
     expect(mockClaim.update).not.toHaveBeenCalled();
     expect(mockClaimCorrection.create).not.toHaveBeenCalled();
     expect(mockNegativeAssertion.create).not.toHaveBeenCalled();
+  });
+
+  it("returns 409 when previousValue does not match current statement", async () => {
+    mockClaim.findUnique.mockResolvedValue({
+      id: "1",
+      statement: "12 years of experience", // current value differs from previousValue
+      corrections: [],
+      negativeAssertions: [],
+    });
+
+    const req = makeRequest("http://localhost/api/claims/1/correct", {
+      method: "POST",
+      body: JSON.stringify({ previousValue: "10 years of experience", correctedValue: "15 years" }),
+    });
+    const res = await postCorrection(req as never, makeParams("1") as never);
+    const data = await res.json();
+    expect(res.status).toBe(409);
+    expect(data.error.code).toBe("CONFLICT");
+    expect(data.error.currentStatement).toBe("12 years of experience");
+    // Should NOT have created any records
+    expect(mockClaim.update).not.toHaveBeenCalled();
+    expect(mockClaimCorrection.create).not.toHaveBeenCalled();
+    expect(mockNegativeAssertion.create).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 when transaction fails on negativeAssertion create (rollback)", async () => {
+    mockClaim.findUnique.mockResolvedValue({
+      id: "1",
+      statement: "10 years",
+      corrections: [],
+      negativeAssertions: [],
+    });
+
+    // Simulate the transaction failing on the negativeAssertion.create call
+    const mockTransaction = prisma.$transaction as ReturnType<typeof vi.fn>;
+    mockTransaction.mockImplementationOnce(async (fn: (tx: typeof prisma) => Promise<unknown>) => {
+      // Create a tx mock where negativeAssertion.create throws
+      const txMock = {
+        ...prisma,
+        claim: { ...prisma.claim, update: vi.fn().mockResolvedValue({ id: "1", statement: "12 years" }) },
+        claimCorrection: { ...prisma.claimCorrection, create: vi.fn().mockResolvedValue({ id: "c1" }) },
+        negativeAssertion: {
+          ...prisma.negativeAssertion,
+          create: vi.fn().mockRejectedValue(new Error("Database connection lost")),
+        },
+      };
+      return fn(txMock as unknown as typeof prisma);
+    });
+
+    const req = makeRequest("http://localhost/api/claims/1/correct", {
+      method: "POST",
+      body: JSON.stringify({ previousValue: "10 years", correctedValue: "12 years" }),
+    });
+    const res = await postCorrection(req as never, makeParams("1") as never);
+    expect(res.status).toBe(500);
+    const data = await res.json();
+    expect(data.error).toBeDefined();
   });
 });
 
