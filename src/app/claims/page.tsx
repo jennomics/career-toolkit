@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -237,14 +237,78 @@ function CorrectionModal({
   claim,
   onClose,
   onSubmit,
+  triggerRef,
 }: {
   claim: Claim;
   onClose: () => void;
   onSubmit: (claimId: string, previousValue: string, correctedValue: string) => Promise<void>;
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
 }) {
   const [correctedValue, setCorrectedValue] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap: keep focus within the modal
+  useEffect(() => {
+    const modal = modalRef.current;
+    if (!modal) return;
+
+    const focusableSelector =
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const getFocusableElements = () =>
+      Array.from(modal.querySelectorAll<HTMLElement>(focusableSelector)).filter(
+        (el) => !el.hasAttribute("disabled")
+      );
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+
+      const focusableElements = getFocusableElements();
+      if (focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    // Focus the first focusable element in the modal
+    const focusableElements = getFocusableElements();
+    if (focusableElements.length > 0) {
+      focusableElements[0].focus();
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
+
+  // Restore focus to trigger button on close
+  useEffect(() => {
+    return () => {
+      // On unmount, return focus to the trigger button
+      setTimeout(() => {
+        triggerRef.current?.focus();
+      }, 0);
+    };
+  }, [triggerRef]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -271,9 +335,8 @@ function CorrectionModal({
       aria-modal="true"
       aria-label="Correct claim"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
     >
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 p-6">
+      <div ref={modalRef} className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Correct This Claim</h3>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -296,7 +359,6 @@ function CorrectionModal({
               rows={3}
               placeholder="Enter the correct statement..."
               aria-required="true"
-              autoFocus
             />
           </div>
           {error && (
@@ -345,6 +407,7 @@ function ClaimCard({
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [correcting, setCorrecting] = useState(false);
+  const correctButtonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <div className="border border-gray-200 rounded-lg p-4 bg-white" role="article" aria-label={`Claim: ${claim.statement.slice(0, 60)}`}>
@@ -357,6 +420,7 @@ function ClaimCard({
           </div>
         </div>
         <button
+          ref={correctButtonRef}
           onClick={() => setCorrecting(true)}
           className="shrink-0 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded hover:bg-red-100 transition-colors"
           aria-label={`Report this claim as wrong: ${claim.statement.slice(0, 40)}`}
@@ -378,6 +442,7 @@ function ClaimCard({
           claim={claim}
           onClose={() => setCorrecting(false)}
           onSubmit={onCorrect}
+          triggerRef={correctButtonRef}
         />
       )}
     </div>
@@ -434,9 +499,10 @@ export default function ClaimsPage() {
     await fetchClaims();
   };
 
-  // Group claims by claimKey to detect conflicts
+  // Group non-superseded claims by claimKey to detect conflicts
   const claimsByKey: Record<string, Claim[]> = {};
   for (const claim of claims) {
+    if (claim.status === "superseded") continue;
     if (!claimsByKey[claim.claimKey]) {
       claimsByKey[claim.claimKey] = [];
     }
@@ -488,7 +554,7 @@ export default function ClaimsPage() {
 
   const activeClaims = claims.filter((c) => c.status !== "superseded");
   const hasConflicts = Object.values(claimsByKey).some(
-    (group) => group.filter((c) => c.status !== "superseded").length > 1
+    (group) => group.length > 1
   );
 
   return (
