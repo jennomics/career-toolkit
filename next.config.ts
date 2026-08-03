@@ -1,9 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Enable standalone output for smaller deployments
-  output: "standalone",
-
   // Security headers applied to all routes
   headers: async () => [
     {

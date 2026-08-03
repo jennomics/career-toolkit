@@ -46,6 +46,11 @@ next-env.d.ts
 # Private seed data (contains real PII - stays local only)
 prisma/seed-profile.ts
 
+# Internal agent state (not portfolio-ready)
+.kiro/agent-results.json
+.kiro/agent-commands.json
+.kiro/tunnel-url.txt
+
 # SQLite database (legacy, no longer used)
 dev.db
 dev.db-journal
