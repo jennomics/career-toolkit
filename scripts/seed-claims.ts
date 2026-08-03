@@ -94,7 +94,7 @@ async function importFromExperienceHighlights() {
   let skipped = 0;
 
   for (const highlight of highlights) {
-    const claimKey = `highlight-${slugify(highlight.text).slice(0, 80)}`;
+    const claimKey = `highlight-${slugify(highlight.text).slice(0, 80)}-${highlight.id.slice(-8)}`;
 
     // Idempotent: skip if claim with this claimKey already exists
     const existing = await prisma.claim.findFirst({
