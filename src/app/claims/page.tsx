@@ -474,10 +474,18 @@ export default function ClaimsPage() {
   }, [fetchClaims]);
 
   const handleUpdate = async (id: string, newStatement: string) => {
-    const res = await fetch(`/api/claims/${id}`, {
-      method: "PATCH",
+    const claim = claims.find((c) => c.id === id);
+    if (!claim) return;
+    // Statement changes go through the /correct endpoint to maintain
+    // the correction audit trail and create negative assertions.
+    const res = await fetch(`/api/claims/${id}/correct`, {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ statement: newStatement }),
+      body: JSON.stringify({
+        previousValue: claim.statement,
+        correctedValue: newStatement,
+        source: "user-ui",
+      }),
     });
     if (!res.ok) {
       const data = await res.json();

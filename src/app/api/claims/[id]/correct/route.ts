@@ -47,6 +47,23 @@ export async function POST(
       }
     }
 
+    // Validate that previousValue matches the current statement.
+    // This prevents stale UI or concurrent modifications from creating
+    // negative assertions for text that was never the claim's actual content.
+    if (claim.statement !== previousValue) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "CONFLICT",
+            message:
+              "The claim statement has changed since you last loaded it. Please refresh and try again.",
+            currentStatement: claim.statement,
+          },
+        },
+        { status: 409 }
+      );
+    }
+
     const correctionSource = source || "user-ui";
 
     // All three writes are wrapped in an interactive transaction for atomicity.
