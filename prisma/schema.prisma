@@ -305,7 +305,6 @@ model Claim {
   negativeAssertions NegativeAssertion[]
   corrections        ClaimCorrection[]
 
-  @@unique([claimKey, status])
   @@index([claimKey])
   @@index([status])
   @@index([category])

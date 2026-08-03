@@ -49,35 +49,39 @@ export async function POST(
 
     const correctionSource = source || "user-ui";
 
-    // Step 1: Update the claim statement
-    const updatedClaim = await prisma.claim.update({
-      where: { id },
-      data: { statement: correctedValue },
-    });
+    // All three writes are wrapped in an interactive transaction for atomicity.
+    // If any step fails, all changes are rolled back.
+    const result = await prisma.$transaction(async (tx) => {
+      // Step 1: Update the claim statement
+      const updatedClaim = await tx.claim.update({
+        where: { id },
+        data: { statement: correctedValue },
+      });
 
-    // Step 2: Create a ClaimCorrection record
-    const correction = await prisma.claimCorrection.create({
-      data: {
-        claimId: id,
-        previousValue,
-        correctedValue,
-        source: correctionSource,
-      },
-    });
+      // Step 2: Create a ClaimCorrection record
+      const correction = await tx.claimCorrection.create({
+        data: {
+          claimId: id,
+          previousValue,
+          correctedValue,
+          source: correctionSource,
+        },
+      });
 
-    // Step 3: Create a NegativeAssertion for the old value
-    const negativeAssertion = await prisma.negativeAssertion.create({
-      data: {
-        claimId: id,
-        forbiddenText: previousValue,
-        reason: `Corrected from "${previousValue}" to "${correctedValue}"`,
-      },
+      // Step 3: Create a NegativeAssertion for the old value
+      const negativeAssertion = await tx.negativeAssertion.create({
+        data: {
+          claimId: id,
+          forbiddenText: previousValue,
+          reason: `Corrected from "${previousValue}" to "${correctedValue}"`,
+        },
+      });
+
+      return { claim: updatedClaim, correction, negativeAssertion };
     });
 
     return NextResponse.json({
-      claim: updatedClaim,
-      correction,
-      negativeAssertion,
+      ...result,
       idempotent: false,
     }, { status: 201 });
   } catch (err) {

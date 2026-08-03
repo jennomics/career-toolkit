@@ -110,6 +110,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(claim, { status: 201 });
   } catch (err) {
     console.error("POST /api/claims error:", err);
+    // Catch Prisma unique constraint violation (race condition on concurrent create)
+    if (
+      err instanceof Error &&
+      "code" in err &&
+      (err as { code: string }).code === "P2002"
+    ) {
+      const requestId = generateRequestId();
+      return NextResponse.json(
+        {
+          error: {
+            code: "CONFLICT",
+            message: `A claim with this claimKey and status already exists (unique constraint violation).`,
+            requestId,
+          },
+        },
+        { status: 409 }
+      );
+    }
     const requestId = generateRequestId();
     return formatErrorResponse(err, requestId);
   }
