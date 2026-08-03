@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import DecompositionPanel from "./DecompositionPanel";
 
 interface Responsibility {
   id: string;
@@ -284,6 +285,9 @@ export default function JobCard({ job, onUpdate, onDelete, onKeywordClick }: Job
               {job.description}
             </div>
           </details>
+
+          {/* Posting Decomposition */}
+          <DecompositionPanel jobId={job.id} />
 
           {job.notes && (
             <div className="mt-3 p-2 bg-yellow-50 rounded text-sm text-gray-600">
