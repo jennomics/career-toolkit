@@ -1,28 +1,36 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // vi.mock is hoisted so the factory must be self-contained
-vi.mock("@/lib/db", () => ({
-  prisma: {
-    claim: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-      findUnique: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-    },
-    claimArtifact: {
-      findMany: vi.fn(),
-      create: vi.fn(),
-    },
-    negativeAssertion: {
-      findMany: vi.fn(),
-      create: vi.fn(),
-    },
-    claimCorrection: {
-      create: vi.fn(),
-    },
-  },
-}));
+vi.mock("@/lib/db", () => {
+  const claimMock = {
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    findUnique: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+  };
+  const claimArtifactMock = {
+    findMany: vi.fn(),
+    create: vi.fn(),
+  };
+  const negativeAssertionMock = {
+    findMany: vi.fn(),
+    create: vi.fn(),
+  };
+  const claimCorrectionMock = {
+    create: vi.fn(),
+  };
+  const prismaMock = {
+    claim: claimMock,
+    claimArtifact: claimArtifactMock,
+    negativeAssertion: negativeAssertionMock,
+    claimCorrection: claimCorrectionMock,
+    $transaction: vi.fn(),
+  };
+  // $transaction calls the callback with the same prisma mock as the tx argument
+  prismaMock.$transaction.mockImplementation(async (fn: (tx: typeof prismaMock) => Promise<unknown>) => fn(prismaMock));
+  return { prisma: prismaMock };
+});
 
 // Import prisma after mock so we get the mocked version
 import { prisma } from "@/lib/db";
