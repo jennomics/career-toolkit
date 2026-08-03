@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Add Claim, ClaimArtifact, NegativeAssertion, ClaimCorrection models to Prisma schema and implement full Claims CRUD API with conflict detection, correction flow, negative assertions API, and artifact management.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Add Claim, ClaimArtifact, NegativeAssertion, ClaimCorrection models to prisma/schema.prisma exactly as specified in the user instruction schema. Maintain existing models unchanged.",
     "Run 'npx prisma generate' to regenerate the Prisma client with the new models.",
@@ -36,5 +36,5 @@
     "npx vitest run"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 29 claims-api tests pass. Full test suite (118 tests) passes. npm run build succeeds with all new API routes detected. Prisma generate works. Used vi.mock factory pattern (not top-level variable reference) due to hoisting behavior in vitest."
 }
