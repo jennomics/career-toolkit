@@ -34,7 +34,9 @@ export async function GET(
   }
 }
 
-// PATCH /api/claims/[id] - Update a claim's fields
+// PATCH /api/claims/[id] - Update a claim's status or category
+// Note: statement changes must go through POST /api/claims/[id]/correct
+// to maintain the correction audit trail and create negative assertions.
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -43,6 +45,13 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
     const { statement, status, category } = body;
+
+    // Reject statement changes - these must use the /correct endpoint
+    if (statement !== undefined) {
+      return validationError(
+        "Statement changes are not allowed via PATCH. Use POST /api/claims/[id]/correct to update a claim's statement with a full correction audit trail."
+      );
+    }
 
     // Validate that the claim exists
     const existing = await prisma.claim.findUnique({ where: { id } });
@@ -60,12 +69,11 @@ export async function PATCH(
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data: any = {};
-    if (statement !== undefined) data.statement = statement;
     if (status !== undefined) data.status = status;
     if (category !== undefined) data.category = category;
 
     if (Object.keys(data).length === 0) {
-      return validationError("At least one field (statement, status, category) must be provided");
+      return validationError("At least one field (status, category) must be provided");
     }
 
     const claim = await prisma.claim.update({
