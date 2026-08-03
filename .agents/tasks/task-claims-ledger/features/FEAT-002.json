@@ -1,0 +1,37 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Create the seed-claims.ts script that imports existing ProfileMetric and ExperienceHighlight data into the Claims ledger, and build the Claims UI page at /claims with list view, conflict indicators, inline edit, correction flow, and evidence drawer.",
+  "status": "completed",
+  "steps": [
+    "Create scripts/ directory and scripts/seed-claims.ts following the pattern in prisma/seed-demo.ts (uses dotenv/config, imports PrismaClient from '../src/generated/prisma/client', uses PrismaPg adapter, gets connection string from env vars). The script: (1) importFromProfileMetrics: for each ProfileMetric row, create a Claim with claimKey derived from slugified label (e.g., 'metric-{label-slug}'), statement = '{label}: {value}', category = 'numeric', status = 'unverified', and a ClaimArtifact with passageText = value, passageLocation = source. (2) importFromExperienceHighlights: for each ExperienceHighlight, create a Claim with claimKey derived from a hash/slug of the text, statement = text, category = based on highlight category (achievement/project -> 'capability', responsibility -> 'narrative'), status = 'unverified', and a ClaimArtifact with passageText = text, passageLocation = metrics field if present. Idempotent: skip if a claim with that claimKey already exists (use findFirst before creating). Use individual prisma.claim.create calls (not createMany). Do NOT delete original data.",
+    "Add a 'seed:claims' script to package.json: 'tsx scripts/seed-claims.ts'",
+    "Create src/app/claims/page.tsx as a 'use client' page with: (1) List view showing all claims fetched from GET /api/claims, grouped by category (numeric, date, attribution, capability, narrative). (2) Status badges with appropriate colors (verified=green, unverified=amber, superseded=gray) with sufficient color contrast and aria-labels. (3) Conflict indicator: claims sharing a claimKey with different statements show a warning icon and 'Resolve' button. (4) Inline edit: click to edit statement, calls PATCH /api/claims/[id]. (5) Correction flow: 'This is wrong' button opens a modal with previous/corrected fields, calls POST /api/claims/[id]/correct. (6) Evidence drawer: expandable panel showing all artifacts for a claim. (7) Empty state with guidance when zero claims exist. (8) All interactive elements keyboard-accessible with ARIA labels.",
+    "Follow existing UI patterns from src/app/profile/page.tsx: header with nav links (including new /claims link), max-w-5xl container, Tailwind CSS v4 classes, loading/error states.",
+    "Add a 'Claims' link to the navigation in the profile page and other relevant pages (or just ensure the claims page has its own nav header consistent with other pages).",
+    "Verify with 'npm run build' that the page compiles and all routes resolve."
+  ],
+  "acceptance_criteria": [
+    "scripts/seed-claims.ts exists and can be run with 'npx tsx scripts/seed-claims.ts'",
+    "The seed script creates Claim rows from all ProfileMetrics (category: numeric) and ExperienceHighlights (category: capability or narrative)",
+    "Each seeded Claim has at least one ClaimArtifact linking back to source",
+    "Seeded claims have status 'unverified'",
+    "Running the script twice is idempotent (checks for existing claimKey before inserting)",
+    "Original ProfileMetric and ExperienceHighlight rows are untouched",
+    "Claims page at /claims renders all claims with category grouping",
+    "Conflicting claims are visually flagged with warning icon and Resolve button",
+    "User can correct a claim and the correction appears immediately in UI",
+    "Evidence panel shows all artifacts",
+    "Page works with zero claims (empty state with guidance)",
+    "All interactive elements are keyboard-accessible with ARIA labels",
+    "Status badges have sufficient color contrast",
+    "npm run build passes",
+    "npx vitest run passes"
+  ],
+  "verification": [
+    "npm run build",
+    "npx vitest run"
+  ],
+  "blocked_reason": null,
+  "findings": "All 118 tests pass. Build succeeds with /claims as static page. Seed script created at scripts/seed-claims.ts using POSTGRES_URL env var with individual prisma.claim.create calls. Claims page uses consistent nav pattern matching profile page. The claims page groups by category, detects conflicts (same claimKey, different statements), supports inline editing via PATCH, correction flow via POST /correct, and evidence drawer showing artifacts and negative assertions."
+}

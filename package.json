@@ -12,6 +12,7 @@
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
     "seed:demo": "tsx prisma/seed-demo.ts",
+    "seed:claims": "tsx scripts/seed-claims.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Add Claim, ClaimArtifact, NegativeAssertion, ClaimCorrection models to Prisma schema and implement full Claims CRUD API with conflict detection, correction flow, negative assertions API, and artifact management.",
+  "status": "completed",
+  "steps": [
+    "Add Claim, ClaimArtifact, NegativeAssertion, ClaimCorrection models to prisma/schema.prisma exactly as specified in the user instruction schema. Maintain existing models unchanged.",
+    "Run 'npx prisma generate' to regenerate the Prisma client with the new models.",
+    "Create src/app/api/claims/route.ts with GET (list claims, filterable by status/category/claimKey, with included artifacts and negativeAssertions) and POST (create claim with validation: statement required, claimKey required, category must be one of numeric/date/attribution/capability/narrative). On POST, if claimKey already has an active claim, return 409 with both claims for user resolution.",
+    "Create src/app/api/claims/[id]/route.ts with GET (single claim with artifacts, negativeAssertions, corrections), PATCH (update statement/status/category, set updatedAt), DELETE (soft-delete: set status to 'superseded').",
+    "Create src/app/api/claims/[id]/artifacts/route.ts with GET (list artifacts for claim) and POST (create artifact with passageText required, passageLocation optional, freshnessWindow optional). Artifact creation must not mutate the claim's statement.",
+    "Create src/app/api/claims/[id]/correct/route.ts with POST that accepts { previousValue, correctedValue, source? }. This atomically: (1) updates the claim statement to correctedValue, (2) creates a ClaimCorrection record, (3) creates a NegativeAssertion with forbiddenText=previousValue. Idempotent: correcting to the same value twice does not create duplicate assertions.",
+    "Create src/app/api/claims/[id]/negative-assertions/route.ts with GET (list) and POST (manual add with forbiddenText and reason required).",
+    "All API routes must use try/catch with formatErrorResponse, generateRequestId, validationError from @/lib/api-error following the pattern in src/app/api/experience/route.ts and src/app/api/profile/metrics/route.ts.",
+    "Write unit tests in src/lib/__tests__/claims-api.test.ts that test the validation logic, conflict detection logic, and correction idempotency logic (can mock prisma). Test that category validation rejects invalid categories, that required fields are enforced, etc.",
+    "Verify with 'npx prisma generate' and 'npm run build' that everything compiles."
+  ],
+  "acceptance_criteria": [
+    "All four models (Claim, ClaimArtifact, NegativeAssertion, ClaimCorrection) exist in prisma/schema.prisma with correct fields, relations, indexes, and @@unique constraint",
+    "npx prisma generate succeeds and produces typed client",
+    "POST /api/claims creates a claim and returns it with id",
+    "GET /api/claims returns list filterable by status, category, claimKey",
+    "PATCH /api/claims/[id] updates fields",
+    "Creating a claim with a claimKey that has an existing active claim returns 409",
+    "POST /api/claims/[id]/artifacts creates evidence without mutating the claim statement",
+    "POST /api/claims/[id]/correct atomically updates claim + creates correction + creates negative assertion",
+    "Correction is idempotent (same correction twice does not duplicate assertions)",
+    "GET /api/claims/[id]/negative-assertions returns all assertions for that claim",
+    "All routes have try/catch with error messages in response body",
+    "npm run build passes",
+    "npx vitest run passes"
+  ],
+  "verification": [
+    "npx prisma generate",
+    "npm run build",
+    "npx vitest run"
+  ],
+  "blocked_reason": null,
+  "findings": "All 29 claims-api tests pass. Full test suite (118 tests) passes. npm run build succeeds with all new API routes detected. Prisma generate works. Used vi.mock factory pattern (not top-level variable reference) due to hoisting behavior in vitest."
+}

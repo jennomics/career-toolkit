@@ -2,7 +2,7 @@ generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
-// Schema version: 2 (Experience tables added)
+// Schema version: 3 (Claims Ledger added)
 
 datasource db {
   provider = "postgresql"
@@ -284,4 +284,64 @@ model WritingSample {
   createdAt DateTime @default(now())
   profile CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   @@index([profileId])
+}
+
+// ─── Claims Ledger ───────────────────────────────────────────────────────────
+
+model Claim {
+  id              String    @id @default(cuid())
+  claimKey        String
+  statement       String
+  category        String    // numeric, date, attribution, capability, narrative
+  status          String    @default("unverified") // verified, unverified, superseded
+  supersededById  String?
+  supersededBy    Claim?    @relation("Supersession", fields: [supersededById], references: [id])
+  supersedes      Claim[]   @relation("Supersession")
+  lastVerifiedAt  DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  artifacts          ClaimArtifact[]
+  negativeAssertions NegativeAssertion[]
+  corrections        ClaimCorrection[]
+
+  @@index([claimKey])
+  @@index([status])
+  @@index([category])
+}
+
+model ClaimArtifact {
+  id              String   @id @default(cuid())
+  claimId         String
+  claim           Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  passageText     String
+  passageLocation String?
+  ingestionDate   DateTime @default(now())
+  freshnessWindow Int?     // Days until stale (null = never expires)
+
+  @@index([claimId])
+}
+
+model NegativeAssertion {
+  id            String   @id @default(cuid())
+  claimId       String
+  claim         Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  forbiddenText String
+  reason        String
+  correctedAt   DateTime @default(now())
+
+  @@index([claimId])
+}
+
+model ClaimCorrection {
+  id             String   @id @default(cuid())
+  claimId        String
+  claim          Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  previousValue  String
+  correctedValue String
+  source         String   // "user-ui", "review", "import"
+  createdAt      DateTime @default(now())
+
+  @@index([claimId])
+  @@index([createdAt])
 }
