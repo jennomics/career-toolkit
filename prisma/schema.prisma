@@ -2,7 +2,7 @@ generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
-// Schema version: 3 (Claims Ledger added)
+// Schema version: 4 (Claims Ledger + Posting Decomposition added)
 
 datasource db {
   provider = "postgresql"
@@ -344,4 +344,20 @@ model ClaimCorrection {
 
   @@index([claimId])
   @@index([createdAt])
+}
+
+// ─── Posting Decomposition ───────────────────────────────────────────────────
+
+model PostingDecomposition {
+  id               String   @id @default(cuid())
+  jobId            String   @unique
+  problemStatement String   // What problem does this role exist to solve?
+  responsibilities String[] // Named responsibilities
+  statedBars       String[] // Explicit bars/requirements
+  vocabulary       String[] // Distinctive terms from the posting
+  hiringQuestions  Json     // Array of { question, claimIds[], gap: boolean }
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([jobId])
 }
