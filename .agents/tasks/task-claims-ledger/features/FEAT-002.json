@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Create the seed-claims.ts script that imports existing ProfileMetric and ExperienceHighlight data into the Claims ledger, and build the Claims UI page at /claims with list view, conflict indicators, inline edit, correction flow, and evidence drawer.",
-  "status": "pending",
+  "status": "completed",
   "steps": [
     "Create scripts/ directory and scripts/seed-claims.ts following the pattern in prisma/seed-demo.ts (uses dotenv/config, imports PrismaClient from '../src/generated/prisma/client', uses PrismaPg adapter, gets connection string from env vars). The script: (1) importFromProfileMetrics: for each ProfileMetric row, create a Claim with claimKey derived from slugified label (e.g., 'metric-{label-slug}'), statement = '{label}: {value}', category = 'numeric', status = 'unverified', and a ClaimArtifact with passageText = value, passageLocation = source. (2) importFromExperienceHighlights: for each ExperienceHighlight, create a Claim with claimKey derived from a hash/slug of the text, statement = text, category = based on highlight category (achievement/project -> 'capability', responsibility -> 'narrative'), status = 'unverified', and a ClaimArtifact with passageText = text, passageLocation = metrics field if present. Idempotent: skip if a claim with that claimKey already exists (use findFirst before creating). Use individual prisma.claim.create calls (not createMany). Do NOT delete original data.",
     "Add a 'seed:claims' script to package.json: 'tsx scripts/seed-claims.ts'",
@@ -33,5 +33,5 @@
     "npx vitest run"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 118 tests pass. Build succeeds with /claims as static page. Seed script created at scripts/seed-claims.ts using POSTGRES_URL env var with individual prisma.claim.create calls. Claims page uses consistent nav pattern matching profile page. The claims page groups by category, detects conflicts (same claimKey, different statements), supports inline editing via PATCH, correction flow via POST /correct, and evidence drawer showing artifacts and negative assertions."
 }
