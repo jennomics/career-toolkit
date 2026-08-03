@@ -302,10 +302,11 @@ function CorrectionModal({
 
   // Restore focus to trigger button on close
   useEffect(() => {
+    const trigger = triggerRef.current;
     return () => {
       // On unmount, return focus to the trigger button
       setTimeout(() => {
-        triggerRef.current?.focus();
+        trigger?.focus();
       }, 0);
     };
   }, [triggerRef]);
@@ -470,8 +471,20 @@ export default function ClaimsPage() {
   }, []);
 
   useEffect(() => {
-    fetchClaims();
-  }, [fetchClaims]);
+    async function loadClaims() {
+      try {
+        const res = await fetch("/api/claims");
+        if (!res.ok) throw new Error("Failed to fetch claims");
+        const data = await res.json();
+        setClaims(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load claims");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadClaims();
+  }, []);
 
   const handleUpdate = async (id: string, newStatement: string) => {
     const claim = claims.find((c) => c.id === id);
