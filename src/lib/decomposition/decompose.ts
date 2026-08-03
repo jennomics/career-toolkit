@@ -13,6 +13,7 @@ export interface DecompositionResult {
   statedBars: string[];
   vocabulary: string[];
   hiringQuestions: Array<{ question: string; rationale: string }>;
+  partialExtraction: boolean;
 }
 
 /**
@@ -50,17 +51,27 @@ export async function decomposePosting(
       return fallbackExtraction(description);
     }
 
+    // Filter and validate individual hiringQuestions entries
+    const validQuestions = parsed.hiringQuestions.filter(
+      (q: unknown): q is { question: string; rationale?: string } =>
+        typeof q === "object" &&
+        q !== null &&
+        typeof (q as Record<string, unknown>).question === "string" &&
+        (q as Record<string, unknown>).question !== ""
+    );
+
     return {
       problemStatement: parsed.problemStatement,
       responsibilities: parsed.responsibilities,
       statedBars: parsed.statedBars,
       vocabulary: parsed.vocabulary,
-      hiringQuestions: parsed.hiringQuestions.map(
-        (q: { question?: string; rationale?: string }) => ({
-          question: q.question || "",
+      hiringQuestions: validQuestions.map(
+        (q: { question: string; rationale?: string }) => ({
+          question: q.question,
           rationale: q.rationale || "",
         })
       ),
+      partialExtraction: false,
     };
   } catch {
     return fallbackExtraction(description);
@@ -111,5 +122,6 @@ export function fallbackExtraction(description: string): DecompositionResult {
     statedBars: [],
     vocabulary: [],
     hiringQuestions: [],
+    partialExtraction: true,
   };
 }
