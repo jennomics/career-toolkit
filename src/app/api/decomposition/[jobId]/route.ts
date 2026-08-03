@@ -24,7 +24,32 @@ export async function GET(
       return notFoundError("Decomposition not found for this job");
     }
 
-    return NextResponse.json(decomposition);
+    // Collect all referenced claim IDs from hiring questions
+    const questions = decomposition.hiringQuestions as Array<{
+      claimIds?: string[];
+    }>;
+    const allClaimIds = new Set<string>();
+    for (const q of questions) {
+      if (q.claimIds) {
+        for (const id of q.claimIds) {
+          allClaimIds.add(id);
+        }
+      }
+    }
+
+    // Fetch claim statements for all referenced claims
+    let claimStatements: Record<string, string> = {};
+    if (allClaimIds.size > 0) {
+      const claims = await prisma.claim.findMany({
+        where: { id: { in: Array.from(allClaimIds) } },
+        select: { id: true, statement: true },
+      });
+      claimStatements = Object.fromEntries(
+        claims.map((c) => [c.id, c.statement])
+      );
+    }
+
+    return NextResponse.json({ ...decomposition, claimStatements });
   } catch (err) {
     console.error("GET /api/decomposition/[jobId] error:", err);
     const requestId = generateRequestId();
@@ -83,6 +108,7 @@ export async function POST(
         statedBars: result.statedBars,
         vocabulary: result.vocabulary,
         hiringQuestions: hiringQuestionsJson,
+        partialExtraction: result.partialExtraction,
       },
       update: {
         problemStatement: result.problemStatement,
@@ -90,6 +116,7 @@ export async function POST(
         statedBars: result.statedBars,
         vocabulary: result.vocabulary,
         hiringQuestions: hiringQuestionsJson,
+        partialExtraction: result.partialExtraction,
       },
     });
 

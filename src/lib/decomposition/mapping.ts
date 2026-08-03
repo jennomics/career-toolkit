@@ -38,7 +38,7 @@ const STOP_WORDS = new Set([
 ]);
 
 // Minimum match threshold: a claim must share at least this many significant words
-const MIN_WORD_OVERLAP = 2;
+const MIN_WORD_OVERLAP = 3;
 
 /**
  * Extracts significant words from text (words with length > 3, not stop words).
@@ -93,7 +93,8 @@ export function mapClaimsToQuestions(
   claims: ClaimForMapping[]
 ): MappingReport {
   const questions: MappedHiringQuestion[] = hiringQuestions.map((hq) => {
-    const questionWords = extractSignificantWords(hq.question + " " + hq.rationale);
+    // Use only question text for matching (not rationale) to reduce false positives
+    const questionWords = extractSignificantWords(hq.question);
 
     const matchedClaimIds: string[] = [];
     for (const claim of claims) {

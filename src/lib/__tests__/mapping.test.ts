@@ -37,16 +37,16 @@ describe("mapClaimsToQuestions", () => {
   const sampleClaims: ClaimForMapping[] = [
     {
       id: "claim-1",
-      statement: "Led a team of 12 engineers through a platform migration",
+      statement: "Led a team of 12 engineers through a complex platform migration to cloud infrastructure",
       artifacts: [
-        { passageText: "Managed cross-functional team during infrastructure migration" },
+        { passageText: "Managed cross-functional team during complex infrastructure migration spanning multiple services" },
       ],
     },
     {
       id: "claim-2",
-      statement: "Scaled data pipeline from 1TB to 50TB daily throughput",
+      statement: "Scaled distributed data pipeline from 1TB to 50TB daily throughput under production pressure",
       artifacts: [
-        { passageText: "Built and scaled distributed data pipeline processing" },
+        { passageText: "Built and scaled distributed data pipeline processing under tight deadlines with production pressure" },
       ],
     },
     {
@@ -60,15 +60,15 @@ describe("mapClaimsToQuestions", () => {
 
   const sampleQuestions: HiringQuestion[] = [
     {
-      question: "Can she lead the team through a complex migration?",
+      question: "Can she lead the engineering team through a complex infrastructure migration?",
       rationale: "Platform migration is the immediate priority",
     },
     {
-      question: "Can he scale data systems under pressure?",
+      question: "Can he build and scale distributed data pipeline under production pressure?",
       rationale: "Data volume is growing 10x",
     },
     {
-      question: "Does she have startup fundraising experience?",
+      question: "Does she have startup fundraising experience with investors?",
       rationale: "Company needs someone who understands investor dynamics",
     },
   ];
