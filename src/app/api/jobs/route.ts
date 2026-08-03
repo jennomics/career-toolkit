@@ -11,6 +11,7 @@ import { mapClaimsToQuestions } from "@/lib/decomposition/mapping";
 /**
  * Triggers posting decomposition in the background (non-blocking).
  * Decomposes the posting, maps claims to hiring questions, and upserts the result.
+ * Retries once after a 2-second delay on failure.
  */
 async function triggerDecomposition(
   jobId: string,
@@ -18,40 +19,52 @@ async function triggerDecomposition(
   title: string,
   company: string
 ): Promise<void> {
-  const result = await decomposePosting(description, title, company);
+  async function attempt(): Promise<void> {
+    const result = await decomposePosting(description, title, company);
 
-  const claims = await prisma.claim.findMany({
-    where: { status: { not: "superseded" } },
-    include: { artifacts: { select: { passageText: true } } },
-  });
+    const claims = await prisma.claim.findMany({
+      where: { status: { not: "superseded" } },
+      include: { artifacts: { select: { passageText: true } } },
+    });
 
-  const mappingReport = mapClaimsToQuestions(
-    result.hiringQuestions,
-    claims.map((c) => ({
-      id: c.id,
-      statement: c.statement,
-      artifacts: c.artifacts,
-    }))
-  );
+    const mappingReport = mapClaimsToQuestions(
+      result.hiringQuestions,
+      claims.map((c) => ({
+        id: c.id,
+        statement: c.statement,
+        artifacts: c.artifacts,
+      }))
+    );
 
-  await prisma.postingDecomposition.upsert({
-    where: { jobId },
-    create: {
-      jobId,
-      problemStatement: result.problemStatement,
-      responsibilities: result.responsibilities,
-      statedBars: result.statedBars,
-      vocabulary: result.vocabulary,
-      hiringQuestions: JSON.parse(JSON.stringify(mappingReport.questions)),
-    },
-    update: {
-      problemStatement: result.problemStatement,
-      responsibilities: result.responsibilities,
-      statedBars: result.statedBars,
-      vocabulary: result.vocabulary,
-      hiringQuestions: JSON.parse(JSON.stringify(mappingReport.questions)),
-    },
-  });
+    await prisma.postingDecomposition.upsert({
+      where: { jobId },
+      create: {
+        jobId,
+        problemStatement: result.problemStatement,
+        responsibilities: result.responsibilities,
+        statedBars: result.statedBars,
+        vocabulary: result.vocabulary,
+        hiringQuestions: JSON.parse(JSON.stringify(mappingReport.questions)),
+        partialExtraction: result.partialExtraction,
+      },
+      update: {
+        problemStatement: result.problemStatement,
+        responsibilities: result.responsibilities,
+        statedBars: result.statedBars,
+        vocabulary: result.vocabulary,
+        hiringQuestions: JSON.parse(JSON.stringify(mappingReport.questions)),
+        partialExtraction: result.partialExtraction,
+      },
+    });
+  }
+
+  try {
+    await attempt();
+  } catch (err) {
+    console.error("Decomposition first attempt failed, retrying in 2s:", err);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await attempt();
+  }
 }
 
 // GET /api/jobs - List all jobs with optional search/filter
