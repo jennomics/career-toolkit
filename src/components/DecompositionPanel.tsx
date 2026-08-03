@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface MappedQuestion {
   question: string;
@@ -17,6 +17,8 @@ interface DecompositionData {
   statedBars: string[];
   vocabulary: string[];
   hiringQuestions: MappedQuestion[];
+  partialExtraction: boolean;
+  claimStatements: Record<string, string>;
 }
 
 interface DecompositionPanelProps {
@@ -27,44 +29,65 @@ export default function DecompositionPanel({ jobId }: DecompositionPanelProps) {
   const [data, setData] = useState<DecompositionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [regenerating, setRegenerating] = useState(false);
   const [expandedQuestions, setExpandedQuestions] = useState<Set<number>>(
     new Set()
   );
 
+  const loadDecomposition = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/decomposition/${jobId}`);
+      if (res.status === 404) {
+        setData(null);
+        setLoading(false);
+        return;
+      }
+      if (!res.ok) {
+        throw new Error("Failed to load decomposition");
+      }
+      const json = await res.json();
+      setData(json);
+      setLoading(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+      setLoading(false);
+    }
+  }, [jobId]);
+
   useEffect(() => {
     let cancelled = false;
 
-    async function loadDecomposition() {
-      try {
-        const res = await fetch(`/api/decomposition/${jobId}`);
-        if (cancelled) return;
-        if (res.status === 404) {
-          setData(null);
-          setLoading(false);
-          return;
-        }
-        if (!res.ok) {
-          throw new Error("Failed to load decomposition");
-        }
-        const json = await res.json();
-        if (!cancelled) {
-          setData(json);
-          setLoading(false);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "An error occurred");
-          setLoading(false);
-        }
-      }
+    async function load() {
+      await loadDecomposition();
+      if (cancelled) return;
     }
 
-    loadDecomposition();
+    load();
 
     return () => {
       cancelled = true;
     };
-  }, [jobId]);
+  }, [loadDecomposition]);
+
+  const handleRegenerate = async () => {
+    setRegenerating(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/decomposition/${jobId}`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to regenerate decomposition");
+      }
+      // Reload the data after regeneration
+      setLoading(true);
+      await loadDecomposition();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Regeneration failed");
+    } finally {
+      setRegenerating(false);
+    }
+  };
 
   const toggleQuestion = (index: number) => {
     setExpandedQuestions((prev) => {
@@ -136,6 +159,7 @@ export default function DecompositionPanel({ jobId }: DecompositionPanelProps) {
 
   const questions = data.hiringQuestions || [];
   const gapCount = questions.filter((q) => q.gap).length;
+  const claimStatements = data.claimStatements || {};
 
   return (
     <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200" role="region" aria-label="Posting decomposition">
@@ -148,6 +172,54 @@ export default function DecompositionPanel({ jobId }: DecompositionPanelProps) {
           {data.problemStatement}
         </p>
       </div>
+
+      {/* Partial extraction warning with regenerate */}
+      {data.partialExtraction && questions.length === 0 && (
+        <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-md flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <svg
+              className="h-4 w-4 text-amber-600 shrink-0"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.168 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span className="text-sm text-amber-700">
+              Partial extraction - LLM unavailable. Click to regenerate.
+            </span>
+          </div>
+          <button
+            onClick={handleRegenerate}
+            disabled={regenerating}
+            aria-label="Regenerate decomposition"
+            className="px-3 py-1 text-xs font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {regenerating ? "Regenerating..." : "Regenerate"}
+          </button>
+        </div>
+      )}
+
+      {/* Empty questions without partial extraction - show regenerate option */}
+      {!data.partialExtraction && questions.length === 0 && (
+        <div className="mb-3 p-3 bg-slate-100 border border-slate-200 rounded-md flex items-center justify-between">
+          <span className="text-sm text-slate-600">
+            No hiring questions extracted.
+          </span>
+          <button
+            onClick={handleRegenerate}
+            disabled={regenerating}
+            aria-label="Regenerate decomposition"
+            className="px-3 py-1 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {regenerating ? "Regenerating..." : "Regenerate"}
+          </button>
+        </div>
+      )}
 
       {/* Hiring Questions */}
       {questions.length > 0 && (
@@ -228,9 +300,9 @@ export default function DecompositionPanel({ jobId }: DecompositionPanelProps) {
                           {q.claimIds.map((claimId) => (
                             <li
                               key={claimId}
-                              className="text-xs text-slate-600 bg-slate-50 rounded px-2 py-1 font-mono"
+                              className="text-xs text-slate-600 bg-slate-50 rounded px-2 py-1"
                             >
-                              {claimId}
+                              {claimStatements[claimId] || claimId}
                             </li>
                           ))}
                         </ul>

@@ -349,15 +349,16 @@ model ClaimCorrection {
 // ─── Posting Decomposition ───────────────────────────────────────────────────
 
 model PostingDecomposition {
-  id               String   @id @default(cuid())
-  jobId            String   @unique
-  problemStatement String   // What problem does this role exist to solve?
-  responsibilities String[] // Named responsibilities
-  statedBars       String[] // Explicit bars/requirements
-  vocabulary       String[] // Distinctive terms from the posting
-  hiringQuestions  Json     // Array of { question, claimIds[], gap: boolean }
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                String   @id @default(cuid())
+  jobId             String   @unique
+  problemStatement  String   // What problem does this role exist to solve?
+  responsibilities  String[] // Named responsibilities
+  statedBars        String[] // Explicit bars/requirements
+  vocabulary        String[] // Distinctive terms from the posting
+  hiringQuestions   Json     // Array of { question, claimIds[], gap: boolean }
+  partialExtraction Boolean  @default(false) // True when LLM was unavailable and fallback was used
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   @@index([jobId])
 }
