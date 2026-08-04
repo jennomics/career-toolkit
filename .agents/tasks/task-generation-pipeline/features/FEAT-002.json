@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Implement the 7-stage generation pipeline: preflight, context assembly, generation, deterministic checks, critique, revision, and pipeline orchestrator with API endpoint",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/lib/generation/types.ts defining shared types: GenerationOptions { jobId, documentType, options?: { strictGaps?: boolean } }, PipelineResult { success, generationId?, text?, spans?, stage?, error?, failures? }, SpanOutput { text, claimId: string | null, modelSupplied: boolean }, DeterministicCheckResult { passed, failures: string[] }, CritiqueIssue { severity: 'critical' | 'major' | 'minor', location: string, description: string }, CritiqueResult { passed, issues: CritiqueIssue[] }, PipelineStage enum.",
     "Create src/lib/generation/preflight.ts implementing the pre-flight stage. It should: (1) verify PostingDecomposition exists for the jobId via prisma, (2) run mapClaimsToQuestions to ensure claim mapping is available, (3) if options.strictGaps is true, fail if any hiring question is a gap, (4) verify non-empty context blocks (profile exists, claims exist). Return { passed: boolean, decomposition, mappedQuestions, errors: string[] }.",
