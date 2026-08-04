@@ -92,7 +92,7 @@ export default function DraftsTab({ companySlug, jobs }: DraftsTabProps) {
             </p>
           </div>
           <Link
-            href="/resume/build"
+            href="/resume"
             className="text-sm text-purple-600 hover:text-purple-800 font-medium"
           >
             Continue &rarr;
