@@ -13,12 +13,18 @@ const registry: Map<string, PromptTemplate[]> = new Map();
 
 /**
  * Register a prompt template version. Called by each prompt module on import.
+ * Deduplicates: if the same version is already registered for a template, it is not appended again.
  */
 export function registerPromptTemplate(
   templateName: string,
   template: PromptTemplate
 ): void {
   const versions = registry.get(templateName) ?? [];
+  // Deduplication guard: skip if this version is already registered
+  const alreadyRegistered = versions.some((t) => t.version === template.version);
+  if (alreadyRegistered) {
+    return;
+  }
   versions.push(template);
   registry.set(templateName, versions);
 }
