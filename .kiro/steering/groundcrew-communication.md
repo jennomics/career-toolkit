@@ -285,9 +285,56 @@ groundcrew start --api-port 8080
 
 When Kiro needs to interact with the local development environment:
 
-1. Use the tunnel URL (available via `/_gc/status`) to reach groundcrew
-2. Submit commands via `POST /_gc/commands` for shell operations
-3. Access dev server previews via `/_gc/proxy/:project/*`
-4. Check project status via `GET /_gc/projects`
+1. User provides the tunnel URL at session start (it changes on every groundcrew restart)
+2. Use the tunnel URL to reach groundcrew endpoints
+3. Submit commands via `POST /_gc/commands` with bearer token for shell operations
+4. Access dev server previews via `/_gc/proxy/:project/*` (also requires bearer token)
+5. Check project status via `GET /_gc/projects` (open, no auth)
+6. Poll command results via `GET /_gc/commands` (open, no auth)
+
+### Authentication
+
+- **Read-only routes** (GET status, GET commands, GET projects): open, no auth required
+- **Mutating routes** (POST commands, POST/DELETE projects, proxy): require `Authorization: Bearer <GC_AUTH_TOKEN>` header
+- Token is set via `GC_AUTH_TOKEN` environment variable in the user's `~/.zshrc`
+- If token is not set, groundcrew rejects all mutating requests with 503
+
+### Session startup pattern
+
+```
+1. User pastes tunnel URL (e.g., https://xyz.trycloudflare.com)
+2. Kiro hits /_gc/status to confirm reachability
+3. Kiro sends commands with Authorization: Bearer <token>
+4. Kiro polls /_gc/commands to read results
+```
+
+### Git Polling + Post-Pull Tasks
+
+Groundcrew automatically:
+- Polls git every 5 seconds for each registered project
+- On new commits: stash → pull → run post-pull tasks → restart dev server if running
+
+Post-pull tasks (automatic):
+- `npm install` if package.json changed
+- `npx prisma generate` if prisma/schema.prisma changed
+- Dev server restart if source code changed AND server is currently running
+
+NOT automatic (must be sent as explicit commands):
+- `npx prisma db push` (risk of data loss — always explicit)
+- Seed scripts (`npm run seed:claims`, `npm run seed:eval`, etc.)
+- Any destructive operation
+
+### Dev Server Restart
+
+The dev server does NOT hot-reload:
+- Prisma schema changes (new models, new fields)
+- Component file structure changes (new files, moved files)
+
+After pushing code with these changes, send this command:
+```
+pkill -f "next dev"; sleep 2 && rm -rf .next && npx prisma generate && npx next dev > /tmp/ct-dev.log 2>&1 &
+```
+
+Or wait for the dev server to idle-timeout and let groundcrew's lazy-start recompile on the next browser request.
 
 All communication is stateless HTTP. No persistent connections, no WebSockets, no polling loops required (though polling `/_gc/commands` for results is the expected pattern).
