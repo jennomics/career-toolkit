@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Implement Package CRUD API, Cross-Document Overlap Detection, and Variant Generation + Tracking. This covers Tasks 5.2 and 5.3 from the spec. Includes /api/packages endpoints, src/lib/packages/overlap.ts, and /api/generation/[id]/variants endpoint.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/lib/packages/overlap.ts with: (1) recordClaimUsage(packageId, generationId) - scans GenerationSpan rows and creates PackageClaimUsage entries for all claims used, (2) detectOverlap(packageId, documentType, claimIds[]) - checks which claims are already used in other documents within the same package, returns overlap report, (3) detectIntraDocumentRepetition(spans) - scans for same claimId used 3+ times within one document, returns repetition flags.",
     "Create src/app/api/packages/route.ts with GET (list packages, filterable by jobId and status) and POST (create package with jobId, name, optional disclosureLevel).",
