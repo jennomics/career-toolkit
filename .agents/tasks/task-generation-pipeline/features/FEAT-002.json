@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Implement the 7-stage generation pipeline: preflight, context assembly, generation, deterministic checks, critique, revision, and pipeline orchestrator with API endpoint",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create src/lib/generation/types.ts defining shared types: GenerationOptions { jobId, documentType, options?: { strictGaps?: boolean } }, PipelineResult { success, generationId?, text?, spans?, stage?, error?, failures? }, SpanOutput { text, claimId: string | null, modelSupplied: boolean }, DeterministicCheckResult { passed, failures: string[] }, CritiqueIssue { severity: 'critical' | 'major' | 'minor', location: string, description: string }, CritiqueResult { passed, issues: CritiqueIssue[] }, PipelineStage enum.",
     "Create src/lib/generation/preflight.ts implementing the pre-flight stage. It should: (1) verify PostingDecomposition exists for the jobId via prisma, (2) run mapClaimsToQuestions to ensure claim mapping is available, (3) if options.strictGaps is true, fail if any hiring question is a gap, (4) verify non-empty context blocks (profile exists, claims exist). Return { passed: boolean, decomposition, mappedQuestions, errors: string[] }.",
@@ -35,5 +35,5 @@
     "export PATH=/opt/toolchains/.nvm/versions/node/v22.23.2/bin:$PATH && cd /projects/sandbox/career-toolkit && npx vitest run"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "1. vi.clearAllMocks() does not reset mock implementations - vi.resetAllMocks() is needed in beforeEach to prevent test interaction. 2. mapClaimsToQuestions requires MIN_WORD_OVERLAP=3 significant words (>3 chars, not stop words) for matching - test data must ensure at least 3 shared exact-match words between question and claim text. 3. Prisma Json type does not accept Record<string, unknown>[] directly - use JSON.parse(JSON.stringify(...)) for the structuredOutput field. 4. The pipeline uses mockResolvedValue (not Once) for shared mocks like claim.findMany since it is called multiple times across stages (preflight + context assembly)."
 }
