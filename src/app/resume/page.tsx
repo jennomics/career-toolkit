@@ -160,7 +160,7 @@ export default function ResumeBuildPage() {
         setGapItems(data.gaps.map((g: string) => ({ keyword: g, status: "gap" as const })));
       } else {
         const data = await gapRes.json().catch(() => ({}));
-        setError(data.error || "Gap analysis failed");
+        setError(typeof data.error === "string" ? data.error : data.error?.message || "Gap analysis failed");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start");
@@ -263,7 +263,7 @@ export default function ResumeBuildPage() {
         setRoleBuild(roles);
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || "Build failed");
+        setError(typeof data.error === "string" ? data.error : data.error?.message || "Build failed");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to build resume");
@@ -430,7 +430,7 @@ export default function ResumeBuildPage() {
         }
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || "Failed to generate resume draft");
+        setError(typeof data.error === "string" ? data.error : data.error?.message || "Failed to generate resume draft");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");
@@ -485,7 +485,7 @@ export default function ResumeBuildPage() {
         } catch { /* non-critical */ }
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || "Failed to generate cover letter");
+        setError(typeof data.error === "string" ? data.error : data.error?.message || "Failed to generate cover letter");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");
