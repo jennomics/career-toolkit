@@ -85,9 +85,11 @@ export async function runDeterministicChecks(
   // 3. Contraction rate check for cover letter/essay
   if (documentType === "cover-letter" || documentType === "essay") {
     const contractionCount = countContractions(renderedText);
-    if (contractionCount === 0) {
+    // Require at least 1 contraction per 100 words (e.g., 250 words needs at least 2)
+    const requiredContractions = Math.max(1, Math.floor(wordCount / 100));
+    if (contractionCount < requiredContractions) {
       failures.push(
-        `No contractions found in ${documentType}. Natural tone requires contractions.`
+        `Insufficient contractions in ${documentType}: found ${contractionCount}, need at least ${requiredContractions} (1 per 100 words). Natural tone requires contractions.`
       );
     }
   }

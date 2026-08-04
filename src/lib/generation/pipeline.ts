@@ -18,11 +18,11 @@ import { runGeneration } from "./generate";
 import { runDeterministicChecks, renderSpansToText } from "./deterministic";
 import { runCritique } from "./critique";
 import { runRevision } from "./revise";
-import type {
-  GenerationOptions,
-  PipelineResult,
+import {
   PipelineStage,
-  SpanOutput,
+  type GenerationOptions,
+  type PipelineResult,
+  type SpanOutput,
 } from "./types";
 
 /**
@@ -38,7 +38,7 @@ export async function runPipeline(
   if (!preflightResult.passed || !preflightResult.decomposition) {
     return {
       success: false,
-      stage: "preflight" as unknown as PipelineStage,
+      stage: PipelineStage.PREFLIGHT,
       error: preflightResult.errors.join("; "),
     };
   }
@@ -57,14 +57,22 @@ export async function runPipeline(
     if (!claimsBlock || claimsBlock.content.length === 0) {
       return {
         success: false,
-        stage: "context_assembly" as unknown as PipelineStage,
+        stage: PipelineStage.CONTEXT_ASSEMBLY,
         error: "Required context block 'claims' is empty.",
       };
+    }
+
+    // Warn if profile block is empty (non-fatal, profile is additive)
+    const profileBlock = contextResult.blocks.find((b) => b.name === "profile");
+    if (!profileBlock || profileBlock.content.length === 0) {
+      console.warn(
+        "Warning: profile context block is empty. Generation will proceed without candidate positioning data."
+      );
     }
   } catch (err) {
     return {
       success: false,
-      stage: "context_assembly" as unknown as PipelineStage,
+      stage: PipelineStage.CONTEXT_ASSEMBLY,
       error: err instanceof Error ? err.message : "Context assembly failed",
     };
   }
@@ -80,7 +88,7 @@ export async function runPipeline(
   } catch (err) {
     return {
       success: false,
-      stage: "generation" as unknown as PipelineStage,
+      stage: PipelineStage.GENERATION,
       error: err instanceof Error ? err.message : "Generation failed",
     };
   }
@@ -96,14 +104,14 @@ export async function runPipeline(
     // Tier 1 failure: skip critique and return failure
     return {
       success: false,
-      stage: "deterministic_checks" as unknown as PipelineStage,
+      stage: PipelineStage.DETERMINISTIC_CHECKS,
       error: "Deterministic checks failed",
       failures: deterministicResult.failures,
     };
   }
 
   // Stage 5: CRITIQUE (LLM Call #2)
-  let critiquePassed = true;
+  let critiquePassed: boolean | null = true;
   try {
     const critiqueResult = await runCritique(finalSpans, options.documentType);
 
@@ -120,7 +128,7 @@ export async function runPipeline(
       if (!revisionResult.success || !revisionResult.spans) {
         return {
           success: false,
-          stage: "revision" as unknown as PipelineStage,
+          stage: PipelineStage.REVISION,
           error: revisionResult.error || "Revision failed",
         };
       }
@@ -129,8 +137,10 @@ export async function runPipeline(
       critiquePassed = true; // Revision succeeded
     }
   } catch (err) {
-    // If critique itself throws, we proceed (non-blocking)
-    // The document already passed deterministic checks
+    // If critique itself throws (e.g., network failure, API key issue),
+    // record critiquePassed as null to preserve the audit trail.
+    // The document already passed deterministic checks so we proceed.
+    critiquePassed = null;
     console.error("Critique stage error (non-blocking):", err);
   }
 
@@ -175,7 +185,7 @@ export async function runPipeline(
   } catch (err) {
     return {
       success: false,
-      stage: "post_generation" as unknown as PipelineStage,
+      stage: PipelineStage.POST_GENERATION,
       error: err instanceof Error ? err.message : "Failed to save generation record",
     };
   }
