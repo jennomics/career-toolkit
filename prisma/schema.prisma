@@ -312,15 +312,18 @@ model Claim {
 }
 
 model ClaimArtifact {
-  id              String   @id @default(cuid())
-  claimId         String
-  claim           Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
-  passageText     String
-  passageLocation String?
-  ingestionDate   DateTime @default(now())
-  freshnessWindow Int?     // Days until stale (null = never expires)
+  id               String          @id @default(cuid())
+  claimId          String
+  claim            Claim           @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  passageText      String
+  passageLocation  String?
+  ingestionDate    DateTime        @default(now())
+  freshnessWindow  Int?            // Days until stale (null = never expires)
+  sourceDocumentId String?
+  sourceDocument   SourceDocument? @relation(fields: [sourceDocumentId], references: [id])
 
   @@index([claimId])
+  @@index([sourceDocumentId])
 }
 
 model NegativeAssertion {
@@ -390,17 +393,56 @@ model GenerationSpan {
 }
 
 model RetrievalLog {
-  id           String   @id @default(cuid())
-  sessionId    String   // Groups retrievals within one generation session
-  contextBlock String   // Which block this retrieval populated (e.g., "voice-corpus", "claims", "profile")
-  success      Boolean
-  tokenCount   Int?     // How many tokens this block contributed
-  truncated    Boolean  @default(false)
-  error        String?  // If failed, why
-  timestamp    DateTime @default(now())
+  id               String          @id @default(cuid())
+  sessionId        String          // Groups retrievals within one generation session
+  contextBlock     String          // Which block this retrieval populated (e.g., "voice-corpus", "claims", "profile")
+  success          Boolean
+  tokenCount       Int?            // How many tokens this block contributed
+  truncated        Boolean         @default(false)
+  error            String?         // If failed, why
+  sourceDocumentId String?
+  sourceDocument   SourceDocument? @relation(fields: [sourceDocumentId], references: [id])
+  timestamp        DateTime        @default(now())
 
   @@index([sessionId])
   @@index([contextBlock])
+  @@index([sourceDocumentId])
+}
+
+// ─── Voice Corpus ────────────────────────────────────────────────────────────
+
+model SourceDocument {
+  id              String   @id @default(cuid())
+  title           String
+  category        String   // work-artifact, third-party-evidence, archived-posting,
+                           // prior-application, critique-rejected-draft, compensation-record
+  authorship      String   // user-authored, third-party, collaborative, unknown
+  authorName      String?  // If third-party, who wrote it
+  documentDate    DateTime // When the document was created/published
+  uploadDate      DateTime @default(now())
+  content         String   // Full text
+  confidential    Boolean  @default(false)
+  currentEmployer Boolean  @default(false)
+
+  passages      VoicePassage[]
+  artifacts     ClaimArtifact[]
+  retrievalLogs RetrievalLog[]
+
+  @@index([category])
+  @@index([authorship])
+}
+
+model VoicePassage {
+  id               String          @id @default(cuid())
+  sourceDocumentId String?
+  sourceDocument   SourceDocument? @relation(fields: [sourceDocumentId], references: [id], onDelete: Cascade)
+  passageText      String          // The verbatim passage
+  topics           String[]        // Topic tags for retrieval
+  speakerIsUser    Boolean         @default(true)
+  createdAt        DateTime        @default(now())
+
+  @@index([topics])
+  @@index([sourceDocumentId])
 }
 
 // ─── Posting Decomposition ───────────────────────────────────────────────────

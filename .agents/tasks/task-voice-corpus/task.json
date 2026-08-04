@@ -1,0 +1,7 @@
+{
+  "task_id": "task-voice-corpus",
+  "task_description": "Implement Phase 4 of the generation system spec: Voice Corpus + Document Ingestion. Adds SourceDocument and VoicePassage models, document upload API with CRUD, passage chunking with topic inference, topic-based retrieval, WritingSample migration, and Document Management UI.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}
