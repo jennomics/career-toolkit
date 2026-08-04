@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "fix",
   "description": "Create a shared extractErrorMessage utility and comprehensive tests, then fix all client components that incorrectly pass structured error objects to React state",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create src/lib/extract-error-message.ts with a utility function that safely extracts a displayable string from API error responses. The function should handle: (1) structured error object { error: { code, message, requestId } } -> returns error.message, (2) plain string error { error: 'some string' } -> returns the string, (3) null/undefined -> returns a provided fallback, (4) any other shape -> returns the fallback. Export it as `extractErrorMessage(data: unknown, fallback?: string): string`.",
     "Create src/lib/__tests__/extract-error-message.test.ts with comprehensive tests covering: structured { error: { code, message, requestId } } responses, legacy { error: 'string' } responses, null/undefined data, missing error field, fallback parameter behavior, nested objects without message field, non-object error values (numbers, booleans, arrays).",
@@ -29,5 +29,5 @@
     "Run `grep -rn 'setError(data.error\\|\\|\\|setError(data?.error' src/` and confirm no remaining unextracted usages"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 260 tests pass (32 new from extract-error-message.test.ts). Lint and build both succeed. The utility handles both structured { error: { message } } and legacy { error: 'string' } patterns with empty-string-to-fallback behavior. Nine client components fixed across app pages and shared components."
 }
