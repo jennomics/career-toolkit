@@ -1,7 +1,14 @@
 {
   "task_id": "task-packages-eval",
   "task_description": "Phase 5: Packages + Eval Harness + Cross-Document Control. Add ApplicationPackage, PackageClaimUsage, GenerationVariant, EvalAssertion, EvalGoldenPackage, EvalRun models. Implement package CRUD + overlap detection, variant generation tracking, eval harness (Tier 1-3), metrics dashboard, and export gate.",
-  "status": "in_progress",
+  "status": "completed",
   "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
-  "blocked_reason": null
+  "blocked_reason": null,
+  "verification": {
+    "build": "pass",
+    "tests": "pass",
+    "test_quality": "pass",
+    "docker_build": "skipped",
+    "summary": "All 228 tests pass (57 new across 3 test files). npm run lint passes. npm run build succeeds. Tests exercise real logic (assertion matching, Levenshtein distance, overlap detection, freshness expiry, disposition gating) and would fail if implementation code were reverted."
+  }
 }
