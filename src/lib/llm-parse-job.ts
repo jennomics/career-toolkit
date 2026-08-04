@@ -6,6 +6,7 @@ import {
   createAbortSignal,
   logLLMCost,
   MAX_OUTPUT_TOKENS,
+  MAX_USER_INPUT_LENGTH,
   checkDailyBudget,
 } from "./llm-guard";
 import { ApiError } from "./api-error";
@@ -70,7 +71,7 @@ export async function llmParseJob(rawText: string): Promise<LLMParsedJob> {
   }
 
   // Validate input length
-  validateInputLength(rawText);
+  validateInputLength(rawText, MAX_USER_INPUT_LENGTH);
 
   // Check daily budget
   const budget = checkDailyBudget();
