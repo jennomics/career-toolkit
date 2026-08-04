@@ -7,6 +7,7 @@ export type DocumentType = "resume" | "cover-letter" | "essay" | "custom";
 export interface GenerationOptions {
   jobId: string;
   documentType: DocumentType;
+  packageId?: string;
   options?: {
     strictGaps?: boolean;
   };
@@ -18,6 +19,15 @@ export interface SpanOutput {
   modelSupplied: boolean;
 }
 
+export interface OverlapInfo {
+  overlappingClaims: Array<{
+    claimId: string;
+    existingDocumentType: string;
+    overridden: boolean;
+  }>;
+  totalChecked: number;
+}
+
 export interface PipelineResult {
   success: boolean;
   generationId?: string;
@@ -26,6 +36,7 @@ export interface PipelineResult {
   stage?: PipelineStage;
   error?: string;
   failures?: string[];
+  overlap?: OverlapInfo;
 }
 
 export interface DeterministicCheckResult {

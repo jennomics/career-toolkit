@@ -23,7 +23,9 @@ import {
   type GenerationOptions,
   type PipelineResult,
   type SpanOutput,
+  type OverlapInfo,
 } from "./types";
+import { recordClaimUsage, detectOverlap } from "@/lib/packages/overlap";
 
 /**
  * Runs the full generation pipeline.
@@ -148,11 +150,26 @@ export async function runPipeline(
   const durationMs = Date.now() - startTime;
   const renderedText = renderSpansToText(finalSpans);
 
+  // If packageId is provided, detect overlap before saving
+  let overlap: OverlapInfo | undefined;
+  if (options.packageId) {
+    const claimIds = finalSpans
+      .filter((s) => s.claimId)
+      .map((s) => s.claimId!);
+    const uniqueClaimIds = [...new Set(claimIds)];
+    overlap = await detectOverlap(
+      options.packageId,
+      options.documentType,
+      uniqueClaimIds
+    );
+  }
+
   try {
     const record = await prisma.generationRecord.create({
       data: {
         documentType: options.documentType,
         jobId: options.jobId,
+        packageId: options.packageId || null,
         modelId: generationResult.modelId,
         promptTemplateVersion: generationResult.promptTemplateVersion,
         temperature: generationResult.temperature,
@@ -176,11 +193,17 @@ export async function runPipeline(
       },
     });
 
+    // If packageId is provided, record claim usage
+    if (options.packageId) {
+      await recordClaimUsage(options.packageId, record.id);
+    }
+
     return {
       success: true,
       generationId: record.id,
       text: renderedText,
       spans: finalSpans,
+      overlap,
     };
   } catch (err) {
     return {
