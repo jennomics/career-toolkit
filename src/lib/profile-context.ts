@@ -153,6 +153,7 @@ Why It Matters: ${story.whyItMatters}`;
 export function getVoiceGuidance(
   profile: NonNullable<ProfileWithRelations>
 ): string | null {
+  console.warn('DEPRECATED: getVoiceGuidance is deprecated. Use topic-based passage retrieval from src/lib/voice/retrieval.ts instead.');
   const parts: string[] = [];
 
   if (profile.writingStyle) {
