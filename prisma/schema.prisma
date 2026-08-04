@@ -281,6 +281,7 @@ model WritingSample {
   title     String
   content   String
   context   String?
+  register  String   @default("informal")
   createdAt DateTime @default(now())
   profile CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   @@index([profileId])

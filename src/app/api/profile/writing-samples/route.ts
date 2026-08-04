@@ -29,11 +29,14 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, content, context } = body;
+    const { title, content, context, register } = body;
 
     if (!title || !content) {
       return validationError("Title and content are required");
     }
+
+    const validRegisters = ["informal", "formal"];
+    const sampleRegister = validRegisters.includes(register) ? register : "informal";
 
     const profile = await prisma.candidateProfile.findFirst();
     if (!profile) {
@@ -58,6 +61,7 @@ export async function POST(request: NextRequest) {
         title,
         content,
         context: context || null,
+        register: sampleRegister,
       },
     });
 
