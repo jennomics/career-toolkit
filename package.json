@@ -13,6 +13,7 @@
     "db:reset": "prisma migrate reset",
     "seed:demo": "tsx prisma/seed-demo.ts",
     "seed:claims": "tsx scripts/seed-claims.ts",
+    "seed:eval": "tsx scripts/seed-eval-assertions.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Implement the Eval Harness: Tier 1 assertions runner, provenance tests, Tier 2 property checks, golden packages, known-bad anchors, batch eval runner, scoring/metrics, and eval results API. Covers Tasks 5.5, 5.6, 5.7, and 5.8.",
+  "status": "pending",
+  "steps": [
+    "Create src/lib/eval/assertions.ts: loads all active Tier 1 EvalAssertions from DB, runs contains/not-contains checks against given text. Returns { passed: boolean, results: Array<{ assertionId, assertType, target, passed, detail? }> }. Filter by documentTypes if the assertion specifies them.",
+    "Create src/lib/eval/provenance.ts with test functions: (1) testUnretrievedCitation(generationId) - checks if generation cites a document with no retrieval log, must fail, (2) testModelSuppliedReuse(claimId) - checks if a model-supplied claim is reused across 3+ docs without acquiring verified status, (3) testFreshnessExpiry(claimId) - checks if external claim past freshness window should block export. Each returns { passed: boolean, detail: string }.",
+    "Create src/lib/eval/properties.ts with Tier 2 checks: (1) contractionRate(text) - count contractions / total words, compare against 25% floor for letters, (2) ruleOfThreeDetector(text) - regex for 'X, Y, and Z' parallel three-item lists, (3) landingDetector(text) - check if majority of paragraphs end on short declarative, (4) vocabularyOverlap(text, postingVocabulary[]) - flag posting terms in generated text, (5) exhibitAdjacency(text, spans) - check if capability claims have specific instance within 2 sentences, (6) intraDocRepetition(text) - semantic similarity of sentences above threshold, (7) comprehensionFlag(text) - phrases with high abstraction + low corpus support. Each returns { violations: Array<{ location, detail }>, violationsPerThousandWords: number }.",
+    "Create src/lib/eval/golden.ts: runGoldenPackage(goldenPackageId, runs=3) - generates output N times using the golden package's posting text and claim snapshot, computes edit distance from each generated output to submittedVersion using character-level Levenshtein normalized to document length, computes variance across runs, stores results in EvalRun.",
+    "Create src/lib/eval/anchors.ts: scoreAnchors(anchorTexts[]) - runs Tier 2 property checks on known-bad anchor texts, verifies all score below passing threshold. Computes anchor discrimination (gap between golden mean and anchor mean). If any anchor passes, return { broken: true }.",
+    "Create src/lib/eval/metrics.ts: computeMetrics(evalRuns[]) - computes: editDistance (primary), regressionPassRate, propertyViolationsPerThousandWords, anchorDiscrimination, variance. Separate factScore and voiceScore - never aggregate. A high voice + failing fact = fail.",
+    "Create src/lib/eval/runner.ts: orchestrates a full eval run: (1) run Tier 1 assertions on provided text, (2) run Tier 2 property checks, (3) optionally run golden packages, (4) run anchors, (5) compute metrics, (6) store EvalRun records. Callable from API and batch.",
+    "Create src/app/api/eval/run/route.ts: POST triggers batch eval (all golden packages + anchors). Non-blocking - returns run IDs for polling.",
+    "Create src/app/api/eval/results/route.ts: GET returns historical eval results with trend data (last 10 runs, pass rates, edit distance trends).",
+    "Create src/app/eval/page.tsx: metrics dashboard showing current scores with separate fact/voice sections, edit distance as primary metric, last 10 runs with trend direction, regression alerts (red indicators). Simple server component fetching from the API.",
+    "Write tests in src/lib/__tests__/eval-harness.test.ts covering: Tier 1 assertion runner catches violations, provenance tests detect unretrieved citations, Tier 2 contraction rate / rule-of-three / vocabulary overlap work correctly, metrics computation separates fact and voice scores, anchor discrimination calculation."
+  ],
+  "acceptance_criteria": [
+    "Tier 1 runner catches all seed assertion violations (contains/not-contains)",
+    "Provenance test correctly fails a generation that cites an unretrieved document",
+    "Contraction rate returns a percentage and compares against 25% floor for letters",
+    "Rule-of-three detector finds 'X, Y, and Z' patterns in prose",
+    "Vocabulary overlap flags specific leaked posting terms",
+    "Golden package runner generates N outputs and computes normalized edit distance",
+    "Known-bad anchors must score below passing threshold or harness reports broken",
+    "Fact and voice scores are separate numbers, never combined",
+    "A generation passing all voice checks but failing one fact assertion is marked failed",
+    "Edit distance computed as character-level Levenshtein normalized to document length",
+    "Dashboard page renders with separate fact/voice sections",
+    "All eval tests pass"
+  ],
+  "verification": [
+    "npx vitest run",
+    "npm run lint",
+    "npm run build"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

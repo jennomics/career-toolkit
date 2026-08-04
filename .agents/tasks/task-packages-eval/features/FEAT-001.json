@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Add ApplicationPackage, PackageClaimUsage, GenerationVariant, EvalAssertion, EvalGoldenPackage, EvalRun models to prisma/schema.prisma. Add packageId field + relation to existing GenerationRecord model. Add variants GenerationVariant[] relation to GenerationRecord. Seed 8 initial Tier 1 assertions from requirements.md. This covers Tasks 5.1 and 5.4 from the spec.",
+  "status": "in_progress",
+  "steps": [
+    "Add ApplicationPackage model to prisma/schema.prisma with fields: id, jobId, name, disclosureLevel (default 'standard'), status (default 'draft'), submittedAt, createdAt, updatedAt, generations GenerationRecord[], claimUsages PackageClaimUsage[]. Indexes on jobId, status.",
+    "Add PackageClaimUsage model with fields: id, packageId (FK to ApplicationPackage with onDelete:Cascade), claimId, documentType, overridden (default false). Unique constraint on [packageId, claimId, documentType]. Indexes on packageId, claimId.",
+    "Add GenerationVariant model with fields: id, generationId (FK to GenerationRecord with onDelete:Cascade), variantLabel, tradeoff, text, chosen (default false). Index on generationId.",
+    "Add EvalAssertion model with fields: id, tier (Int), assertType (String), target (String), claimId (nullable String), documentTypes (String[]), correctionDate (nullable DateTime), active (default true), createdAt. Indexes on tier, active.",
+    "Add EvalGoldenPackage model with fields: id, name, roleFamily, sector, postingText, postingDate (DateTime), claimSnapshot (Json), firstGeneration (String), submittedVersion (String), editDiff (String), approvedAt (DateTime), createdAt. Indexes on roleFamily, sector.",
+    "Add EvalRun model with fields: id, goldenPackageId (nullable String), modelId, promptVersion, temperature (Float), factScore (nullable Float), voiceScore (nullable Float), editDistance (nullable Float), anchorDiscrimination (nullable Float), generatedOutput (String), assertionResults (Json), createdAt. Indexes on goldenPackageId, createdAt.",
+    "Modify existing GenerationRecord model: add packageId (nullable String), add package relation (ApplicationPackage? @relation(fields: [packageId], references: [id])), add variants GenerationVariant[] relation. Add index on packageId.",
+    "Create seed script at scripts/seed-eval-assertions.ts that creates the 8 Tier 1 assertions from the table in requirements.md: (1) contains 'linkedin.com/in/jennomics', (2) not-contains 'jennalang', (3) contains '30 million customer genomes', (4) not-contains 'proprietary sequences', (5) not-contains 'genotype database', (6) not-contains 'human genomes', (7) not-contains 'fifteen years', (8) not-contains 'securing' / 'secured' attached to her as completed act. Make it idempotent.",
+    "Run prisma generate to verify schema compiles correctly.",
+    "Add a package.json script entry: 'seed:eval': 'tsx scripts/seed-eval-assertions.ts'"
+  ],
+  "acceptance_criteria": [
+    "All six new models exist in schema with correct columns, relations, and indexes",
+    "GenerationRecord has packageId field + ApplicationPackage relation + variants GenerationVariant[] relation",
+    "PackageClaimUsage has unique constraint on [packageId, claimId, documentType]",
+    "EvalAssertion supports 'contains' and 'not-contains' assertType values",
+    "Seed script creates 8 initial Tier 1 assertions and is idempotent",
+    "npx prisma generate succeeds without errors",
+    "npm run lint passes",
+    "npm run build passes"
+  ],
+  "verification": [
+    "npx vitest run",
+    "npm run lint",
+    "npm run build"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
