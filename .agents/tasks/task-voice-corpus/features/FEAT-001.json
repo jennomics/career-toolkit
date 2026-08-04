@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Add SourceDocument and VoicePassage models to the Prisma schema, generate the Prisma client, and create the Document Upload API (CRUD endpoints) plus the passage chunking/topic inference and retrieval modules.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "1. Add SourceDocument model to prisma/schema.prisma with fields: id, title, category, authorship, authorName?, documentDate, uploadDate, content, confidential, currentEmployer. Add indexes on [category] and [authorship]. Add passages relation to VoicePassage[].",
     "2. Add VoicePassage model to prisma/schema.prisma with fields: id, sourceDocumentId?, sourceDocument? relation, passageText, topics String[], speakerIsUser Boolean @default(true), createdAt. Add indexes on [topics] and [sourceDocumentId].",
@@ -41,5 +41,5 @@
     "export PATH=\"/opt/toolchains/.nvm/versions/node/v22.23.2/bin:/projects/sandbox/career-toolkit/node_modules/.bin:$PATH\" && cd /projects/sandbox/career-toolkit && npx vitest run"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All steps implemented successfully. Schema changes (SourceDocument, VoicePassage, ClaimArtifact.sourceDocumentId, RetrievalLog.sourceDocumentId) generated cleanly. Had to merge feat/generation-pipeline-v2 branch into feat/voice-corpus since local main lacked the generation pipeline code (could not pull from remote). The context.ts voice-corpus block integration required importing retrievePassages and deriving topics from decomposition vocabulary and question text. Build and all 171 tests pass."
 }
