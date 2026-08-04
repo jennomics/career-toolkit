@@ -616,6 +616,13 @@ export default function ResumeBuildPage() {
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm" role="alert">
             <strong>Error:</strong> {error}
+            {error.includes("unresolved profile item") && (
+              <span className="ml-2">
+                <Link href="/profile" className="text-red-800 underline hover:text-red-900 font-medium">
+                  Resolve items on your Profile page →
+                </Link>
+              </span>
+            )}
           </div>
         )}
 
