@@ -1,0 +1,39 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Implement the 7-stage generation pipeline: preflight, context assembly, generation, deterministic checks, critique, revision, and pipeline orchestrator with API endpoint",
+  "status": "completed",
+  "steps": [
+    "Create src/lib/generation/types.ts defining shared types: GenerationOptions { jobId, documentType, options?: { strictGaps?: boolean } }, PipelineResult { success, generationId?, text?, spans?, stage?, error?, failures? }, SpanOutput { text, claimId: string | null, modelSupplied: boolean }, DeterministicCheckResult { passed, failures: string[] }, CritiqueIssue { severity: 'critical' | 'major' | 'minor', location: string, description: string }, CritiqueResult { passed, issues: CritiqueIssue[] }, PipelineStage enum.",
+    "Create src/lib/generation/preflight.ts implementing the pre-flight stage. It should: (1) verify PostingDecomposition exists for the jobId via prisma, (2) run mapClaimsToQuestions to ensure claim mapping is available, (3) if options.strictGaps is true, fail if any hiring question is a gap, (4) verify non-empty context blocks (profile exists, claims exist). Return { passed: boolean, decomposition, mappedQuestions, errors: string[] }.",
+    "Create src/lib/generation/context.ts implementing context assembly + retrieval logging. It should: (1) generate a sessionId (cuid or uuid), (2) retrieve claims by question relevance using mapClaimsToQuestions result, (3) retrieve profile context via getProfileContext/formatProfileForResume/formatProfileForCoverLetter, (4) log every retrieval as a RetrievalLog entry via prisma with sessionId, contextBlock name, success, tokenCount (estimate via string length / 4), truncated flag. Return assembled context blocks and the sessionId.",
+    "Create src/lib/generation/generate.ts implementing LLM Call #1 (structured generation). It should: (1) select prompt template based on documentType using versions.ts, (2) call guardedLLMCall with the assembled context and prompt template, (3) parse the JSON response expecting an array of spans (each with text, claimId or null, modelSupplied), (4) if JSON parsing fails or spans are not an array, throw/fail - NO fallback to unattributed prose, (5) return { spans: SpanOutput[], inputTokens, outputTokens, modelId, promptTemplateVersion, temperature }.",
+    "Create src/lib/generation/deterministic.ts implementing deterministic checks (Step 4). Checks: (1) negative assertion scan - fetch all NegativeAssertion records, check none of their forbiddenText appears in the rendered text, (2) word count validation (cover letter 250-300 words), (3) contraction rate check (cover letter/essay must have contractions above a floor), (4) markdown artifact scan (no stray markdown like ## or ** in output), (5) confidentiality scan (no placeholder tokens like [COMPANY], raw claim IDs, or internal markers). Return DeterministicCheckResult { passed, failures }.",
+    "Create src/lib/generation/critique.ts implementing LLM Call #2 (critique pass). It should: (1) render spans to plain text, (2) call guardedLLMCall with ONLY the rendered text + critique rubric prompt (NOT the generation prompt or claims), (3) parse structured JSON response with issues array, (4) determine passed based on whether any critical/major issues exist. Return CritiqueResult.",
+    "Create src/lib/generation/revise.ts implementing LLM Call #3 (revision pass, conditional). It should: (1) receive the original spans + critique issues, (2) call guardedLLMCall instructing it to revise only affected spans while preserving claimId attribution, (3) parse the revised spans array, (4) re-run deterministic checks on revised output, (5) if deterministic checks fail again, generation fails entirely (max one revision, no loops). Return revised spans or failure.",
+    "Create src/lib/generation/pipeline.ts implementing the pipeline orchestrator. It should: (1) run preflight - if fails return { success: false, stage: 'preflight', error }, (2) run context assembly - if any required block empty return failure, (3) run generation LLM call - if fails return failure, (4) run deterministic checks - if tier 1 fails, skip critique and return failure, (5) run critique - if passes skip revision, (6) if critique fails, run revision - if revision fails return failure, (7) on success: create GenerationRecord and GenerationSpan entries in DB, flag model-supplied spans, return { success: true, generationId, text, spans }.",
+    "Create src/app/api/generation/run/route.ts as POST endpoint. Body: { jobId, documentType, options?: { strictGaps?: boolean } }. Validate inputs (jobId required string, documentType must be one of 'resume', 'cover-letter', 'essay', 'custom'). Call pipeline orchestrator. On success return { success, generationId, text, spans }. On failure return { success: false, stage, error }. Use formatErrorResponse pattern for unexpected errors.",
+    "Create test file src/lib/__tests__/generation-pipeline.test.ts with unit tests covering: (1) preflight passes with valid decomposition and claims, (2) preflight fails when decomposition missing, (3) deterministic checks catch negative assertions, (4) deterministic checks validate word count for cover letters, (5) deterministic checks catch markdown artifacts, (6) pipeline orchestrator returns failure at correct stage, (7) pipeline handles successful end-to-end flow with mocked LLM calls."
+  ],
+  "acceptance_criteria": [
+    "POST /api/generation/run endpoint exists and accepts { jobId, documentType, options? }",
+    "Pipeline executes 7 stages in order: preflight, context assembly, generation, deterministic checks, critique, revision (conditional), post-generation",
+    "Generation NEVER returns plain prose - always returns GenerationSpan[] with claim attribution",
+    "If LLM fails to produce valid span-attributed JSON, generation fails (no fallback)",
+    "Deterministic checks gate critique (failed draft never reaches critique)",
+    "Critique receives only rendered text + rubric (not generation prompt or claims)",
+    "Maximum one revision pass - second failure means generation fails",
+    "Every retrieval creates a RetrievalLog entry with sessionId, contextBlock, success, tokenCount, truncated",
+    "GenerationRecord stores model ID, prompt template version, temperature",
+    "All unit tests pass via npx vitest run",
+    "npm run lint passes",
+    "npm run build passes"
+  ],
+  "verification": [
+    "export PATH=/opt/toolchains/.nvm/versions/node/v22.23.2/bin:$PATH && cd /projects/sandbox/career-toolkit && npm run lint",
+    "export PATH=/opt/toolchains/.nvm/versions/node/v22.23.2/bin:$PATH && cd /projects/sandbox/career-toolkit && npm run build",
+    "export PATH=/opt/toolchains/.nvm/versions/node/v22.23.2/bin:$PATH && cd /projects/sandbox/career-toolkit && npx vitest run"
+  ],
+  "blocked_reason": null,
+  "findings": "1. vi.clearAllMocks() does not reset mock implementations - vi.resetAllMocks() is needed in beforeEach to prevent test interaction. 2. mapClaimsToQuestions requires MIN_WORD_OVERLAP=3 significant words (>3 chars, not stop words) for matching - test data must ensure at least 3 shared exact-match words between question and claim text. 3. Prisma Json type does not accept Record<string, unknown>[] directly - use JSON.parse(JSON.stringify(...)) for the structuredOutput field. 4. The pipeline uses mockResolvedValue (not Once) for shared mocks like claim.findMany since it is called multiple times across stages (preflight + context assembly)."
+}

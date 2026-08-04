@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Add GenerationRecord, GenerationSpan, and RetrievalLog models to Prisma schema plus prompt template versioning system",
+  "status": "in_progress",
+  "steps": [
+    "Add GenerationRecord model to prisma/schema.prisma with fields: id (cuid), documentType (String), jobId (String), modelId (String), promptTemplateVersion (String), temperature (Float), retrievalSnapshotId (String), inputTokens (Int), outputTokens (Int), durationMs (Int), preflightPassed (Boolean), critiquePassed (Boolean?), revisedFromId (String?), structuredOutput (Json), renderedText (String), createdAt (DateTime). Add indexes on documentType, jobId, createdAt. Add spans relation to GenerationSpan[].",
+    "Add GenerationSpan model to prisma/schema.prisma with fields: id (cuid), generationId (String), generation (relation to GenerationRecord with onDelete Cascade), spanIndex (Int), text (String), claimId (String?), claim (optional relation to Claim), modelSupplied (Boolean default false), disposition (String?). Add indexes on generationId, claimId.",
+    "Add RetrievalLog model to prisma/schema.prisma with fields: id (cuid), sessionId (String), contextBlock (String), success (Boolean), tokenCount (Int?), truncated (Boolean default false), error (String?), timestamp (DateTime default now()). Add indexes on sessionId, contextBlock.",
+    "Add generationSpans GenerationSpan[] relation to existing Claim model in prisma/schema.prisma.",
+    "Run npx prisma generate to validate the schema and regenerate the client.",
+    "Create src/lib/prompts/versions.ts exporting a PromptTemplate interface { version: string; systemPrompt: string; userPromptBuilder: (...args: any[]) => string } and a getPromptVersion(templateName: string, version?: string) utility that returns the latest version by default.",
+    "Create src/lib/prompts/resume.ts with a versioned resume generation prompt template (v1.0) following the pattern in src/lib/prompts/decomposition.ts. The system prompt should instruct the LLM to return structured JSON with spans array where each span has text, claimId (or null), and modelSupplied fields. Include document-type policy: scannable, parallel, numbers early, NOT user's voice.",
+    "Create src/lib/prompts/cover-letter.ts with a versioned cover letter generation prompt template (v1.0). System prompt instructs LLM to return spans array. Document-type policy: contractions required, concrete specifics, one idea stated once, no rule-of-three, 250-300 words.",
+    "Create src/lib/prompts/critique.ts with a versioned critique prompt template (v1.0). System prompt receives text + rubric (NOT the generation prompt/claims context). Checks: contractions absent (letter/essay), rule-of-three, short declarative endings, em-dash asides, abstract nouns, vocabulary lifted from posting, claim with no exhibit, same idea three times, comprehension check. Returns structured JSON with issues array [{severity, location, description}]."
+  ],
+  "acceptance_criteria": [
+    "npx prisma generate succeeds without errors",
+    "GenerationRecord, GenerationSpan, and RetrievalLog models exist in schema with all specified fields and indexes",
+    "Claim model has generationSpans relation",
+    "src/lib/prompts/versions.ts exports PromptTemplate type and getPromptVersion function",
+    "src/lib/prompts/resume.ts exports RESUME_PROMPT_VERSION, resume system prompt, and user prompt builder",
+    "src/lib/prompts/cover-letter.ts exports COVER_LETTER_PROMPT_VERSION, system prompt, and user prompt builder",
+    "src/lib/prompts/critique.ts exports CRITIQUE_PROMPT_VERSION, system prompt with rubric checks, returns structured issues",
+    "npm run lint passes",
+    "npm run build passes"
+  ],
+  "verification": [
+    "export PATH=/opt/toolchains/.nvm/versions/node/v22.23.2/bin:$PATH && cd /projects/sandbox/career-toolkit && npx prisma generate",
+    "export PATH=/opt/toolchains/.nvm/versions/node/v22.23.2/bin:$PATH && cd /projects/sandbox/career-toolkit && npm run lint",
+    "export PATH=/opt/toolchains/.nvm/versions/node/v22.23.2/bin:$PATH && cd /projects/sandbox/career-toolkit && npx vitest run"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
