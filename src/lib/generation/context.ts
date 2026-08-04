@@ -12,6 +12,7 @@ import {
   formatProfileForResume,
   formatProfileForCoverLetter,
 } from "@/lib/profile-context";
+import { retrievePassages } from "@/lib/voice/retrieval";
 import type {
   ContextAssemblyResult,
   ContextBlock,
@@ -164,6 +165,39 @@ export async function assembleContext(
   });
 
   await logRetrieval(sessionId, "decomposition", true, decompositionTokenCount, false);
+
+  // 4. Retrieve voice-corpus passages by topic overlap
+  try {
+    // Derive topics from decomposition vocabulary and hiring question topics
+    const voiceTopics = [
+      ...decomposition.vocabulary.map((v) => v.toLowerCase()),
+      ...mappedQuestions.map((q) => q.question.toLowerCase().split(" ").slice(0, 3).join("-")),
+    ].filter((t) => t.length > 0);
+
+    const passages = await retrievePassages(voiceTopics, 10, sessionId);
+
+    const voiceContent = passages
+      .map((p) => p.passageText)
+      .join("\n\n");
+    const voiceTokenCount = estimateTokens(voiceContent);
+
+    blocks.push({
+      name: "voice-corpus",
+      content: voiceContent,
+      tokenCount: voiceTokenCount,
+      truncated: false,
+    });
+  } catch (err) {
+    blocks.push({ name: "voice-corpus", content: "", tokenCount: 0, truncated: false });
+    await logRetrieval(
+      sessionId,
+      "voice-corpus",
+      false,
+      null,
+      false,
+      err instanceof Error ? err.message : "Unknown error"
+    );
+  }
 
   return {
     sessionId,

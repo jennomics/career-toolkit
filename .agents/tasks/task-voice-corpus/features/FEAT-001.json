@@ -1,0 +1,45 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Add SourceDocument and VoicePassage models to the Prisma schema, generate the Prisma client, and create the Document Upload API (CRUD endpoints) plus the passage chunking/topic inference and retrieval modules.",
+  "status": "in_progress",
+  "steps": [
+    "1. Add SourceDocument model to prisma/schema.prisma with fields: id, title, category, authorship, authorName?, documentDate, uploadDate, content, confidential, currentEmployer. Add indexes on [category] and [authorship]. Add passages relation to VoicePassage[].",
+    "2. Add VoicePassage model to prisma/schema.prisma with fields: id, sourceDocumentId?, sourceDocument? relation, passageText, topics String[], speakerIsUser Boolean @default(true), createdAt. Add indexes on [topics] and [sourceDocumentId].",
+    "3. Add ClaimArtifact.sourceDocumentId and ClaimArtifact.sourceDocument relation if not already present (check existing schema - it may need adding since design.md shows it). Add RetrievalLog.sourceDocumentId and sourceDocument relation.",
+    "4. Run npx prisma generate to update the Prisma client types in src/generated/prisma/.",
+    "5. Create src/app/api/documents/route.ts with GET (list documents, filterable by category and authorship) and POST (create document, requires title, content, category, authorship, documentDate). Validate category against the 6 allowed values: work-artifact, third-party-evidence, archived-posting, prior-application, critique-rejected-draft, compensation-record. Validate authorship against: user-authored, third-party, collaborative, unknown. Use formatErrorResponse/validationError from src/lib/api-error.ts for error handling.",
+    "6. Create src/app/api/documents/[id]/route.ts with GET (single document with passages), PATCH (update metadata), DELETE (remove document and cascade passages). All with try/catch error handling.",
+    "7. Create src/lib/voice/passages.ts with: chunkDocument(content: string): string[] - splits at paragraph boundaries, min 50 chars, max 500 chars (split at sentence boundaries). inferTopics(passage: string): Promise<string[]> - calls guardedLLMCall with GPT-4o-mini to assign 1-3 topic tags. ingestDocument(documentId: string): Promise<void> - loads document, chunks, infers topics, creates VoicePassage rows. Idempotent: deletes existing passages for the document before re-creating.",
+    "8. Create src/lib/voice/retrieval.ts with: retrievePassages(topics: string[], limit?: number): Promise<VoicePassage[]> - queries VoicePassage where topics overlap, speakerIsUser=true, ordered by relevance (number of matching topics). Logs retrieval to RetrievalLog (contextBlock: 'voice-corpus'). Returns empty array if no matches (does not throw).",
+    "9. Update src/lib/generation/context.ts to add a voice-corpus context block that calls retrievePassages with topics derived from decomposition vocabulary and question topics. Replace the existing WritingSample truncation logic with this new retrieval.",
+    "10. Create src/lib/__tests__/voice-passages.test.ts testing chunkDocument (paragraph splitting, min/max length enforcement, sentence boundary splitting) and the retrieval logic (mocking prisma).",
+    "11. Ensure npm run lint && npm run build pass."
+  ],
+  "acceptance_criteria": [
+    "SourceDocument and VoicePassage models exist in schema.prisma with correct fields, indexes, and relations",
+    "npx prisma generate succeeds without errors",
+    "POST /api/documents requires title, content, category, authorship, documentDate - returns 400 with field names for missing required fields",
+    "GET /api/documents supports filtering by category and authorship",
+    "GET /api/documents/[id] returns document with passages included",
+    "PATCH /api/documents/[id] updates metadata fields",
+    "DELETE /api/documents/[id] removes document and its passages",
+    "chunkDocument splits at paragraph boundaries, enforces 50 char min and 500 char max with sentence splitting",
+    "inferTopics calls GPT-4o-mini and returns 1-3 topic tags",
+    "ingestDocument is idempotent (deletes old passages before creating new ones)",
+    "retrievePassages only returns speakerIsUser=true passages, ranked by topic overlap",
+    "retrievePassages logs to RetrievalLog",
+    "Context assembly integrates voice-corpus block",
+    "npm run lint passes",
+    "npm run build passes",
+    "npx vitest run passes all tests"
+  ],
+  "verification": [
+    "export PATH=\"/opt/toolchains/.nvm/versions/node/v22.23.2/bin:/projects/sandbox/career-toolkit/node_modules/.bin:$PATH\" && cd /projects/sandbox/career-toolkit && npx prisma generate",
+    "export PATH=\"/opt/toolchains/.nvm/versions/node/v22.23.2/bin:/projects/sandbox/career-toolkit/node_modules/.bin:$PATH\" && cd /projects/sandbox/career-toolkit && npm run lint",
+    "export PATH=\"/opt/toolchains/.nvm/versions/node/v22.23.2/bin:/projects/sandbox/career-toolkit/node_modules/.bin:$PATH\" && cd /projects/sandbox/career-toolkit && npm run build",
+    "export PATH=\"/opt/toolchains/.nvm/versions/node/v22.23.2/bin:/projects/sandbox/career-toolkit/node_modules/.bin:$PATH\" && cd /projects/sandbox/career-toolkit && npx vitest run"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

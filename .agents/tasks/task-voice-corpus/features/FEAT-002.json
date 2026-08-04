@@ -1,0 +1,37 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "WritingSample migration (src/lib/voice/migration.ts + scripts/migrate-writing-samples.ts) and the Document Management UI (/documents page with upload form, category-grouped list, and document detail view).",
+  "status": "pending",
+  "steps": [
+    "1. Create src/lib/voice/migration.ts with migrateWritingSamples(): for each WritingSample, create a SourceDocument (category: work-artifact, authorship: user-authored, documentDate: sample.createdAt, title: sample.title, content: sample.content). Then run ingestDocument on the new SourceDocument. Track which samples have been migrated by checking for existing SourceDocuments with matching title+content to ensure idempotency.",
+    "2. Create scripts/migrate-writing-samples.ts that imports and runs migrateWritingSamples(). Use tsx runner per existing package.json pattern.",
+    "3. Modify src/lib/profile-context.ts getVoiceGuidance function to add console.warn('DEPRECATED: getVoiceGuidance is deprecated. Use topic-based passage retrieval from src/lib/voice/retrieval.ts instead.') at the top of the function. Do NOT remove the function.",
+    "4. Create src/app/documents/page.tsx as a 'use client' page with: (a) Upload form with required fields (title input, category dropdown with all 6 categories, authorship radio with 'I wrote this'/'Someone else wrote this'/'Collaborative'/'Unknown', authorName field shown conditionally when third-party, date picker for documentDate, content textarea, confidential checkbox, currentEmployer checkbox). (b) List view grouped by category with document count per category. (c) Document detail view (click to expand) showing metadata, passage count, passages with topics. (d) Accessible: ARIA labels on all form controls, keyboard navigable.",
+    "5. Create src/lib/__tests__/voice-migration.test.ts testing migration idempotency (mock prisma to verify it checks for existing documents before creating).",
+    "6. Ensure npm run lint && npm run build pass."
+  ],
+  "acceptance_criteria": [
+    "migrateWritingSamples converts each WritingSample to SourceDocument + VoicePassages",
+    "Migration is idempotent - running twice does not create duplicates",
+    "Old WritingSample data is NOT deleted",
+    "getVoiceGuidance logs a deprecation warning when called",
+    "scripts/migrate-writing-samples.ts runs the migration",
+    "Document upload form enforces required fields client-side",
+    "Category dropdown shows all 6 categories",
+    "Authorship selection shows human-readable labels with conditional authorName field",
+    "List view shows documents grouped by category with counts",
+    "Document detail shows passage count and passages with topic tags",
+    "All form controls have ARIA labels",
+    "npm run lint passes",
+    "npm run build passes",
+    "npx vitest run passes all tests"
+  ],
+  "verification": [
+    "export PATH=\"/opt/toolchains/.nvm/versions/node/v22.23.2/bin:/projects/sandbox/career-toolkit/node_modules/.bin:$PATH\" && cd /projects/sandbox/career-toolkit && npm run lint",
+    "export PATH=\"/opt/toolchains/.nvm/versions/node/v22.23.2/bin:/projects/sandbox/career-toolkit/node_modules/.bin:$PATH\" && cd /projects/sandbox/career-toolkit && npm run build",
+    "export PATH=\"/opt/toolchains/.nvm/versions/node/v22.23.2/bin:/projects/sandbox/career-toolkit/node_modules/.bin:$PATH\" && cd /projects/sandbox/career-toolkit && npx vitest run"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
