@@ -30,6 +30,7 @@ interface Profile {
   recognitionPresence: string | null;
   operatingPrinciples: string[];
   writingStyle: string | null;
+  writingStyleFormal: string | null;
   selfDescribedPosture: string | null;
   searchTargetLevel: string | null;
   searchGeography: string | null;
@@ -448,13 +449,25 @@ export default function ProfilePage() {
 
         {/* Writing Style */}
         <CollapsibleSection title="Writing & Communication Style">
-          <div className="space-y-4">
-            <TextFieldEditor
-              value={profile.writingStyle}
-              onSave={async (value) => updateProfile({ writingStyle: value })}
-              label="Writing Style"
-              multiline
-            />
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold text-gray-700">Informal Register</h4>
+              <TextFieldEditor
+                value={profile.writingStyle}
+                onSave={async (value) => updateProfile({ writingStyle: value })}
+                label="Informal Writing Style"
+                multiline
+              />
+            </div>
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold text-gray-700">Formal Register</h4>
+              <TextFieldEditor
+                value={profile.writingStyleFormal}
+                onSave={async (value) => updateProfile({ writingStyleFormal: value })}
+                label="Formal Writing Style"
+                multiline
+              />
+            </div>
             <TextFieldEditor
               value={profile.selfDescribedPosture}
               onSave={async (value) =>

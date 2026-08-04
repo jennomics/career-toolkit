@@ -206,7 +206,8 @@ model CandidateProfile {
   educationCredentials   String?
   recognitionPresence    String?
   operatingPrinciples    String[]
-  writingStyle           String?
+  writingStyle           String?  // Informal register style description
+  writingStyleFormal     String?  // Formal register style description
   selfDescribedPosture   String?
   searchTargetLevel      String?
   searchGeography        String?
