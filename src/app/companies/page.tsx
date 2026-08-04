@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
 import { extractErrorMessage } from "@/lib/extract-error-message";
+import Nav from "@/components/Nav";
 
 interface Company {
   id: string;
@@ -103,33 +104,7 @@ export default function CompaniesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Companies</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Track companies, their jobs, and build targeted resumes
-            </p>
-          </div>
-          <nav className="flex gap-4">
-            <Link href="/" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              Home
-            </Link>
-            <Link href="/jobs" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              Jobs
-            </Link>
-            <Link href="/skills" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              Skills
-            </Link>
-            <Link href="/resume" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              Resume
-            </Link>
-            <Link href="/phrases" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              Phrases
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <Nav title="Companies" subtitle="Track companies, their jobs, and build targeted resumes" />
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
         {/* Error display */}

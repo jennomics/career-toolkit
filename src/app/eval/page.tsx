@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Nav from "@/components/Nav";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -61,27 +62,33 @@ export default function EvalDashboardPage() {
 
   if (loading) {
     return (
-      <div className="p-8">
-        <h1 className="text-2xl font-bold mb-4">Eval Dashboard</h1>
-        <p className="text-gray-500">Loading evaluation results...</p>
+      <div className="min-h-screen bg-gray-50">
+        <Nav title="Eval Dashboard" />
+        <main className="max-w-6xl mx-auto px-6 py-8">
+          <p className="text-gray-500">Loading evaluation results...</p>
+        </main>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-8">
-        <h1 className="text-2xl font-bold mb-4">Eval Dashboard</h1>
-        <p className="text-red-600">Error: {error}</p>
+      <div className="min-h-screen bg-gray-50">
+        <Nav title="Eval Dashboard" />
+        <main className="max-w-6xl mx-auto px-6 py-8">
+          <p className="text-red-600">Error: {error}</p>
+        </main>
       </div>
     );
   }
 
   if (!data || data.runs.length === 0) {
     return (
-      <div className="p-8">
-        <h1 className="text-2xl font-bold mb-4">Eval Dashboard</h1>
-        <p className="text-gray-500">No evaluation runs yet.</p>
+      <div className="min-h-screen bg-gray-50">
+        <Nav title="Eval Dashboard" />
+        <main className="max-w-6xl mx-auto px-6 py-8">
+          <p className="text-gray-500">No evaluation runs yet.</p>
+        </main>
       </div>
     );
   }
@@ -89,8 +96,9 @@ export default function EvalDashboardPage() {
   const { metrics, runs, trend } = data;
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Eval Dashboard</h1>
+    <div className="min-h-screen bg-gray-50">
+      <Nav title="Eval Dashboard" subtitle="Monitor evaluation metrics and run history" />
+      <main className="max-w-6xl mx-auto px-6 py-8">
 
       {/* Primary Metric: Edit Distance */}
       <div className="mb-8 p-6 bg-white border rounded-lg shadow-sm">
@@ -226,6 +234,7 @@ export default function EvalDashboardPage() {
           {metrics.variance.toFixed(4)} (standard deviation of edit distances across runs)
         </p>
       </div>
+    </main>
     </div>
   );
 }
