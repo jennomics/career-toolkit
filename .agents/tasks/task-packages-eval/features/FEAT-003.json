@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "Implement the Eval Harness: Tier 1 assertions runner, provenance tests, Tier 2 property checks, golden packages, known-bad anchors, batch eval runner, scoring/metrics, and eval results API. Covers Tasks 5.5, 5.6, 5.7, and 5.8.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/lib/eval/assertions.ts: loads all active Tier 1 EvalAssertions from DB, runs contains/not-contains checks against given text. Returns { passed: boolean, results: Array<{ assertionId, assertType, target, passed, detail? }> }. Filter by documentTypes if the assertion specifies them.",
     "Create src/lib/eval/provenance.ts with test functions: (1) testUnretrievedCitation(generationId) - checks if generation cites a document with no retrieval log, must fail, (2) testModelSuppliedReuse(claimId) - checks if a model-supplied claim is reused across 3+ docs without acquiring verified status, (3) testFreshnessExpiry(claimId) - checks if external claim past freshness window should block export. Each returns { passed: boolean, detail: string }.",
