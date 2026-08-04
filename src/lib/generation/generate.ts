@@ -23,6 +23,9 @@ const DEFAULT_TEMPERATURE = 0.3;
 
 /**
  * Gets the prompt template name and version for a document type.
+ * Note: essay and custom types reuse existing templates intentionally.
+ * The spec only defines dedicated policies for cover-letter and resume.
+ * essay reuses cover-letter (narrative style) and custom reuses resume (structured style).
  */
 function getTemplateForType(documentType: DocumentType): {
   templateName: string;
@@ -34,9 +37,49 @@ function getTemplateForType(documentType: DocumentType): {
     case "cover-letter":
       return { templateName: "cover-letter", version: COVER_LETTER_PROMPT_VERSION };
     case "essay":
+      // Intentional: essay reuses cover-letter template (narrative style with contractions).
+      // No dedicated essay prompt is defined in the spec.
       return { templateName: "cover-letter", version: COVER_LETTER_PROMPT_VERSION };
     case "custom":
+      // Intentional: custom reuses resume template (structured style).
+      // No dedicated custom prompt is defined in the spec.
       return { templateName: "resume", version: RESUME_PROMPT_VERSION };
+  }
+}
+
+/**
+ * Builds user prompt arguments for the registered template builder based on document type.
+ */
+function buildUserPromptArgs(
+  documentType: DocumentType,
+  context: ContextAssemblyResult,
+  mappedQuestions: MappedQuestion[]
+): unknown[] {
+  const { claims, profileContext, decomposition } = context;
+
+  switch (documentType) {
+    case "cover-letter":
+    case "essay":
+      return [
+        claims,
+        decomposition.responsibilities[0] || "Target Role",
+        "", // targetCompany - not available in current context
+        decomposition.problemStatement,
+        mappedQuestions.map((q) => ({ question: q.question, rationale: q.rationale })),
+        decomposition.vocabulary,
+        profileContext,
+      ];
+    case "resume":
+    case "custom":
+    default:
+      return [
+        claims,
+        decomposition.responsibilities[0] || "Target Role",
+        "", // targetCompany - not available in current context
+        decomposition.responsibilities,
+        decomposition.vocabulary,
+        profileContext,
+      ];
   }
 }
 
@@ -52,12 +95,9 @@ export async function runGeneration(
   const { templateName, version } = getTemplateForType(documentType);
   const template = getPromptVersion(templateName, version);
 
-  // Build the user prompt using the template's builder
-  const userPrompt = buildUserPromptForType(
-    documentType,
-    context,
-    mappedQuestions
-  );
+  // Build user prompt using the registered template builder
+  const userPromptArgs = buildUserPromptArgs(documentType, context, mappedQuestions);
+  const userPrompt = template.userPromptBuilder(...userPromptArgs);
 
   const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
     { role: "system", content: template.systemPrompt },
@@ -136,66 +176,4 @@ export async function runGeneration(
     promptTemplateVersion: version,
     temperature,
   };
-}
-
-/**
- * Builds the appropriate user prompt based on document type.
- */
-function buildUserPromptForType(
-  documentType: DocumentType,
-  context: ContextAssemblyResult,
-  mappedQuestions: MappedQuestion[]
-): string {
-  const { claims, profileContext, decomposition } = context;
-
-  const claimsList = claims
-    .map((c) => `- [${c.id}] (${c.category}) ${c.statement}`)
-    .join("\n");
-
-  const questionsList = mappedQuestions
-    .map((q) => `- ${q.question} (Why: ${q.rationale})`)
-    .join("\n");
-
-  const vocabList = decomposition.vocabulary.join(", ");
-
-  switch (documentType) {
-    case "cover-letter":
-    case "essay":
-      return `Generate a ${documentType} tailored for this role. Return structured JSON with attributed spans. ${documentType === "cover-letter" ? "Target length: 250-300 words." : ""}
-
-TARGET ROLE: ${decomposition.responsibilities[0] || "Target Role"}
-PROBLEM THIS ROLE SOLVES: ${decomposition.problemStatement}
-
-HIRING QUESTIONS TO ADDRESS:
-${questionsList}
-
-POSTING VOCABULARY: ${vocabList}
-
-CANDIDATE PROFILE:
-${profileContext}
-
-AVAILABLE CLAIMS (use these claimIds for attribution):
-${claimsList}
-
-Generate the ${documentType} as attributed spans. Every factual statement must reference a claimId from the list above. Use contractions naturally. Be concrete and specific.`;
-
-    case "resume":
-    case "custom":
-    default:
-      return `Generate a resume tailored for this role. Return structured JSON with attributed spans.
-
-TARGET ROLE: ${decomposition.responsibilities[0] || "Target Role"}
-KEY RESPONSIBILITIES:
-${decomposition.responsibilities.map((r) => `- ${r}`).join("\n")}
-
-POSTING VOCABULARY: ${vocabList}
-
-CANDIDATE PROFILE:
-${profileContext}
-
-AVAILABLE CLAIMS (use these claimIds for attribution):
-${claimsList}
-
-Generate the resume content as attributed spans. Every factual statement must reference a claimId from the list above.`;
-  }
 }
