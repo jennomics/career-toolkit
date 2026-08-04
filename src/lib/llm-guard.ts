@@ -1,7 +1,10 @@
 import { ApiError, VALIDATION_ERROR } from "./api-error";
 
 /** Maximum input length for LLM requests (characters). */
-export const MAX_INPUT_LENGTH = 15000;
+export const MAX_INPUT_LENGTH = 100000;
+
+/** Maximum length for user-provided raw text input (e.g., pasted job descriptions). */
+export const MAX_USER_INPUT_LENGTH = 15000;
 
 /** Request timeout for LLM calls (milliseconds). */
 export const REQUEST_TIMEOUT_MS = 30000;
@@ -84,13 +87,15 @@ export function logLLMCost(model: string, inputTokens: number, outputTokens: num
 }
 
 /**
- * Validates that the input text does not exceed MAX_INPUT_LENGTH.
+ * Validates that the input text does not exceed the given limit.
+ * Defaults to MAX_INPUT_LENGTH (100K, for assembled prompts).
+ * Use MAX_USER_INPUT_LENGTH (15K) for raw user-pasted text.
  * Throws an ApiError with VALIDATION_ERROR if too long.
  */
-export function validateInputLength(text: string): void {
-  if (text.length > MAX_INPUT_LENGTH) {
+export function validateInputLength(text: string, limit: number = MAX_INPUT_LENGTH): void {
+  if (text.length > limit) {
     throw new ApiError(
-      `Input too long: ${text.length} characters exceeds maximum of ${MAX_INPUT_LENGTH}`,
+      `Input too long: ${text.length} characters exceeds maximum of ${limit}`,
       VALIDATION_ERROR,
       400
     );

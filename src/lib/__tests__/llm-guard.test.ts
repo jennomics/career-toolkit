@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import {
   validateInputLength,
   MAX_INPUT_LENGTH,
+  MAX_USER_INPUT_LENGTH,
   Semaphore,
   logLLMCost,
 } from "../llm-guard";
@@ -30,6 +31,21 @@ describe("validateInputLength", () => {
       expect(apiErr.statusCode).toBe(400);
       expect(apiErr.message).toContain("Input too long");
     }
+  });
+
+  it("uses custom limit when provided", () => {
+    const text = "a".repeat(16000);
+    // Should pass with default (100K) but fail with user input limit (15K)
+    expect(() => validateInputLength(text)).not.toThrow();
+    expect(() => validateInputLength(text, MAX_USER_INPUT_LENGTH)).toThrow(ApiError);
+  });
+
+  it("MAX_USER_INPUT_LENGTH is 15000", () => {
+    expect(MAX_USER_INPUT_LENGTH).toBe(15000);
+  });
+
+  it("MAX_INPUT_LENGTH is 100000", () => {
+    expect(MAX_INPUT_LENGTH).toBe(100000);
   });
 });
 
