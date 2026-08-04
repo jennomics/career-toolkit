@@ -10,6 +10,7 @@
 
 import { prisma } from "@/lib/db";
 import { guardedLLMCall } from "@/lib/guarded-llm";
+import { llmSemaphore } from "@/lib/llm-guard";
 
 const MIN_PASSAGE_LENGTH = 50;
 const MAX_PASSAGE_LENGTH = 500;
@@ -106,7 +107,10 @@ export async function inferTopics(passage: string): Promise<string[]> {
       .map((t: string) => t.toLowerCase().trim())
       .filter((t: string) => t.length > 0);
   } catch {
-    // Fallback: return empty topics if parsing fails
+    // Log the failure so operators can diagnose unretrievable passages
+    console.warn(
+      `[voice/inferTopics] Failed to parse LLM topic response for passage (first 80 chars): "${passage.slice(0, 80)}"`
+    );
     return [];
   }
 }
@@ -135,17 +139,24 @@ export async function ingestDocument(documentId: string): Promise<void> {
   // Determine speakerIsUser based on authorship
   const speakerIsUser = document.authorship === "user-authored";
 
-  // Infer topics and create passages
-  for (const chunk of chunks) {
-    const topics = await inferTopics(chunk);
+  // Infer topics and create passages with concurrency control
+  const processChunk = async (chunk: string): Promise<void> => {
+    await llmSemaphore.acquire();
+    try {
+      const topics = await inferTopics(chunk);
 
-    await prisma.voicePassage.create({
-      data: {
-        sourceDocumentId: documentId,
-        passageText: chunk,
-        topics,
-        speakerIsUser,
-      },
-    });
-  }
+      await prisma.voicePassage.create({
+        data: {
+          sourceDocumentId: documentId,
+          passageText: chunk,
+          topics,
+          speakerIsUser,
+        },
+      });
+    } finally {
+      llmSemaphore.release();
+    }
+  };
+
+  await Promise.allSettled(chunks.map(processChunk));
 }

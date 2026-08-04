@@ -168,11 +168,11 @@ export async function assembleContext(
 
   // 4. Retrieve voice-corpus passages by topic overlap
   try {
-    // Derive topics from decomposition vocabulary and hiring question topics
-    const voiceTopics = [
-      ...decomposition.vocabulary.map((v) => v.toLowerCase()),
-      ...mappedQuestions.map((q) => q.question.toLowerCase().split(" ").slice(0, 3).join("-")),
-    ].filter((t) => t.length > 0);
+    // Derive topics from decomposition vocabulary words (these are real domain terms
+    // that match the hyphenated topic tags GPT-4o-mini assigns during ingestion)
+    const voiceTopics = decomposition.vocabulary
+      .map((v) => v.toLowerCase().trim())
+      .filter((t) => t.length > 0);
 
     const passages = await retrievePassages(voiceTopics, 10, sessionId);
 
