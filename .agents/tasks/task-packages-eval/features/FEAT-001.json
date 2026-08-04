@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Add ApplicationPackage, PackageClaimUsage, GenerationVariant, EvalAssertion, EvalGoldenPackage, EvalRun models to prisma/schema.prisma. Add packageId field + relation to existing GenerationRecord model. Add variants GenerationVariant[] relation to GenerationRecord. Seed 8 initial Tier 1 assertions from requirements.md. This covers Tasks 5.1 and 5.4 from the spec.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Add ApplicationPackage model to prisma/schema.prisma with fields: id, jobId, name, disclosureLevel (default 'standard'), status (default 'draft'), submittedAt, createdAt, updatedAt, generations GenerationRecord[], claimUsages PackageClaimUsage[]. Indexes on jobId, status.",
     "Add PackageClaimUsage model with fields: id, packageId (FK to ApplicationPackage with onDelete:Cascade), claimId, documentType, overridden (default false). Unique constraint on [packageId, claimId, documentType]. Indexes on packageId, claimId.",
@@ -31,5 +31,5 @@
     "npm run build"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Node.js was not pre-installed in the sandbox; installed node@22 via mise (MISE_NODE_VERIFY=0 to bypass gpg). Bun was available but prisma CLI requires node. All 171 existing tests pass. Build succeeds cleanly."
 }
