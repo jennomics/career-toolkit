@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { extractErrorMessage } from "@/lib/extract-error-message";
 import { CompanyData } from "./page";
 
 interface ResumeTabProps {
@@ -69,7 +70,7 @@ export default function ResumeTab({ company }: ResumeTabProps) {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || `Generation failed (${res.status})`);
+        setError(extractErrorMessage(data, `Generation failed (${res.status})`));
         return;
       }
 

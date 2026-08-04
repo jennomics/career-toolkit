@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { extractErrorMessage } from "@/lib/extract-error-message";
 
 interface Highlight {
   id?: string;
@@ -178,7 +179,7 @@ export default function MergeExperience({ experiences, onMerged, onCancel }: Mer
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        setError(data?.error || `Failed to create merged role (${res.status})`);
+        setError(extractErrorMessage(data, `Failed to create merged role (${res.status})`));
         setIsSaving(false);
         return;
       }

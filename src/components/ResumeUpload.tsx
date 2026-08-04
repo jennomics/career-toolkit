@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { extractErrorMessage } from "@/lib/extract-error-message";
 
 interface ExtractedHighlight {
   text: string;
@@ -198,7 +199,7 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
         const data = await res.json();
 
         if (!res.ok) {
-          setError(data.error || `Extraction failed (${res.status})`);
+          setError(extractErrorMessage(data, `Extraction failed (${res.status})`));
           setStep("upload");
           return;
         }

@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-001",
+  "type": "fix",
+  "description": "Create a shared extractErrorMessage utility and comprehensive tests, then fix all client components that incorrectly pass structured error objects to React state",
+  "status": "in_progress",
+  "steps": [
+    "Create src/lib/extract-error-message.ts with a utility function that safely extracts a displayable string from API error responses. The function should handle: (1) structured error object { error: { code, message, requestId } } -> returns error.message, (2) plain string error { error: 'some string' } -> returns the string, (3) null/undefined -> returns a provided fallback, (4) any other shape -> returns the fallback. Export it as `extractErrorMessage(data: unknown, fallback?: string): string`.",
+    "Create src/lib/__tests__/extract-error-message.test.ts with comprehensive tests covering: structured { error: { code, message, requestId } } responses, legacy { error: 'string' } responses, null/undefined data, missing error field, fallback parameter behavior, nested objects without message field, non-object error values (numbers, booleans, arrays).",
+    "Fix src/app/companies/page.tsx: change `setError(data.error || 'Failed to add company')` and `setSyncResult(data.error || 'Sync failed')` to use extractErrorMessage.",
+    "Fix src/app/company/[slug]/page.tsx: change `setError(data.error || 'Failed to save notes')` and `setError(data.error || 'Failed to update')` to use extractErrorMessage.",
+    "Fix src/app/company/[slug]/ResumeTab.tsx: change `setError(data.error || ...)` to use extractErrorMessage.",
+    "Fix src/app/dedup/page.tsx: change all `throw new Error(data.error || ...)` to use extractErrorMessage.",
+    "Fix src/app/profile/page.tsx: change `throw new Error(data.error || 'Failed to add writing sample')` to use extractErrorMessage.",
+    "Fix src/components/AddJobForm.tsx: change `setError(data?.error || ...)` to use extractErrorMessage.",
+    "Fix src/components/ExperienceForm.tsx: change `setError(data?.error || ...)` to use extractErrorMessage.",
+    "Fix src/components/MergeExperience.tsx: change `setError(data?.error || ...)` to use extractErrorMessage.",
+    "Fix src/components/ResumeUpload.tsx: change `setError(data.error || ...)` to use extractErrorMessage."
+  ],
+  "acceptance_criteria": [
+    "src/lib/extract-error-message.ts exports extractErrorMessage function",
+    "src/lib/__tests__/extract-error-message.test.ts has tests covering structured error objects, string errors, null/undefined, and fallback behavior",
+    "All tests pass when running `npx vitest run`",
+    "No client component directly uses `data.error` or `data?.error` as a string value without extracting .message first",
+    "`npm run lint && npm run build` succeeds with no errors"
+  ],
+  "verification": [
+    "Run `npx vitest run` and confirm all tests pass including the new extract-error-message tests",
+    "Run `npm run lint && npm run build` and confirm success",
+    "Run `grep -rn 'setError(data.error\\|\\|\\|setError(data?.error' src/` and confirm no remaining unextracted usages"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

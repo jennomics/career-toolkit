@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
+import { extractErrorMessage } from "@/lib/extract-error-message";
 
 interface Company {
   id: string;
@@ -66,7 +67,7 @@ export default function CompaniesPage() {
         setSyncResult(`Synced: ${data.created} created, ${data.linked} jobs linked`);
         fetchCompanies();
       } else {
-        setSyncResult(data.error || "Sync failed");
+        setSyncResult(extractErrorMessage(data, "Sync failed"));
       }
     } catch (err) {
       setSyncResult(err instanceof Error ? err.message : "Sync failed");
@@ -91,7 +92,7 @@ export default function CompaniesPage() {
         setNewCompanyName("");
         fetchCompanies();
       } else {
-        setError(data.error || "Failed to add company");
+        setError(extractErrorMessage(data, "Failed to add company"));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add company");
