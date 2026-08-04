@@ -7,12 +7,13 @@ interface WritingSample {
   title: string;
   content: string;
   context: string | null;
+  register: string;
   createdAt: string;
 }
 
 interface WritingSamplesSectionProps {
   samples: WritingSample[];
-  onAdd: (sample: { title: string; content: string; context?: string }) => Promise<void>;
+  onAdd: (sample: { title: string; content: string; context?: string; register: string }) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
 
@@ -27,6 +28,7 @@ export default function WritingSamplesSection({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [context, setContext] = useState("");
+  const [register, setRegister] = useState<string>("informal");
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const handleAdd = async () => {
@@ -35,65 +37,84 @@ export default function WritingSamplesSection({
       title: title.trim(),
       content: content.trim(),
       context: context.trim() || undefined,
+      register,
     });
     setTitle("");
     setContent("");
     setContext("");
+    setRegister("informal");
     setAdding(false);
   };
 
-  return (
-    <div className="space-y-4">
-      {samples.length > 0 && (
-        <div className="space-y-3">
-          {samples.map((sample) => (
-            <div
-              key={sample.id}
-              className="border border-gray-200 rounded-lg p-4"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <button
-                    onClick={() =>
-                      setExpanded(expanded === sample.id ? null : sample.id)
-                    }
-                    className="text-sm font-medium text-gray-900 hover:text-blue-600 text-left"
-                    aria-expanded={expanded === sample.id}
-                    aria-label={`Toggle ${sample.title}`}
-                  >
-                    {sample.title}
-                  </button>
-                  {sample.context && (
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {sample.context}
-                    </p>
-                  )}
-                </div>
-                <button
-                  onClick={() => onDelete(sample.id)}
-                  aria-label={`Delete ${sample.title}`}
-                  className="px-2 py-1 text-xs text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
-                >
-                  Delete
-                </button>
-              </div>
-              {expanded === sample.id && (
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">
-                    {sample.content}
-                  </pre>
-                </div>
+  const informalSamples = samples.filter((s) => s.register !== "formal");
+  const formalSamples = samples.filter((s) => s.register === "formal");
+
+  const renderSampleList = (sampleList: WritingSample[]) => (
+    <div className="space-y-3">
+      {sampleList.map((sample) => (
+        <div
+          key={sample.id}
+          className="border border-gray-200 rounded-lg p-4"
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <button
+                onClick={() =>
+                  setExpanded(expanded === sample.id ? null : sample.id)
+                }
+                className="text-sm font-medium text-gray-900 hover:text-blue-600 text-left"
+                aria-expanded={expanded === sample.id}
+                aria-label={`Toggle ${sample.title}`}
+              >
+                {sample.title}
+              </button>
+              {sample.context && (
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {sample.context}
+                </p>
               )}
             </div>
-          ))}
+            <button
+              onClick={() => onDelete(sample.id)}
+              aria-label={`Delete ${sample.title}`}
+              className="px-2 py-1 text-xs text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
+            >
+              Delete
+            </button>
+          </div>
+          {expanded === sample.id && (
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">
+                {sample.content}
+              </pre>
+            </div>
+          )}
         </div>
-      )}
+      ))}
+    </div>
+  );
 
-      {samples.length === 0 && !adding && (
-        <p className="text-sm text-gray-400 italic">
-          No writing samples yet. Add up to {MAX_SAMPLES}.
-        </p>
-      )}
+  return (
+    <div className="space-y-6">
+      {/* Informal Register */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-semibold text-gray-700">Informal Register</h4>
+        {informalSamples.length > 0 ? (
+          renderSampleList(informalSamples)
+        ) : (
+          <p className="text-sm text-gray-400 italic">No informal writing samples yet.</p>
+        )}
+      </div>
+
+      {/* Formal Register */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-semibold text-gray-700">Formal Register</h4>
+        {formalSamples.length > 0 ? (
+          renderSampleList(formalSamples)
+        ) : (
+          <p className="text-sm text-gray-400 italic">No formal writing samples yet.</p>
+        )}
+      </div>
 
       {adding ? (
         <div className="border border-gray-200 rounded-lg p-4 space-y-3">
@@ -109,6 +130,21 @@ export default function WritingSamplesSection({
               placeholder="e.g., Cover letter for Anthropic"
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
+          </div>
+          <div>
+            <label htmlFor="sample-register" className="block text-xs font-medium text-gray-500 mb-1">
+              Register
+            </label>
+            <select
+              id="sample-register"
+              value={register}
+              onChange={(e) => setRegister(e.target.value)}
+              aria-label="Writing register"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="informal">Informal</option>
+              <option value="formal">Formal</option>
+            </select>
           </div>
           <div>
             <label htmlFor="sample-context" className="block text-xs font-medium text-gray-500 mb-1">
@@ -150,6 +186,7 @@ export default function WritingSamplesSection({
                 setTitle("");
                 setContent("");
                 setContext("");
+                setRegister("informal");
               }}
               className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
             >

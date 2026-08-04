@@ -77,6 +77,7 @@ interface Profile {
     title: string;
     content: string;
     context: string | null;
+    register: string;
     createdAt: string;
   }>;
 }
@@ -141,6 +142,7 @@ export default function ProfilePage() {
     title: string;
     content: string;
     context?: string;
+    register: string;
   }) => {
     const res = await fetch("/api/profile/writing-samples", {
       method: "POST",
