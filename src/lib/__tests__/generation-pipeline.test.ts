@@ -361,7 +361,7 @@ describe("Generation Pipeline", () => {
 
       expect(result.passed).toBe(false);
       expect(
-        result.failures.some((f) => f.includes("No contractions"))
+        result.failures.some((f) => f.includes("Insufficient contractions"))
       ).toBe(true);
     });
   });
