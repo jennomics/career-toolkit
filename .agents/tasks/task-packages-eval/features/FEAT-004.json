@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "feat",
   "description": "Implement Export Gate + Package Finalization (Task 5.9). Pre-export validation checks, export formats (plain text, markdown), and the /api/packages/[id]/export endpoint that returns blocking issues as structured list if validation fails.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/lib/packages/export.ts with exportPackage(packageId, format) function that: (1) loads the package with all generations and their spans, (2) runs pre-export checks: all model-supplied spans have disposition (accepted/rejected, not pending), no unverified spans remain without explicit acceptance, freshness check on all external claims within their window, confidentiality check on flagged claims being dispositioned, format validation (word count within limits, no markdown artifacts, no smart quotes), (3) if all checks pass returns the formatted document, (4) if any check fails returns structured blocking issues list with resolution instructions.",
     "Implement the freshness check: for each claim used in the package's generations, find its ClaimArtifact records, check if any have freshnessWindow set and ingestionDate + freshnessWindow < now(). If expired, add to blocking issues.",
