@@ -144,12 +144,33 @@ export default function ProfilePage() {
     content: string;
     context?: string;
     register: string;
+    file?: File;
   }) => {
-    const res = await fetch("/api/profile/writing-samples", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(sample),
-    });
+    let res: Response;
+
+    if (sample.file) {
+      const formData = new FormData();
+      formData.append("title", sample.title);
+      formData.append("register", sample.register);
+      if (sample.context) formData.append("context", sample.context);
+      formData.append("file", sample.file);
+      res = await fetch("/api/profile/writing-samples", {
+        method: "POST",
+        body: formData,
+      });
+    } else {
+      res = await fetch("/api/profile/writing-samples", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: sample.title,
+          content: sample.content,
+          context: sample.context,
+          register: sample.register,
+        }),
+      });
+    }
+
     if (!res.ok) {
       const data = await res.json();
       throw new Error(extractErrorMessage(data, "Failed to add writing sample"));
