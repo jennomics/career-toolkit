@@ -2,7 +2,7 @@ generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
-// Schema version: 3 (Claims Ledger + Posting Decomposition added)
+// Schema version: 4 (Generation Pipeline added)
 
 datasource db {
   provider = "postgresql"
@@ -304,6 +304,7 @@ model Claim {
   artifacts          ClaimArtifact[]
   negativeAssertions NegativeAssertion[]
   corrections        ClaimCorrection[]
+  generationSpans    GenerationSpan[]
 
   @@index([claimKey])
   @@index([status])
@@ -344,6 +345,62 @@ model ClaimCorrection {
 
   @@index([claimId])
   @@index([createdAt])
+}
+
+// ─── Generation Pipeline ─────────────────────────────────────────────────────
+
+model GenerationRecord {
+  id                    String   @id @default(cuid())
+  documentType          String   // resume, cover-letter, essay, custom
+  jobId                 String
+  modelId               String   // e.g. "gpt-4o-2024-08-06"
+  promptTemplateVersion String   // Semver of the prompt template used
+  temperature           Float
+  retrievalSnapshotId   String   // ID linking to the retrieval logs for this generation
+  inputTokens           Int
+  outputTokens          Int
+  durationMs            Int
+  preflightPassed       Boolean
+  critiquePassed        Boolean?
+  revisedFromId         String?  // If this is a revision, which generation it revised
+  structuredOutput      Json     // Array of spans with claim attribution
+  renderedText          String   // Final prose
+  createdAt             DateTime @default(now())
+
+  spans GenerationSpan[]
+
+  @@index([documentType])
+  @@index([jobId])
+  @@index([createdAt])
+}
+
+model GenerationSpan {
+  id            String           @id @default(cuid())
+  generationId  String
+  generation    GenerationRecord @relation(fields: [generationId], references: [id], onDelete: Cascade)
+  spanIndex     Int              // Order within the document
+  text          String
+  claimId       String?          // Null = model-supplied
+  claim         Claim?           @relation(fields: [claimId], references: [id])
+  modelSupplied Boolean          @default(false)
+  disposition   String?          // "accepted", "rejected", "pending" (for export gate)
+
+  @@index([generationId])
+  @@index([claimId])
+}
+
+model RetrievalLog {
+  id           String   @id @default(cuid())
+  sessionId    String   // Groups retrievals within one generation session
+  contextBlock String   // Which block this retrieval populated (e.g., "voice-corpus", "claims", "profile")
+  success      Boolean
+  tokenCount   Int?     // How many tokens this block contributed
+  truncated    Boolean  @default(false)
+  error        String?  // If failed, why
+  timestamp    DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([contextBlock])
 }
 
 // ─── Posting Decomposition ───────────────────────────────────────────────────
