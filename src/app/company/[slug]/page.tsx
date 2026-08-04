@@ -85,7 +85,7 @@ export default function CompanyDetailPage() {
         setDreamCompany(data.dreamCompany);
       } else {
         const errData = await res.json().catch(() => ({}));
-        setError(errData.error || `Failed to load company (${res.status})`);
+        setError(extractErrorMessage(errData, `Failed to load company (${res.status})`));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to connect");

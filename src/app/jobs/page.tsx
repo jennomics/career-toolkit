@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
+import { extractErrorMessage } from "@/lib/extract-error-message";
 import AddJobForm from "@/components/AddJobForm";
 import JobCard from "@/components/JobCard";
 import KeywordsSummary from "@/components/KeywordsSummary";
@@ -47,7 +48,7 @@ export default function Home() {
         setJobs(data);
       } else {
         const errData = await res.json().catch(() => ({}));
-        setError(errData.error || `Failed to load jobs (${res.status})`);
+        setError(extractErrorMessage(errData, `Failed to load jobs (${res.status})`));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to connect");

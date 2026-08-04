@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo } from "react";
 import Link from "next/link";
+import { extractErrorMessage } from "@/lib/extract-error-message";
 
 /** Inline editable phrase component */
 function EditablePhrase({
@@ -186,7 +187,7 @@ export default function PhrasesPage() {
       const res = await fetch("/api/phrases");
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Failed (${res.status})`);
+        throw new Error(extractErrorMessage(errData, `Failed (${res.status})`));
       }
       const json = await res.json();
       setData(json);
