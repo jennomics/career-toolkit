@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
+import { extractErrorMessage } from "@/lib/extract-error-message";
 
 interface TaxonomySkill {
   canonicalName: string;
@@ -74,7 +75,7 @@ export default function SkillsPage() {
         setExpandedCategories(catsWithData);
       } else {
         const errData = await res.json().catch(() => ({}));
-        setError(errData.error || `Failed to load taxonomy (${res.status})`);
+        setError(extractErrorMessage(errData, `Failed to load taxonomy (${res.status})`));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to connect");
@@ -102,7 +103,7 @@ export default function SkillsPage() {
         await fetchTaxonomy();
       } else {
         const errData = await res.json().catch(() => ({}));
-        setError(errData.error || "Failed to normalize skills");
+        setError(extractErrorMessage(errData, "Failed to normalize skills"));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to normalize");
@@ -126,7 +127,7 @@ export default function SkillsPage() {
         await fetchTaxonomy();
       } else {
         const errData = await res.json().catch(() => ({}));
-        setError(errData.error || "Failed to normalize skills");
+        setError(extractErrorMessage(errData, "Failed to normalize skills"));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to normalize");

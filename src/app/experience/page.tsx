@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
+import { extractErrorMessage } from "@/lib/extract-error-message";
 import ExperienceCard from "@/components/ExperienceCard";
 import ExperienceForm from "@/components/ExperienceForm";
 import ResumeUpload from "@/components/ResumeUpload";
@@ -85,7 +86,7 @@ export default function ExperiencePage() {
         setExperiences([]);
       } else {
         const errData = await res.json().catch(() => ({}));
-        setError(errData.error || `Failed to load experience (${res.status})`);
+        setError(extractErrorMessage(errData, `Failed to load experience (${res.status})`));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to connect");

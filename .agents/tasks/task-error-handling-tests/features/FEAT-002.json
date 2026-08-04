@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-002",
+  "type": "fix",
+  "description": "Fix remaining errData.error call sites and add comprehensive tests for parse-responsibilities.ts",
+  "status": "completed",
+  "steps": [
+    "Fix src/app/companies/page.tsx: fetchCompanies errData.error pattern",
+    "Fix src/app/company/[slug]/page.tsx: loadCompany errData.error pattern",
+    "Fix src/app/company/[slug]/DraftsTab.tsx: errData.error pattern",
+    "Fix src/app/skills/page.tsx: 3 errData.error patterns",
+    "Fix src/app/experience/page.tsx: errData.error pattern",
+    "Fix src/app/jobs/page.tsx: errData.error pattern",
+    "Fix src/app/phrases/page.tsx: errData.error pattern",
+    "Create src/lib/__tests__/parse-responsibilities.test.ts with comprehensive unit tests"
+  ],
+  "acceptance_criteria": [
+    "No remaining errData.error patterns in the codebase without extractErrorMessage",
+    "parse-responsibilities.ts has comprehensive test coverage",
+    "All tests pass",
+    "Lint and build succeed"
+  ],
+  "verification": [
+    "Run `grep -rn 'errData.error' src/` and confirm no unprotected usages",
+    "Run `npx vitest run` and confirm all tests pass",
+    "Run `npm run lint && npm run build` and confirm success"
+  ],
+  "blocked_reason": null,
+  "findings": "Fixed 9 additional errData.error call sites across companies, company/[slug], DraftsTab, skills (3 sites), experience, jobs, and phrases pages. Added 46 tests for parse-responsibilities.ts covering action verb extraction, bullet stripping, prefix removal, section detection, keyword extraction, deduplication, and edge cases. Discovered that section detection requires headers > 20 chars (due to line length filtering) and is sensitive to keyword collisions (a line containing 'requirements' as a substring triggers section change)."
+}

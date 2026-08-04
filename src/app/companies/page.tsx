@@ -34,7 +34,7 @@ export default function CompaniesPage() {
         setCompanies(data);
       } else {
         const errData = await res.json().catch(() => ({}));
-        setError(errData.error || `Failed to load companies (${res.status})`);
+        setError(extractErrorMessage(errData, `Failed to load companies (${res.status})`));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to connect");

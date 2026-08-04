@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { extractErrorMessage } from "@/lib/extract-error-message";
 import { CompanyJob } from "./page";
 
 interface DraftsTabProps {
@@ -36,7 +37,7 @@ export default function DraftsTab({ companySlug, jobs }: DraftsTabProps) {
           setDrafts(data);
         } else {
           const errData = await res.json().catch(() => ({}));
-          setError(errData.error || "Failed to load drafts");
+          setError(extractErrorMessage(errData, "Failed to load drafts"));
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load drafts");

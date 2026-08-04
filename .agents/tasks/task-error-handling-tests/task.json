@@ -1,7 +1,14 @@
 {
   "task_id": "task-error-handling-tests",
   "task_description": "Create a shared extractErrorMessage utility with comprehensive tests, and fix all client components that incorrectly pass structured error objects (from formatErrorResponse) to React state or throw them as strings. This addresses the test coverage gap that allowed the resume page bug.",
-  "status": "in_progress",
-  "feature_order": ["FEAT-001"],
-  "blocked_reason": null
+  "status": "completed",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null,
+  "verification": {
+    "build": "pass",
+    "tests": "pass",
+    "test_quality": "pass",
+    "docker_build": "skipped",
+    "summary": "All 306 tests pass (228 existing + 32 from FEAT-001 + 46 from FEAT-002). Lint clean. Build successful. All errData.error patterns (9 additional call sites) fixed to use extractErrorMessage. Comprehensive unit tests added for parse-responsibilities.ts."
+  }
 }
