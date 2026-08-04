@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef, useMemo } from "react";
-import Link from "next/link";
 import { extractErrorMessage } from "@/lib/extract-error-message";
+import Nav from "@/components/Nav";
 
 /** Inline editable phrase component */
 function EditablePhrase({
@@ -287,32 +287,7 @@ export default function PhrasesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Resume Phrases
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              All extracted phrases grouped by keyword, sorted by frequency
-            </p>
-          </div>
-          <div className="flex gap-4">
-            <Link
-              href="/"
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Home
-            </Link>
-            <Link
-              href="/jobs"
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              &larr; Back to Jobs
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Nav title="Resume Phrases" subtitle="All extracted phrases grouped by keyword, sorted by frequency" />
 
       <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
         {/* Summary stats */}

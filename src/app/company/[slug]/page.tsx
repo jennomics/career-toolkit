@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { extractErrorMessage } from "@/lib/extract-error-message";
+import Nav from "@/components/Nav";
 import JobsTab from "./JobsTab";
 import SkillsTab from "./SkillsTab";
 import PhrasesTab from "./PhrasesTab";
@@ -166,13 +167,7 @@ export default function CompanyDetailPage() {
   if (error && !company) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="max-w-5xl mx-auto">
-            <Link href="/companies" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              &larr; Back to Companies
-            </Link>
-          </div>
-        </header>
+        <Nav title="Company" />
         <main className="max-w-5xl mx-auto px-6 py-8">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm" role="alert">
             <strong>Error:</strong> {error}
@@ -186,42 +181,24 @@ export default function CompanyDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/companies" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              &larr; Companies
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-900">{company.name}</h1>
-            <button
-              onClick={toggleDreamCompany}
-              disabled={togglingDream}
-              className={`text-2xl cursor-pointer transition-colors ${
-                dreamCompany ? "text-yellow-500" : "text-gray-300 hover:text-yellow-400"
-              }`}
-              title={dreamCompany ? "Dream Company (click to remove)" : "Mark as Dream Company"}
-            >
-              &#9733;
-            </button>
-          </div>
-          <nav className="flex gap-4">
-            <Link href="/" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              Home
-            </Link>
-            <Link href="/jobs" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              Jobs
-            </Link>
-            <Link href="/skills" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              Skills
-            </Link>
-            <Link href="/resume" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              Resume
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <Nav title={company.name} />
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+        <div className="flex items-center gap-4">
+          <Link href="/companies" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+            &larr; Companies
+          </Link>
+          <button
+            onClick={toggleDreamCompany}
+            disabled={togglingDream}
+            className={`text-2xl cursor-pointer transition-colors ${
+              dreamCompany ? "text-yellow-500" : "text-gray-300 hover:text-yellow-400"
+            }`}
+            title={dreamCompany ? "Dream Company (click to remove)" : "Mark as Dream Company"}
+          >
+            &#9733;
+          </button>
+        </div>
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm" role="alert">
             <strong>Error:</strong> {error}

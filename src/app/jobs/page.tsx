@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import Link from "next/link";
 import { extractErrorMessage } from "@/lib/extract-error-message";
+import Nav from "@/components/Nav";
 import AddJobForm from "@/components/AddJobForm";
 import JobCard from "@/components/JobCard";
 import KeywordsSummary from "@/components/KeywordsSummary";
@@ -146,54 +146,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Job Library</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Save job descriptions, track keywords, build your resume
-            </p>
-          </div>
-          <div className="flex gap-4">
-            <Link
-              href="/"
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Home
-            </Link>
-            <Link
-              href="/experience"
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              My Experience &rarr;
-            </Link>
-            <Link
-              href="/skills"
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Skills Taxonomy &rarr;
-            </Link>
-            <Link
-              href="/phrases"
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Resume Phrases &rarr;
-            </Link>
-            <Link
-              href="/resume"
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Resume Builder &rarr;
-            </Link>
-            <Link
-              href="/dedup"
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              De-dup
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Nav title="Job Library" subtitle="Save job descriptions, track keywords, build your resume" />
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
         {/* Error display */}

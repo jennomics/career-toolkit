@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import Link from "next/link";
 import { extractErrorMessage } from "@/lib/extract-error-message";
 import ExperienceCard from "@/components/ExperienceCard";
 import ExperienceForm from "@/components/ExperienceForm";
 import ResumeUpload from "@/components/ResumeUpload";
 import MergeExperience from "@/components/MergeExperience";
+import Nav from "@/components/Nav";
 
 interface Highlight {
   id: string;
@@ -191,36 +191,7 @@ export default function ExperiencePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">My Experience</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Your work history — used for resume building and job matching
-            </p>
-          </div>
-          <div className="flex gap-4">
-            <Link
-              href="/"
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Home
-            </Link>
-            <Link
-              href="/jobs"
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              &larr; Job Library
-            </Link>
-            <Link
-              href="/resume"
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Resume Builder &rarr;
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Nav title="My Experience" subtitle="Your work history — used for resume building and job matching" />
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
         {/* Error */}

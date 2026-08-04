@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Nav from "@/components/Nav";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -583,19 +584,7 @@ export default function ResumeBuildPage() {
   // ─── Render ───────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Resume Builder</h1>
-            <p className="text-sm text-gray-500 mt-1">Guided workflow: Job &rarr; Gap Analysis &rarr; Fill Gaps &rarr; Build</p>
-          </div>
-          <div className="flex gap-4">
-            <Link href="/" className="text-sm text-blue-600 hover:text-blue-800 font-medium">Home</Link>
-            <Link href="/experience" className="text-sm text-blue-600 hover:text-blue-800 font-medium">My Experience</Link>
-            <Link href="/jobs" className="text-sm text-blue-600 hover:text-blue-800 font-medium">Jobs</Link>
-          </div>
-        </div>
-      </header>
+      <Nav title="Resume Builder" subtitle="Guided workflow: Job → Gap Analysis → Fill Gaps → Build" />
 
       {/* Step indicator */}
       <div className="max-w-5xl mx-auto px-6 pt-6">
