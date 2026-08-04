@@ -1,0 +1,7 @@
+{
+  "task_id": "task-generation-pipeline",
+  "task_description": "Implement Phase 3 of the generation system: 7-stage Generation Pipeline with provenance tracking. Includes schema (GenerationRecord, GenerationSpan, RetrievalLog), prompt template versioning, preflight checks, context assembly with retrieval logging, structured LLM generation (spans with claim attribution), deterministic checks, critique pass, revision pass, and pipeline orchestrator with POST /api/generation/run endpoint.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}
