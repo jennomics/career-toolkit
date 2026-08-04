@@ -5,6 +5,67 @@ import { normalizeAndCategorize, normalizeAndCategorizeWithFallback } from "@/li
 import { normalizeCompanyName } from "@/lib/normalize-company";
 import { slugify } from "@/lib/slugify";
 import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
+import { decomposePosting } from "@/lib/decomposition/decompose";
+import { mapClaimsToQuestions } from "@/lib/decomposition/mapping";
+
+/**
+ * Triggers posting decomposition in the background (non-blocking).
+ * Decomposes the posting, maps claims to hiring questions, and upserts the result.
+ * Retries once after a 2-second delay on failure.
+ */
+async function triggerDecomposition(
+  jobId: string,
+  description: string,
+  title: string,
+  company: string
+): Promise<void> {
+  async function attempt(): Promise<void> {
+    const result = await decomposePosting(description, title, company);
+
+    const claims = await prisma.claim.findMany({
+      where: { status: { not: "superseded" } },
+      include: { artifacts: { select: { passageText: true } } },
+    });
+
+    const mappingReport = mapClaimsToQuestions(
+      result.hiringQuestions,
+      claims.map((c) => ({
+        id: c.id,
+        statement: c.statement,
+        artifacts: c.artifacts,
+      }))
+    );
+
+    await prisma.postingDecomposition.upsert({
+      where: { jobId },
+      create: {
+        jobId,
+        problemStatement: result.problemStatement,
+        responsibilities: result.responsibilities,
+        statedBars: result.statedBars,
+        vocabulary: result.vocabulary,
+        hiringQuestions: JSON.parse(JSON.stringify(mappingReport.questions)),
+        partialExtraction: result.partialExtraction,
+      },
+      update: {
+        problemStatement: result.problemStatement,
+        responsibilities: result.responsibilities,
+        statedBars: result.statedBars,
+        vocabulary: result.vocabulary,
+        hiringQuestions: JSON.parse(JSON.stringify(mappingReport.questions)),
+        partialExtraction: result.partialExtraction,
+      },
+    });
+  }
+
+  try {
+    await attempt();
+  } catch (err) {
+    console.error("Decomposition first attempt failed, retrying in 2s:", err);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await attempt();
+  }
+}
 
 // GET /api/jobs - List all jobs with optional search/filter
 export async function GET(request: NextRequest) {
@@ -241,6 +302,15 @@ export async function POST(request: NextRequest) {
     } catch (companyErr) {
       // Company linking failures should not block job creation
       console.error("Failed to auto-link company:", companyErr);
+    }
+
+    // Trigger decomposition async (non-blocking)
+    try {
+      triggerDecomposition(job.id, description, title, company).catch((err) => {
+        console.error("Background decomposition failed:", err);
+      });
+    } catch (decompErr) {
+      console.error("Failed to trigger decomposition:", decompErr);
     }
 
     return NextResponse.json(job, { status: 201 });
