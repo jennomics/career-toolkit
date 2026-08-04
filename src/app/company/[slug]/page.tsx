@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { extractErrorMessage } from "@/lib/extract-error-message";
 import JobsTab from "./JobsTab";
 import SkillsTab from "./SkillsTab";
 import PhrasesTab from "./PhrasesTab";
@@ -112,7 +113,7 @@ export default function CompanyDetailPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || "Failed to save notes");
+        setError(extractErrorMessage(data, "Failed to save notes"));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save notes");
@@ -135,7 +136,7 @@ export default function CompanyDetailPage() {
         setDreamCompany(newValue);
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || "Failed to update");
+        setError(extractErrorMessage(data, "Failed to update"));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update");

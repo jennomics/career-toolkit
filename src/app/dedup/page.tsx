@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { extractErrorMessage } from "@/lib/extract-error-message";
 
 // Types for company duplicates
 interface CompanyDuplicate {
@@ -71,7 +72,7 @@ export default function DedupPage() {
         const res = await fetch("/api/companies/duplicates");
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || `Failed to fetch (${res.status})`);
+          throw new Error(extractErrorMessage(data, `Failed to fetch (${res.status})`));
         }
         const data: CompanyDuplicateGroup[] = await res.json();
         setCompanyGroups(data);
@@ -102,7 +103,7 @@ export default function DedupPage() {
         const res = await fetch("/api/jobs/duplicates");
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || `Failed to fetch (${res.status})`);
+          throw new Error(extractErrorMessage(data, `Failed to fetch (${res.status})`));
         }
         const data: JobDuplicateGroup[] = await res.json();
         setJobGroups(data);
@@ -143,7 +144,7 @@ export default function DedupPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `Merge failed (${res.status})`);
+        throw new Error(extractErrorMessage(data, `Merge failed (${res.status})`));
       }
 
       const result = await res.json();
@@ -181,7 +182,7 @@ export default function DedupPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `Merge failed (${res.status})`);
+        throw new Error(extractErrorMessage(data, `Merge failed (${res.status})`));
       }
 
       const result = await res.json();

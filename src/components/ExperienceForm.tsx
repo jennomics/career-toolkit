@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { extractErrorMessage } from "@/lib/extract-error-message";
 
 interface Highlight {
   text: string;
@@ -152,7 +153,7 @@ export default function ExperienceForm({ initialData, onSave, onCancel }: Experi
         onSave();
       } else {
         const data = await res.json().catch(() => null);
-        setError(data?.error || `Save failed (${res.status})`);
+        setError(extractErrorMessage(data, `Save failed (${res.status})`));
       }
     } catch (err) {
       setError(`Network error: ${err instanceof Error ? err.message : "unknown"}`);

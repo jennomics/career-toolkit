@@ -1,0 +1,7 @@
+{
+  "task_id": "task-error-handling-tests",
+  "task_description": "Create a shared extractErrorMessage utility with comprehensive tests, and fix all client components that incorrectly pass structured error objects (from formatErrorResponse) to React state or throw them as strings. This addresses the test coverage gap that allowed the resume page bug.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001"],
+  "blocked_reason": null
+}

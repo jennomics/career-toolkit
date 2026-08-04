@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { extractErrorMessage } from "@/lib/extract-error-message";
 import CollapsibleSection from "@/components/CollapsibleSection";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import StringListEditor from "@/components/profile/StringListEditor";
@@ -148,7 +149,7 @@ export default function ProfilePage() {
     });
     if (!res.ok) {
       const data = await res.json();
-      throw new Error(data.error || "Failed to add writing sample");
+      throw new Error(extractErrorMessage(data, "Failed to add writing sample"));
     }
     await fetchProfile();
   };
