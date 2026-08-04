@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "WritingSample migration (src/lib/voice/migration.ts + scripts/migrate-writing-samples.ts) and the Document Management UI (/documents page with upload form, category-grouped list, and document detail view).",
-  "status": "pending",
+  "status": "completed",
   "steps": [
     "1. Create src/lib/voice/migration.ts with migrateWritingSamples(): for each WritingSample, create a SourceDocument (category: work-artifact, authorship: user-authored, documentDate: sample.createdAt, title: sample.title, content: sample.content). Then run ingestDocument on the new SourceDocument. Track which samples have been migrated by checking for existing SourceDocuments with matching title+content to ensure idempotency.",
     "2. Create scripts/migrate-writing-samples.ts that imports and runs migrateWritingSamples(). Use tsx runner per existing package.json pattern.",
@@ -33,5 +33,5 @@
     "export PATH=\"/opt/toolchains/.nvm/versions/node/v22.23.2/bin:/projects/sandbox/career-toolkit/node_modules/.bin:$PATH\" && cd /projects/sandbox/career-toolkit && npx vitest run"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Most of FEAT-002 was implemented during FEAT-001. The only remaining item was adding the deprecation warning to getVoiceGuidance. All lint, build, and 171 tests pass."
 }
