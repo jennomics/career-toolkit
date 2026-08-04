@@ -2,7 +2,7 @@ generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
-// Schema version: 5 (Claims Ledger + Posting Decomposition + Generation Pipeline)
+// Schema version: 6 (Claims Ledger + Posting Decomposition + Generation Pipeline + Packages + Eval)
 
 datasource db {
   provider = "postgresql"
@@ -366,14 +366,18 @@ model GenerationRecord {
   preflightPassed       Boolean
   critiquePassed        Boolean?
   revisedFromId         String?  // If this is a revision, which generation it revised
+  packageId             String?  // Links to the application package this generation belongs to
   structuredOutput      Json     // Array of spans with claim attribution
   renderedText          String   // Final prose
   createdAt             DateTime @default(now())
 
-  spans GenerationSpan[]
+  package  ApplicationPackage? @relation(fields: [packageId], references: [id])
+  spans    GenerationSpan[]
+  variants GenerationVariant[]
 
   @@index([documentType])
   @@index([jobId])
+  @@index([packageId])
   @@index([createdAt])
 }
 
@@ -460,4 +464,101 @@ model PostingDecomposition {
   updatedAt         DateTime @updatedAt
 
   @@index([jobId])
+}
+
+// ─── Application Packages ────────────────────────────────────────────────────
+
+model ApplicationPackage {
+  id              String    @id @default(cuid())
+  jobId           String
+  name            String
+  disclosureLevel String    @default("standard") // standard, redacted, full
+  status          String    @default("draft") // draft, in-review, submitted
+  submittedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  generations GenerationRecord[]
+  claimUsages PackageClaimUsage[]
+
+  @@index([jobId])
+  @@index([status])
+}
+
+model PackageClaimUsage {
+  id           String             @id @default(cuid())
+  packageId    String
+  package      ApplicationPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  claimId      String
+  documentType String
+  overridden   Boolean            @default(false)
+
+  @@unique([packageId, claimId, documentType])
+  @@index([packageId])
+  @@index([claimId])
+}
+
+model GenerationVariant {
+  id           String           @id @default(cuid())
+  generationId String
+  generation   GenerationRecord @relation(fields: [generationId], references: [id], onDelete: Cascade)
+  variantLabel String
+  tradeoff     String
+  text         String
+  chosen       Boolean          @default(false)
+
+  @@index([generationId])
+}
+
+// ─── Eval Harness ────────────────────────────────────────────────────────────
+
+model EvalAssertion {
+  id             String    @id @default(cuid())
+  tier           Int       // 1 = regression, 2 = property
+  assertType     String    // "contains", "not-contains", "property"
+  target         String    // The string or property name
+  claimId        String?
+  documentTypes  String[]  // empty = all
+  correctionDate DateTime?
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+
+  @@index([tier])
+  @@index([active])
+}
+
+model EvalGoldenPackage {
+  id               String   @id @default(cuid())
+  name             String
+  roleFamily       String   // IC, manager, product, executive
+  sector           String   // frontier-ai, big-pharma, cloud-vendor, nonprofit
+  postingText      String
+  postingDate      DateTime
+  claimSnapshot    Json
+  firstGeneration  String
+  submittedVersion String
+  editDiff         String
+  approvedAt       DateTime
+  createdAt        DateTime @default(now())
+
+  @@index([roleFamily])
+  @@index([sector])
+}
+
+model EvalRun {
+  id                    String   @id @default(cuid())
+  goldenPackageId       String?
+  modelId               String
+  promptVersion         String
+  temperature           Float
+  factScore             Float?
+  voiceScore            Float?
+  editDistance           Float?
+  anchorDiscrimination  Float?
+  generatedOutput       String
+  assertionResults      Json
+  createdAt             DateTime @default(now())
+
+  @@index([goldenPackageId])
+  @@index([createdAt])
 }
