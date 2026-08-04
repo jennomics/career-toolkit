@@ -160,11 +160,16 @@ describe("inferTopics", () => {
     expect(result).toHaveLength(3);
   });
 
-  it("returns empty array on parse failure", async () => {
+  it("returns empty array on parse failure and logs warning", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     mockGuardedLLMCall.mockResolvedValue("not valid json");
 
     const result = await inferTopics("Some passage text");
     expect(result).toEqual([]);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[voice/inferTopics] Failed to parse")
+    );
+    warnSpy.mockRestore();
   });
 
   it("lowercases and trims topics", async () => {

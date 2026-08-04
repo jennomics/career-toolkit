@@ -129,8 +129,7 @@ export async function DELETE(
       return notFoundError(`Document with id "${id}" not found`);
     }
 
-    // Delete passages first (cascade), then the document
-    await prisma.voicePassage.deleteMany({ where: { sourceDocumentId: id } });
+    // Delete the document (passages cascade automatically via onDelete: Cascade)
     await prisma.sourceDocument.delete({ where: { id } });
 
     return NextResponse.json({ success: true, id });

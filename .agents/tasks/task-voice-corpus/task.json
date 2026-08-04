@@ -3,5 +3,12 @@
   "task_description": "Implement Phase 4 of the generation system spec: Voice Corpus + Document Ingestion. Adds SourceDocument and VoicePassage models, document upload API with CRUD, passage chunking with topic inference, topic-based retrieval, WritingSample migration, and Document Management UI.",
   "status": "in_progress",
   "feature_order": ["FEAT-001", "FEAT-002"],
-  "blocked_reason": null
+  "blocked_reason": null,
+  "verification": {
+    "build": "pass",
+    "tests": "pass",
+    "test_quality": "pass",
+    "docker_build": "skipped",
+    "summary": "npm run lint passes clean. npm run build compiles all routes including /documents page and /api/documents endpoints. All 171 tests pass (14 test files). Test quality verified: voice-passages.test.ts has 18 tests covering chunking logic, topic inference, idempotent ingestion, and retrieval ranking."
+  }
 }

@@ -32,10 +32,11 @@ export async function migrateWritingSamples(): Promise<MigrationResult> {
   for (const profile of profiles) {
     for (const sample of profile.writingSamples) {
       try {
-        // Check if already migrated (by title match)
+        // Check if already migrated (by title + content match for robustness)
         const existing = await prisma.sourceDocument.findFirst({
           where: {
             title: sample.title,
+            content: sample.content,
             category: "work-artifact",
             authorship: "user-authored",
           },

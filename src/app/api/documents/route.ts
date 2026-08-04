@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { formatErrorResponse, generateRequestId, validationError } from "@/lib/api-error";
+import { ingestDocument } from "@/lib/voice/passages";
 
 const VALID_CATEGORIES = [
   "work-artifact",
@@ -115,6 +116,9 @@ export async function POST(request: NextRequest) {
         currentEmployer: currentEmployer ?? false,
       },
     });
+
+    // Ingest document into passages (chunking + topic inference)
+    await ingestDocument(document.id);
 
     return NextResponse.json(document, { status: 201 });
   } catch (err) {
