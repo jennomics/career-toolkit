@@ -1,0 +1,50 @@
+[
+  {
+    "tier": 1,
+    "assertType": "contains",
+    "target": "PLACEHOLDER_URL",
+    "documentTypes": []
+  },
+  {
+    "tier": 1,
+    "assertType": "not-contains",
+    "target": "PLACEHOLDER_FORBIDDEN_TERM",
+    "documentTypes": []
+  },
+  {
+    "tier": 1,
+    "assertType": "contains",
+    "target": "PLACEHOLDER_REQUIRED_METRIC",
+    "documentTypes": []
+  },
+  {
+    "tier": 1,
+    "assertType": "not-contains",
+    "target": "PLACEHOLDER_SENSITIVE_TERM_1",
+    "documentTypes": []
+  },
+  {
+    "tier": 1,
+    "assertType": "not-contains",
+    "target": "PLACEHOLDER_SENSITIVE_TERM_2",
+    "documentTypes": []
+  },
+  {
+    "tier": 1,
+    "assertType": "not-contains",
+    "target": "PLACEHOLDER_SENSITIVE_TERM_3",
+    "documentTypes": []
+  },
+  {
+    "tier": 1,
+    "assertType": "not-contains",
+    "target": "PLACEHOLDER_INCORRECT_DURATION",
+    "documentTypes": []
+  },
+  {
+    "tier": 1,
+    "assertType": "not-contains",
+    "target": "PLACEHOLDER_FORBIDDEN_VERB",
+    "documentTypes": []
+  }
+]

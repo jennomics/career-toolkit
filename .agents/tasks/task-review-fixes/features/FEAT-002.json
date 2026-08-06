@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-002",
+  "type": "fix",
+  "description": "Analytics fixes: conversion rate math from events, time-in-stage current stage counting, status validation, atomic status+event, queryRawUnsafe replacement, eval assertion scoping, identity data removal",
+  "status": "completed",
+  "steps": [
+    "Fix src/lib/tracker-helpers.ts: Rewrite computeConversionRates to accept optional events parameter `events?: Array<{ jobId: string; toStatus: string | null }>`. When events are provided, compute funnel from event history (count distinct jobIds that ever reached each stage via toStatus). When not provided, fall back to current snapshot-based approach but include rejected/withdrawn in denominators. A job at a later stage implicitly reached earlier stages.",
+    "Fix src/app/api/tracker/analytics/route.ts: (1) Pass events to computeConversionRates with the right shape: `events.map(e => ({ jobId: e.jobId, toStatus: e.toStatus }))`. (2) Fix time-in-stage: for each job's last event, if toStatus matches the job's current status, compute duration from that event's occurredAt to now and add to the stage's accumulator. Need to correlate jobs (by id) with their events.",
+    "Fix src/app/api/jobs/[id]/route.ts: (1) Add status validation against PIPELINE_STAGES - import PIPELINE_STAGES from tracker-helpers, check status is valid before proceeding, return 400 with VALIDATION_ERROR if invalid. (2) Wrap status update + event creation in $transaction - remove the try/catch around event creation that silently swallows errors.",
+    "Fix src/app/api/integrity/route.ts: Replace all $queryRawUnsafe calls with $queryRaw using tagged template literals. There are 4 occurrences: `SELECT 1`, the pg_tables query, the orphan skills query, and the orphan responsibilities query.",
+    "Fix src/lib/eval/assertions.ts: In the documentTypes filtering logic, when documentType is undefined/null AND assertion.documentTypes.length > 0, SKIP the assertion (continue). Currently it only skips when documentType IS provided and not in the list - but when documentType is undefined, assertions with non-empty documentTypes still fire (wrong).",
+    "Fix scripts/seed-eval-assertions.ts: Remove the hard-coded TIER_1_ASSERTIONS array. Replace with logic that loads from scripts/eval-assertions.json file (error if not found). Create scripts/eval-assertions.example.json with the structure but placeholder values.",
+    "Fix prisma/seed-demo.ts line ~141: Change 'Delivered Population Insights feature matching users to 800+ population clusters' to 'Delivered Population Insights feature matching users to 800+ reference clusters'",
+    "Fix src/lib/__tests__/tracker-analytics.test.ts: (1) Add tests with rejected jobs proving they are counted in denominators. (2) Add event-based conversion tests. (3) Fix the test asserting '5 jobs at accepted = 100% everywhere' by adding rejected jobs and verifying the rate drops."
+  ],
+  "acceptance_criteria": [
+    "computeConversionRates accepts optional events parameter and computes from event history when provided",
+    "Time-in-stage accounts for jobs still sitting in their current stage (uses now - lastEvent.occurredAt)",
+    "PATCH /api/jobs/[id] validates status against PIPELINE_STAGES, returns 400 for invalid",
+    "Status change + event creation are wrapped in $transaction (no silent failure)",
+    "All $queryRawUnsafe replaced with $queryRaw tagged template literals in integrity route",
+    "Eval assertions with non-empty documentTypes are skipped when documentType is undefined",
+    "seed-eval-assertions.ts loads from JSON file instead of hard-coded array",
+    "scripts/eval-assertions.example.json exists with placeholder values",
+    "No reference to 'Ancestry' in seed-demo.ts",
+    "Tracker analytics tests cover rejected jobs in denominator and event-based conversion",
+    "npm run build passes",
+    "npm run test passes"
+  ],
+  "verification": ["npm run build", "npm run test", "npm run lint"],
+  "blocked_reason": null,
+  "findings": "All 8 steps implemented and verified. 341 tests pass, build and lint clean. The event-based conversion rates use implicit stage propagation (job at later stage implies earlier stages reached). Fallback snapshot mode adds terminal statuses (rejected/withdrawn/closed) to the 'applied' bucket as approximation. The $transaction pattern for status change uses array-style (returns array) so we destructure [updatedJob]. PIPELINE_STAGES needed cast to `readonly string[]` for .includes() due to `as const` tuple type."
+}

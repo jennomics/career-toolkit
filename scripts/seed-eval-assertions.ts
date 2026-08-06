@@ -1,6 +1,8 @@
 import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { readFileSync, existsSync } from "fs";
+import { resolve } from "path";
 
 const connectionString = process.env.POSTGRES_URL;
 if (!connectionString) {
@@ -12,72 +14,48 @@ const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
 /**
- * Tier 1 regression assertions from requirements.md.
- * These are hard-coded facts that must always (or never) appear in generated output.
+ * Tier 1 regression assertions are loaded from scripts/eval-assertions.json.
+ * This file is in .gitignore and must be created locally from the example file.
+ * See scripts/eval-assertions.example.json for the required structure.
  */
-const TIER_1_ASSERTIONS: Array<{
+interface AssertionEntry {
   tier: number;
   assertType: string;
   target: string;
   documentTypes: string[];
-}> = [
-  {
-    tier: 1,
-    assertType: "contains",
-    target: "REDACTED_LINKEDIN_URL",
-    documentTypes: [],
-  },
-  {
-    tier: 1,
-    assertType: "not-contains",
-    target: "REDACTED_ALT_NAME",
-    documentTypes: [],
-  },
-  {
-    tier: 1,
-    assertType: "contains",
-    target: "30 million customer genomes",
-    documentTypes: [],
-  },
-  {
-    tier: 1,
-    assertType: "not-contains",
-    target: "REDACTED_FORBIDDEN_PHRASE_1",
-    documentTypes: [],
-  },
-  {
-    tier: 1,
-    assertType: "not-contains",
-    target: "REDACTED_FORBIDDEN_PHRASE_2",
-    documentTypes: [],
-  },
-  {
-    tier: 1,
-    assertType: "not-contains",
-    target: "REDACTED_FORBIDDEN_PHRASE_3",
-    documentTypes: [],
-  },
-  {
-    tier: 1,
-    assertType: "not-contains",
-    target: "REDACTED_FORBIDDEN_PHRASE_4",
-    documentTypes: [],
-  },
-  {
-    tier: 1,
-    assertType: "not-contains",
-    target: "securing",
-    documentTypes: [],
-  },
-];
+}
+
+function loadAssertions(): AssertionEntry[] {
+  const assertionsPath = resolve(__dirname, "eval-assertions.json");
+
+  if (!existsSync(assertionsPath)) {
+    console.error(
+      "Error: scripts/eval-assertions.json not found.\n" +
+      "Copy scripts/eval-assertions.example.json to scripts/eval-assertions.json\n" +
+      "and fill in the actual assertion values before running this script."
+    );
+    process.exit(1);
+  }
+
+  const raw = readFileSync(assertionsPath, "utf-8");
+  const data = JSON.parse(raw) as AssertionEntry[];
+
+  if (!Array.isArray(data) || data.length === 0) {
+    console.error("Error: scripts/eval-assertions.json must contain a non-empty array of assertions.");
+    process.exit(1);
+  }
+
+  return data;
+}
 
 async function main() {
   console.log("Seeding Tier 1 eval assertions...\n");
 
+  const assertions = loadAssertions();
   let created = 0;
   let skipped = 0;
 
-  for (const assertion of TIER_1_ASSERTIONS) {
+  for (const assertion of assertions) {
     // Idempotent: check if an assertion with the same tier+assertType+target already exists
     const existing = await prisma.evalAssertion.findFirst({
       where: {

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
-import { requireAuth, isDemoMode, rejectMutationInDemo } from "../auth";
+import { requireServiceToken, isDemoMode, rejectMutationInDemo } from "../auth";
 
 function makeRequest(url: string, options?: { method?: string; headers?: Record<string, string> }): NextRequest {
   const { method = "GET", headers = {} } = options || {};
@@ -10,7 +10,7 @@ function makeRequest(url: string, options?: { method?: string; headers?: Record<
   });
 }
 
-describe("requireAuth", () => {
+describe("requireServiceToken", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
@@ -21,45 +21,52 @@ describe("requireAuth", () => {
     process.env = originalEnv;
   });
 
-  it("returns null (pass) when AUTH_SECRET is not configured (local dev mode)", () => {
-    delete process.env.AUTH_SECRET;
-    const req = makeRequest("/api/jobs");
-    const result = requireAuth(req);
-    expect(result).toBeNull();
-  });
-
-  it("returns 401 response when no Authorization header", async () => {
-    process.env.AUTH_SECRET = "my-secret-token";
-    const req = makeRequest("/api/jobs");
-    const result = requireAuth(req);
+  it("returns 401 when SERVICE_TOKEN is not configured (fail closed)", async () => {
+    delete process.env.SERVICE_TOKEN;
+    const req = makeRequest("/api/sentinel", { method: "POST" });
+    const result = requireServiceToken(req);
 
     expect(result).not.toBeNull();
     expect(result!.status).toBe(401);
     const body = await result!.json();
     expect(body.error.code).toBe("UNAUTHORIZED");
-    expect(body.error.message).toContain("Missing authorization header");
+    expect(body.error.message).toContain("Service token not configured");
   });
 
-  it("returns 401 when token does not match AUTH_SECRET", async () => {
-    process.env.AUTH_SECRET = "my-secret-token";
-    const req = makeRequest("/api/jobs", {
+  it("returns 401 when no Authorization header is provided", async () => {
+    process.env.SERVICE_TOKEN = "my-service-token";
+    const req = makeRequest("/api/sentinel", { method: "POST" });
+    const result = requireServiceToken(req);
+
+    expect(result).not.toBeNull();
+    expect(result!.status).toBe(401);
+    const body = await result!.json();
+    expect(body.error.code).toBe("UNAUTHORIZED");
+    expect(body.error.message).toContain("Missing service token");
+  });
+
+  it("returns 401 when token does not match SERVICE_TOKEN", async () => {
+    process.env.SERVICE_TOKEN = "my-service-token";
+    const req = makeRequest("/api/sentinel", {
+      method: "POST",
       headers: { Authorization: "Bearer wrong-token" },
     });
-    const result = requireAuth(req);
+    const result = requireServiceToken(req);
 
     expect(result).not.toBeNull();
     expect(result!.status).toBe(401);
     const body = await result!.json();
     expect(body.error.code).toBe("UNAUTHORIZED");
-    expect(body.error.message).toContain("Invalid authorization token");
+    expect(body.error.message).toContain("Invalid service token");
   });
 
-  it("returns null (pass) when token matches AUTH_SECRET", () => {
-    process.env.AUTH_SECRET = "my-secret-token";
-    const req = makeRequest("/api/jobs", {
-      headers: { Authorization: "Bearer my-secret-token" },
+  it("returns null (pass) when token matches SERVICE_TOKEN", () => {
+    process.env.SERVICE_TOKEN = "my-service-token";
+    const req = makeRequest("/api/sentinel", {
+      method: "POST",
+      headers: { Authorization: "Bearer my-service-token" },
     });
-    const result = requireAuth(req);
+    const result = requireServiceToken(req);
     expect(result).toBeNull();
   });
 });

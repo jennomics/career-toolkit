@@ -25,6 +25,11 @@ function isServiceRoute(pathname: string, method: string): boolean {
   return method === "POST" && (pathname === "/api/sentinel" || pathname === "/api/integrity");
 }
 
+/** GC routes that require GC_AUTH_TOKEN authentication for all methods. */
+function isGCRoute(pathname: string): boolean {
+  return pathname.startsWith("/api/gc/");
+}
+
 /** Returns a client identifier for rate limiting (IP-based). */
 function getClientKey(request: NextRequest): string {
   return (
@@ -107,22 +112,50 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 4. Demo mode - allow reads, block mutations, block gc routes entirely
-  if (process.env.DEMO_MODE === "true") {
-    // Block groundcrew command history in demo mode (exposes internal state)
-    if (pathname.startsWith("/api/gc/")) {
+  // 3b. GC routes - require GC_AUTH_TOKEN for all methods, fail CLOSED
+  if (isGCRoute(pathname)) {
+    const gcToken = process.env.GC_AUTH_TOKEN;
+
+    // Fail closed: if GC_AUTH_TOKEN is not configured, reject (unless development)
+    if (!gcToken) {
+      if (process.env.NODE_ENV === "development") {
+        return NextResponse.next();
+      }
       return NextResponse.json(
         {
           error: {
-            code: "FORBIDDEN",
-            message: "Groundcrew routes are disabled in demo mode",
+            code: "UNAUTHORIZED",
+            message: "GC auth token not configured",
             requestId,
           },
         },
-        { status: 403 }
+        { status: 401 }
       );
     }
 
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.replace(/^Bearer\s+/i, "") || "";
+
+    if (token !== gcToken) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Invalid or missing GC auth token",
+            requestId,
+          },
+        },
+        { status: 401 }
+      );
+    }
+
+    // Valid GC token - allow through
+    return NextResponse.next();
+  }
+
+  // 4. Demo mode - allow reads, block mutations
+  //    (GC routes are already handled by step 3b above)
+  if (process.env.DEMO_MODE === "true") {
     if (method === "GET") {
       return NextResponse.next();
     }

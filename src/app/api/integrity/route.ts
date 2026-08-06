@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   // 1. Database connectivity
   try {
     const start = Date.now();
-    await prisma.$queryRawUnsafe("SELECT 1");
+    await prisma.$queryRaw`SELECT 1`;
     const latency = Date.now() - start;
 
     checks.push({
@@ -55,9 +55,7 @@ export async function POST(request: NextRequest) {
 
   // 2. Schema sync — verify all expected tables exist
   try {
-    const tables = await prisma.$queryRawUnsafe<{ tablename: string }[]>(
-      `SELECT tablename FROM pg_tables WHERE schemaname = 'public'`
-    );
+    const tables = await prisma.$queryRaw<{ tablename: string }[]>`SELECT tablename FROM pg_tables WHERE schemaname = 'public'`;
     const tableNames = tables.map((t) => t.tablename);
 
     const expectedTables = ["Job", "JobSkill", "JobResponsibility", "Correction", "AgentCommand"];
@@ -88,15 +86,11 @@ export async function POST(request: NextRequest) {
   // 3. Data integrity — orphan records
   try {
     // Skills referencing non-existent jobs
-    const orphanSkills = await prisma.$queryRawUnsafe<{ count: string }[]>(
-      `SELECT COUNT(*) as count FROM "JobSkill" js LEFT JOIN "Job" j ON js."jobId" = j.id WHERE j.id IS NULL`
-    );
+    const orphanSkills = await prisma.$queryRaw<{ count: string }[]>`SELECT COUNT(*) as count FROM "JobSkill" js LEFT JOIN "Job" j ON js."jobId" = j.id WHERE j.id IS NULL`;
     const orphanSkillCount = parseInt(String(orphanSkills[0]?.count || "0"), 10);
 
     // Responsibilities referencing non-existent jobs
-    const orphanResps = await prisma.$queryRawUnsafe<{ count: string }[]>(
-      `SELECT COUNT(*) as count FROM "JobResponsibility" jr LEFT JOIN "Job" j ON jr."jobId" = j.id WHERE j.id IS NULL`
-    );
+    const orphanResps = await prisma.$queryRaw<{ count: string }[]>`SELECT COUNT(*) as count FROM "JobResponsibility" jr LEFT JOIN "Job" j ON jr."jobId" = j.id WHERE j.id IS NULL`;
     const orphanRespCount = parseInt(String(orphanResps[0]?.count || "0"), 10);
 
     const totalOrphans = orphanSkillCount + orphanRespCount;
@@ -140,7 +134,7 @@ export async function POST(request: NextRequest) {
     } else {
       const warnings: string[] = [];
       if (!hasOpenAI) warnings.push("OPENAI_API_KEY not set (LLM features will use regex fallback)");
-      if (!hasGcToken) warnings.push("GC_AUTH_TOKEN not set (groundcrew API is open/unauthenticated)");
+      if (!hasGcToken) warnings.push("GC_AUTH_TOKEN not set (groundcrew API will reject all requests in production)");
 
       checks.push({
         name: "env_vars",

@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-001",
+  "type": "fix",
+  "description": "Security fixes: GC auth fail-closed, middleware GC route auth, Prisma proxy binding, dead auth code removal, requireServiceToken fail-closed",
+  "status": "completed",
+  "steps": [
+    "Fix src/app/api/gc/commands/route.ts: Change `if (!token) return true` to `if (!token) return process.env.NODE_ENV === 'development'` so it only fails open in development",
+    "Fix src/lib/db.ts: In the Proxy getter, bind functions to db.client: `const value = db.client[prop as keyof PrismaClient]; if (typeof value === 'function') { return (value as Function).bind(db.client); } return value;`",
+    "Fix src/middleware.ts: Expand isServiceRoute or add new logic for /api/gc/* routes. For GC routes, require GC_AUTH_TOKEN as bearer token for all methods (GET, POST, PATCH). In production (non-demo, non-development), reject without valid token with 401. Allow existing handler-level auth to remain (belt and suspenders). Add this BEFORE the demo mode check (step 3 in middleware) since GC routes should require auth even outside demo mode.",
+    "Fix src/lib/auth.ts: Delete the requireAuth function entirely. Change requireServiceToken to fail closed: when SERVICE_TOKEN env var is not set, return a 401 response (matching middleware pattern) instead of null.",
+    "Update src/lib/__tests__/auth.test.ts: Remove all requireAuth tests. Add/update requireServiceToken tests: test that when SERVICE_TOKEN is not set it returns 401 (not null), test valid token returns null, test invalid token returns 401, test missing header returns 401.",
+    "Add GC_AUTH_TOKEN to .env.example with a comment explaining it's required for production GC command API auth.",
+    "Add scripts/eval-assertions.json to .gitignore"
+  ],
+  "acceptance_criteria": [
+    "GC authenticate function returns false (not true) when no token is configured in production",
+    "Prisma proxy binds functions to the real client so $transaction works correctly",
+    "Middleware rejects unauthenticated requests to /api/gc/* in production with 401",
+    "requireAuth function no longer exists in src/lib/auth.ts",
+    "requireServiceToken returns 401 when SERVICE_TOKEN is not configured (fail closed)",
+    "GC_AUTH_TOKEN appears in .env.example",
+    "scripts/eval-assertions.json is in .gitignore",
+    "npm run build passes",
+    "npm run test passes"
+  ],
+  "verification": ["npm run build", "npm run test", "npm run lint"],
+  "blocked_reason": null,
+  "findings": "All changes verified. Build, test (336 tests), and lint pass. The lint rule @typescript-eslint/no-unsafe-function-type required using `(...args: unknown[]) => unknown` instead of `Function` for the Prisma proxy bind cast. requireAuth was only used in groundcrew/ (separate project with its own auth.ts) so removing from src/lib/auth.ts is safe."
+}

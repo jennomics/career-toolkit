@@ -10,39 +10,19 @@ import { NextRequest, NextResponse } from "next/server";
  */
 
 /**
- * Checks if the request has a valid Bearer token matching AUTH_SECRET.
- * Returns null if valid, or a 401 NextResponse if invalid.
- */
-export function requireAuth(request: NextRequest): NextResponse | null {
-  const secret = process.env.AUTH_SECRET;
-  if (!secret) return null; // No secret configured = skip auth (local dev)
-
-  const authHeader = request.headers.get("authorization");
-  if (!authHeader) {
-    return NextResponse.json(
-      { error: { code: "UNAUTHORIZED", message: "Missing authorization header", requestId: crypto.randomUUID() } },
-      { status: 401 }
-    );
-  }
-
-  const token = authHeader.replace(/^Bearer\s+/i, "");
-  if (token !== secret) {
-    return NextResponse.json(
-      { error: { code: "UNAUTHORIZED", message: "Invalid authorization token", requestId: crypto.randomUUID() } },
-      { status: 401 }
-    );
-  }
-
-  return null;
-}
-
-/**
  * Checks if the request has a valid Bearer token matching SERVICE_TOKEN.
  * Returns null if valid, or a 401 NextResponse if invalid.
+ * Fails closed: if SERVICE_TOKEN is not configured, rejects the request.
  */
 export function requireServiceToken(request: NextRequest): NextResponse | null {
   const token = process.env.SERVICE_TOKEN;
-  if (!token) return null; // No token configured = skip (dev mode)
+  if (!token) {
+    // Fail closed: no token configured means service auth cannot succeed
+    return NextResponse.json(
+      { error: { code: "UNAUTHORIZED", message: "Service token not configured", requestId: crypto.randomUUID() } },
+      { status: 401 }
+    );
+  }
 
   const authHeader = request.headers.get("authorization");
   if (!authHeader) {

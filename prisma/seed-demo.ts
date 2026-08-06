@@ -138,7 +138,7 @@ async function main() {
             scope: "30-person team, full pipeline ownership from sequencer output to clinical-grade results",
             highlights: [
               "Migrated all production pipelines from on-prem HPC to AWS (Nextflow + EKS)",
-              "Delivered Population Insights feature matching users to 800+ population clusters",
+              "Delivered Population Insights feature matching users to 800+ reference clusters",
               "Reduced pipeline costs by 55% through spot instance strategy and container optimization",
               "Hired and developed 10 senior engineers during hypergrowth phase",
             ],

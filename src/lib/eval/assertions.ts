@@ -39,13 +39,12 @@ export async function runTier1Assertions(
   const results: AssertionResult[] = [];
 
   for (const assertion of assertions) {
-    // Filter by documentTypes: empty array means applies to all
-    if (
-      assertion.documentTypes.length > 0 &&
-      documentType &&
-      !assertion.documentTypes.includes(documentType)
-    ) {
-      continue;
+    // Filter by documentTypes: empty array means applies to all.
+    // When documentType is undefined/null and assertion has specific documentTypes, skip it.
+    if (assertion.documentTypes.length > 0) {
+      if (!documentType || !assertion.documentTypes.includes(documentType)) {
+        continue;
+      }
     }
 
     const lowerText = text.toLowerCase();

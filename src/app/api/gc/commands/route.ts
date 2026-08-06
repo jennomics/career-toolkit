@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  */
 function authenticate(request: NextRequest): boolean {
   const token = process.env.GC_AUTH_TOKEN;
-  if (!token) return true; // No token configured = open (dev mode)
+  if (!token) return process.env.NODE_ENV === "development"; // Fail closed in production
 
   const authHeader = request.headers.get("authorization");
   if (!authHeader) return false;

@@ -1,0 +1,14 @@
+{
+  "task_id": "task-review-fixes",
+  "task_description": "Fix all issues from codebase review: security (auth fail-closed, proxy binding), analytics (conversion rates, time-in-stage), data exposure (identity fixtures, Ancestry reference), code cleanup (dead auth, queryRawUnsafe, eval scoping)",
+  "status": "completed",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null,
+  "verification": {
+    "build": "pass",
+    "tests": "pass",
+    "test_quality": "pass",
+    "docker_build": "skipped",
+    "summary": "Build succeeds, lint clean, 341 tests pass (5 new tests added for event-based conversion and rejected job denominators). Auth tests updated to cover requireServiceToken fail-closed behavior."
+  }
+}

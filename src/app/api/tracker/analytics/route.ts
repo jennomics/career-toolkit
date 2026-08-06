@@ -34,7 +34,15 @@ export async function GET() {
       eventsByJob[evt.jobId].push(evt);
     }
 
-    for (const jobEvents of Object.values(eventsByJob)) {
+    // Build a map of jobId -> current status for time-in-stage current stage calculation
+    const jobStatusMap: Record<string, string> = {};
+    for (const job of jobs) {
+      jobStatusMap[job.id] = job.status || "saved";
+    }
+
+    const now = new Date();
+
+    for (const [jobId, jobEvents] of Object.entries(eventsByJob)) {
       for (let i = 0; i < jobEvents.length - 1; i++) {
         const fromStatus = jobEvents[i].toStatus;
         if (!fromStatus) continue;
@@ -42,6 +50,18 @@ export async function GET() {
         if (!timeInStage[fromStatus]) timeInStage[fromStatus] = { totalMs: 0, count: 0 };
         timeInStage[fromStatus].totalMs += duration;
         timeInStage[fromStatus].count += 1;
+      }
+
+      // Fix: account for current stage duration.
+      // If the last event's toStatus matches the job's current status,
+      // compute duration from that event's occurredAt to now.
+      const lastEvent = jobEvents[jobEvents.length - 1];
+      const currentStatus = jobStatusMap[jobId];
+      if (lastEvent && lastEvent.toStatus === currentStatus) {
+        const currentStageDuration = now.getTime() - new Date(lastEvent.occurredAt).getTime();
+        if (!timeInStage[currentStatus]) timeInStage[currentStatus] = { totalMs: 0, count: 0 };
+        timeInStage[currentStatus].totalMs += currentStageDuration;
+        timeInStage[currentStatus].count += 1;
       }
     }
 
@@ -51,7 +71,10 @@ export async function GET() {
     }
 
     // Conversion rates
-    const conversionRates = computeConversionRates(stageCounts);
+    const conversionRates = computeConversionRates(
+      stageCounts,
+      events.map((e) => ({ jobId: e.jobId, toStatus: e.toStatus }))
+    );
 
     return NextResponse.json({
       totalJobs: jobs.length,
