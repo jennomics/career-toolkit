@@ -6,10 +6,12 @@ import Nav from "@/components/Nav";
 import PipelineBoard from "@/components/tracker/PipelineBoard";
 import ListView from "@/components/tracker/ListView";
 import TimelineView from "@/components/tracker/TimelineView";
+import AnalyticsDashboard from "@/components/tracker/AnalyticsDashboard";
+import AttentionWidget from "@/components/tracker/AttentionWidget";
 import DetailDrawer from "@/components/tracker/DetailDrawer";
 import { type TrackerJob } from "@/components/tracker/PipelineCard";
 
-type ViewTab = "pipeline" | "list" | "timeline";
+type ViewTab = "pipeline" | "list" | "timeline" | "analytics";
 
 export default function TrackerPage() {
   const [jobs, setJobs] = useState<TrackerJob[]>([]);
@@ -78,6 +80,13 @@ export default function TrackerPage() {
     setSelectedJob(job);
   };
 
+  const handleAttentionJobClick = (jobId: string) => {
+    const job = jobs.find((j) => j.id === jobId);
+    if (job) {
+      setSelectedJob(job);
+    }
+  };
+
   const handleDrawerClose = () => {
     setSelectedJob(null);
   };
@@ -136,6 +145,18 @@ export default function TrackerPage() {
           >
             Timeline
           </button>
+          <button
+            role="tab"
+            aria-selected={activeView === "analytics"}
+            onClick={() => setActiveView("analytics")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+              activeView === "analytics"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Analytics
+          </button>
         </div>
 
         {/* Content */}
@@ -166,12 +187,23 @@ export default function TrackerPage() {
               />
             )}
             {activeView === "list" && (
-              <ListView jobs={jobs} onJobClick={handleJobClick} />
+              <ListView jobs={jobs} onJobClick={handleJobClick} onJobUpdated={handleJobUpdated} />
             )}
             {activeView === "timeline" && (
               <TimelineView
                 jobs={jobs.map((j) => ({ id: j.id, title: j.title, company: j.company }))}
               />
+            )}
+            {activeView === "analytics" && (
+              <div className="space-y-8">
+                <AnalyticsDashboard />
+                <section aria-labelledby="attention-heading" className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+                  <h3 id="attention-heading" className="text-base font-semibold text-gray-900 mb-4">
+                    Needs Attention
+                  </h3>
+                  <AttentionWidget onJobClick={handleAttentionJobClick} />
+                </section>
+              </div>
             )}
           </>
         )}
