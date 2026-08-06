@@ -1,0 +1,38 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Analytics dashboard, attention widget, dashboard integration, and export/bulk-actions polish",
+  "status": "pending",
+  "steps": [
+    "Create src/components/tracker/AnalyticsDashboard.tsx - Shows conversion funnel visualization (how many jobs at each stage, conversion rates between stages), average time-in-stage chart, and weekly/monthly application velocity. Uses data from GET /api/tracker/analytics.",
+    "Create src/components/tracker/AttentionWidget.tsx - Shows items needing action: overdue follow-ups (past due date), stale applications (>14 days without an event), upcoming interviews (next 7 days). Each item is clickable to open the detail drawer. Uses data from GET /api/tracker/attention.",
+    "Add Analytics section to the tracker page (src/app/tracker/page.tsx) as a fourth tab or integrated section",
+    "Update src/app/page.tsx (dashboard) to include: a pipeline stats card showing active applications count by stage, and the AttentionWidget showing urgent items. Import data from /api/tracker/pipeline and /api/tracker/attention. Handle the case where the tracker has no data gracefully.",
+    "Add bulk actions to ListView.tsx: select multiple jobs via checkboxes, then bulk-update status, bulk-archive (set to closed), or bulk-delete. Add a toolbar that appears when items are selected.",
+    "Add CSV export button to ListView.tsx: exports currently visible/filtered jobs as CSV with columns (title, company, status, applied date, priority, next action, salary). Use client-side CSV generation with Blob download.",
+    "Polish drag-and-drop in PipelineBoard.tsx: add visual feedback during drag (ghost card, drop zone highlighting with dashed border), smooth transitions, and proper ARIA live announcements for screen readers when cards are moved",
+    "Add keyboard accessibility to PipelineBoard: allow cards to be moved between columns using keyboard shortcuts (e.g., Ctrl+Arrow Left/Right to move to adjacent column)",
+    "Ensure all new components handle loading states (skeleton placeholders), error states (using extractErrorMessage), and empty states",
+    "Add unit tests in src/lib/__tests__/tracker-analytics.test.ts for analytics calculation utilities (conversion rate calculation, time-in-stage averaging, attention item detection logic)"
+  ],
+  "acceptance_criteria": [
+    "Analytics dashboard shows conversion funnel and time-in-stage data",
+    "Attention widget correctly identifies overdue follow-ups and stale applications",
+    "Main dashboard (/) shows pipeline stats and attention widget",
+    "Bulk actions work in list view (multi-select, bulk status change, bulk archive, bulk delete)",
+    "CSV export downloads a valid CSV file with correct headers and data",
+    "Drag-and-drop has visual feedback (drop zones, ghost cards)",
+    "Keyboard navigation works for moving cards between columns",
+    "All loading/error/empty states are handled",
+    "npm run build succeeds",
+    "npm run lint passes",
+    "npm run test passes"
+  ],
+  "verification": [
+    "npm run build (in /projects/sandbox/career-toolkit)",
+    "npm run lint (in /projects/sandbox/career-toolkit)",
+    "npm run test (in /projects/sandbox/career-toolkit)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

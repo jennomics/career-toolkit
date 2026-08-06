@@ -1,0 +1,7 @@
+{
+  "task_id": "task-job-tracker",
+  "task_description": "Build a full job application tracker with 5 phases: Schema + API + auto-logging, Pipeline board UI with drag-and-drop + detail drawer, Interviews/Contacts/Follow-ups CRUD + UI, Analytics dashboard + attention widget + timeline, and Drag-and-drop polish + bulk actions + export",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

@@ -36,7 +36,17 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    const { title, company, location, url, description, status, source, notes, skills, dreamCompany, dreamJob } = body;
+    const {
+      title, company, location, url, description, status, source, notes,
+      skills, dreamCompany, dreamJob, appliedAt, salary, priority,
+      nextAction, nextActionDate, rejectionReason,
+    } = body;
+
+    // Fetch current job to detect status changes
+    const currentJob = await prisma.job.findUnique({ where: { id } });
+    if (!currentJob) {
+      return notFoundError("Job not found");
+    }
 
     // If skills are provided, delete existing and recreate
     if (skills !== undefined) {
@@ -56,6 +66,12 @@ export async function PATCH(
         ...(notes !== undefined && { notes }),
         ...(dreamCompany !== undefined && { dreamCompany }),
         ...(dreamJob !== undefined && { dreamJob }),
+        ...(appliedAt !== undefined && { appliedAt: appliedAt ? new Date(appliedAt) : null }),
+        ...(salary !== undefined && { salary }),
+        ...(priority !== undefined && { priority }),
+        ...(nextAction !== undefined && { nextAction }),
+        ...(nextActionDate !== undefined && { nextActionDate: nextActionDate ? new Date(nextActionDate) : null }),
+        ...(rejectionReason !== undefined && { rejectionReason }),
         ...(skills !== undefined && {
           skills: {
             create: skills.map((skill: string) => ({ name: skill })),
@@ -64,6 +80,24 @@ export async function PATCH(
       },
       include: { skills: true, responsibilities: true },
     });
+
+    // Auto-create ApplicationEvent on status change
+    if (status !== undefined && status !== currentJob.status) {
+      try {
+        await prisma.applicationEvent.create({
+          data: {
+            jobId: id,
+            eventType: "status_change",
+            fromStatus: currentJob.status,
+            toStatus: status,
+            occurredAt: new Date(),
+          },
+        });
+      } catch (eventErr) {
+        // Event logging should not block the update
+        console.error("Failed to create status change event:", eventErr);
+      }
+    }
 
     return NextResponse.json(job);
   } catch (err) {
