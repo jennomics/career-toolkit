@@ -44,7 +44,7 @@ export async function guardedLLMCall(options: GuardedLLMOptions): Promise<string
   validateInputLength(totalInput);
 
   // Check daily budget
-  const budget = checkDailyBudget();
+  const budget = await checkDailyBudget();
   if (!budget.allowed) {
     throw new ApiError(
       `Daily LLM budget exceeded ($${budget.spent.toFixed(2)}/$${budget.limit.toFixed(2)})`,
@@ -81,7 +81,7 @@ export async function guardedLLMCall(options: GuardedLLMOptions): Promise<string
 
     // Log cost
     if (response.usage) {
-      logLLMCost(model, response.usage.prompt_tokens, response.usage.completion_tokens);
+      await logLLMCost(model, response.usage.prompt_tokens, response.usage.completion_tokens);
     }
 
     return content;

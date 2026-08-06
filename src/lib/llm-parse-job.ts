@@ -74,7 +74,7 @@ export async function llmParseJob(rawText: string): Promise<LLMParsedJob> {
   validateInputLength(rawText, MAX_USER_INPUT_LENGTH);
 
   // Check daily budget
-  const budget = checkDailyBudget();
+  const budget = await checkDailyBudget();
   if (!budget.allowed) {
     throw new ApiError(
       `Daily LLM budget exceeded ($${budget.spent.toFixed(2)}/$${budget.limit.toFixed(2)})`,
@@ -112,7 +112,7 @@ export async function llmParseJob(rawText: string): Promise<LLMParsedJob> {
 
     // Log cost
     if (response.usage) {
-      logLLMCost(
+      await logLLMCost(
         "gpt-4o-mini",
         response.usage.prompt_tokens,
         response.usage.completion_tokens

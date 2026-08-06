@@ -79,9 +79,15 @@ jobs:
   health-check:
     name: Health Check (Post-Deploy)
     runs-on: ubuntu-latest
-    needs: lint-and-build
+    needs: [lint-and-build, test]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     timeout-minutes: 5
+
+    # NOTE: Vercel deploys on push regardless of CI status. This health-check
+    # job gates on both lint-and-build AND test, so it only runs when the full
+    # suite is green. However, it cannot prevent Vercel from deploying a broken
+    # build. For true deployment gating, enable Vercel's "Required Checks"
+    # feature in the project settings to block promotion until CI passes.
 
     steps:
       - name: Wait for Vercel deployment

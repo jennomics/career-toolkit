@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { withHandler } from "@/lib/with-handler";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -11,7 +12,7 @@ export const revalidate = 0;
  * GET /api/health
  * Returns: { status: "healthy", db: "connected", timestamp, version }
  */
-export async function GET() {
+export const GET = withHandler(async (_request: NextRequest) => {
   const timestamp = new Date().toISOString();
   const version = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || "local";
 
@@ -45,4 +46,4 @@ export async function GET() {
     },
     { status: isHealthy ? 200 : 503 }
   );
-}
+});

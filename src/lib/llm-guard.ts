@@ -1,4 +1,5 @@
 import { ApiError, VALIDATION_ERROR } from "./api-error";
+import { prisma } from "@/lib/db";
 
 /** Maximum input length for LLM requests (characters). */
 export const MAX_INPUT_LENGTH = 100000;
@@ -18,47 +19,16 @@ export const CONCURRENCY_LIMIT = 3;
 /** Daily budget limit in USD. */
 export const DAILY_BUDGET_USD = 5.0;
 
-// --- Daily budget tracking ---
+// --- Daily budget tracking (persistent via Postgres) ---
 //
-// NOTE: This is a best-effort heuristic. The in-memory dailySpend counter
-// resets on every process restart or serverless cold start. In a serverless
-// deployment (e.g., Vercel Edge/Serverless), each function invocation may
-// start with totalUsd = 0. For a hard budget ceiling, a persistent store
-// (e.g., database row or Redis) would be needed. For this single-tenant app,
-// in-memory tracking provides reasonable protection against runaway costs
-// during a single server session.
-
-interface DailySpend {
-  date: string; // YYYY-MM-DD in UTC
-  totalUsd: number;
-}
-
-let dailySpend: DailySpend = {
-  date: new Date().toISOString().slice(0, 10),
-  totalUsd: 0,
-};
+// Budget is tracked per UTC date in the LlmBudget table. Each serverless
+// instance reads/writes to the same row, providing a true daily ceiling
+// across all instances. DB failures are handled gracefully: if the budget
+// table is unreachable, requests are allowed (fail-open) to avoid blocking
+// users due to infrastructure issues.
 
 function getTodayUTC(): string {
   return new Date().toISOString().slice(0, 10);
-}
-
-function resetIfNewDay(): void {
-  const today = getTodayUTC();
-  if (dailySpend.date !== today) {
-    dailySpend = { date: today, totalUsd: 0 };
-  }
-}
-
-/**
- * Checks if the daily LLM budget has been exceeded.
- */
-export function checkDailyBudget(): { allowed: boolean; spent: number; limit: number } {
-  resetIfNewDay();
-  return {
-    allowed: dailySpend.totalUsd < DAILY_BUDGET_USD,
-    spent: dailySpend.totalUsd,
-    limit: DAILY_BUDGET_USD,
-  };
 }
 
 // Approximate cost per 1M tokens by model (input/output)
@@ -69,21 +39,63 @@ const MODEL_COSTS: Record<string, { inputPer1M: number; outputPer1M: number }> =
 };
 
 /**
- * Logs estimated cost for an LLM call and tracks daily spend.
+ * Checks if the daily LLM budget has been exceeded.
+ * Queries the LlmBudget row for today's date. If no row exists, budget is $0 spent (allowed).
+ * On DB failure, gracefully degrades by allowing the request.
  */
-export function logLLMCost(model: string, inputTokens: number, outputTokens: number): void {
-  resetIfNewDay();
+export async function checkDailyBudget(): Promise<{ allowed: boolean; spent: number; limit: number }> {
+  const todayUTC = getTodayUTC();
+
+  try {
+    const record = await prisma.llmBudget.findUnique({
+      where: { date: todayUTC },
+    });
+
+    const spent = record?.totalUsd ?? 0;
+    return {
+      allowed: spent < DAILY_BUDGET_USD,
+      spent,
+      limit: DAILY_BUDGET_USD,
+    };
+  } catch (err) {
+    console.warn("[llm-guard] Failed to check daily budget from DB, allowing request (graceful degradation):", err);
+    return {
+      allowed: true,
+      spent: 0,
+      limit: DAILY_BUDGET_USD,
+    };
+  }
+}
+
+/**
+ * Logs estimated cost for an LLM call and tracks daily spend in the database.
+ * Uses an atomic upsert with increment to avoid race conditions.
+ * On DB failure, logs a warning but does not throw.
+ */
+export async function logLLMCost(model: string, inputTokens: number, outputTokens: number): Promise<void> {
+  const todayUTC = getTodayUTC();
 
   const costs = MODEL_COSTS[model] || { inputPer1M: 1.0, outputPer1M: 2.0 };
   const inputCost = (inputTokens / 1_000_000) * costs.inputPer1M;
   const outputCost = (outputTokens / 1_000_000) * costs.outputPer1M;
   const totalCost = inputCost + outputCost;
 
-  dailySpend.totalUsd += totalCost;
+  try {
+    const updated = await prisma.llmBudget.upsert({
+      where: { date: todayUTC },
+      create: { date: todayUTC, totalUsd: totalCost },
+      update: { totalUsd: { increment: totalCost } },
+    });
 
-  console.log(
-    `[llm-cost] model=${model} input_tokens=${inputTokens} output_tokens=${outputTokens} cost=$${totalCost.toFixed(6)} daily_total=$${dailySpend.totalUsd.toFixed(4)}`
-  );
+    console.log(
+      `[llm-cost] model=${model} input_tokens=${inputTokens} output_tokens=${outputTokens} cost=$${totalCost.toFixed(6)} daily_total=$${updated.totalUsd.toFixed(4)}`
+    );
+  } catch (err) {
+    console.warn("[llm-guard] Failed to log LLM cost to DB (graceful degradation):", err);
+    console.log(
+      `[llm-cost] model=${model} input_tokens=${inputTokens} output_tokens=${outputTokens} cost=$${totalCost.toFixed(6)} daily_total=unknown (DB unavailable)`
+    );
+  }
 }
 
 /**

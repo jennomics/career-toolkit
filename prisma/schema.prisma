@@ -2,7 +2,7 @@ generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
-// Schema version: 6 (Claims Ledger + Posting Decomposition + Generation Pipeline + Packages + Eval)
+// Schema version: 8 (Claims Ledger + Posting Decomposition + Generation Pipeline + Packages + Eval + LlmBudget)
 
 datasource db {
   provider = "postgresql"
@@ -563,4 +563,13 @@ model EvalRun {
 
   @@index([goldenPackageId])
   @@index([createdAt])
+}
+
+// ─── LLM Budget Tracking ─────────────────────────────────────────────────────
+
+model LlmBudget {
+  id        String   @id @default(cuid())
+  date      String   @unique // YYYY-MM-DD
+  totalUsd  Float    @default(0)
+  updatedAt DateTime @updatedAt
 }

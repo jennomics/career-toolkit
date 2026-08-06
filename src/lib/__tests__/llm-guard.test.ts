@@ -1,12 +1,37 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   validateInputLength,
   MAX_INPUT_LENGTH,
   MAX_USER_INPUT_LENGTH,
   Semaphore,
   logLLMCost,
+  checkDailyBudget,
+  DAILY_BUDGET_USD,
 } from "../llm-guard";
 import { ApiError } from "../api-error";
+
+// Mock the prisma client
+vi.mock("@/lib/db", () => ({
+  prisma: {
+    llmBudget: {
+      findUnique: vi.fn(),
+      upsert: vi.fn(),
+    },
+  },
+}));
+
+import { prisma } from "@/lib/db";
+
+const mockedPrisma = prisma as unknown as {
+  llmBudget: {
+    findUnique: ReturnType<typeof vi.fn>;
+    upsert: ReturnType<typeof vi.fn>;
+  };
+};
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 describe("validateInputLength", () => {
   it("does not throw for text under MAX_INPUT_LENGTH", () => {
@@ -111,22 +136,107 @@ describe("Semaphore", () => {
   });
 });
 
+describe("checkDailyBudget", () => {
+  it("returns allowed=true when no budget row exists (no spend today)", async () => {
+    mockedPrisma.llmBudget.findUnique.mockResolvedValue(null);
+
+    const result = await checkDailyBudget();
+    expect(result.allowed).toBe(true);
+    expect(result.spent).toBe(0);
+    expect(result.limit).toBe(DAILY_BUDGET_USD);
+  });
+
+  it("returns allowed=true when spend is under the limit", async () => {
+    mockedPrisma.llmBudget.findUnique.mockResolvedValue({
+      id: "test-id",
+      date: new Date().toISOString().slice(0, 10),
+      totalUsd: 2.5,
+      updatedAt: new Date(),
+    });
+
+    const result = await checkDailyBudget();
+    expect(result.allowed).toBe(true);
+    expect(result.spent).toBe(2.5);
+  });
+
+  it("returns allowed=false when spend exceeds the limit", async () => {
+    mockedPrisma.llmBudget.findUnique.mockResolvedValue({
+      id: "test-id",
+      date: new Date().toISOString().slice(0, 10),
+      totalUsd: 6.0,
+      updatedAt: new Date(),
+    });
+
+    const result = await checkDailyBudget();
+    expect(result.allowed).toBe(false);
+    expect(result.spent).toBe(6.0);
+  });
+
+  it("gracefully degrades on DB failure (allows request)", async () => {
+    mockedPrisma.llmBudget.findUnique.mockRejectedValue(new Error("DB connection failed"));
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const result = await checkDailyBudget();
+    expect(result.allowed).toBe(true);
+    expect(result.spent).toBe(0);
+    expect(warnSpy).toHaveBeenCalled();
+
+    warnSpy.mockRestore();
+  });
+});
+
 describe("logLLMCost", () => {
-  it("does not throw (basic smoke test)", () => {
+  it("upserts the cost to the database", async () => {
+    mockedPrisma.llmBudget.upsert.mockResolvedValue({
+      id: "test-id",
+      date: new Date().toISOString().slice(0, 10),
+      totalUsd: 0.001,
+      updatedAt: new Date(),
+    });
     const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-    expect(() => logLLMCost("gpt-4o-mini", 1000, 500)).not.toThrow();
+
+    await logLLMCost("gpt-4o-mini", 1000, 500);
+
+    expect(mockedPrisma.llmBudget.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { date: expect.any(String) },
+        create: { date: expect.any(String), totalUsd: expect.any(Number) },
+        update: { totalUsd: { increment: expect.any(Number) } },
+      })
+    );
+
     consoleSpy.mockRestore();
   });
 
-  it("logs cost information to console", () => {
+  it("logs cost information to console", async () => {
+    mockedPrisma.llmBudget.upsert.mockResolvedValue({
+      id: "test-id",
+      date: new Date().toISOString().slice(0, 10),
+      totalUsd: 0.001,
+      updatedAt: new Date(),
+    });
     const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-    logLLMCost("gpt-4o-mini", 1000, 500);
+
+    await logLLMCost("gpt-4o-mini", 1000, 500);
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("[llm-cost]")
     );
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("gpt-4o-mini")
     );
+
     consoleSpy.mockRestore();
+  });
+
+  it("gracefully degrades on DB failure (does not throw)", async () => {
+    mockedPrisma.llmBudget.upsert.mockRejectedValue(new Error("DB connection failed"));
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    await expect(logLLMCost("gpt-4o-mini", 1000, 500)).resolves.not.toThrow();
+    expect(warnSpy).toHaveBeenCalled();
+
+    warnSpy.mockRestore();
+    logSpy.mockRestore();
   });
 });
