@@ -22,6 +22,7 @@ vi.mock("../llm-guard", () => ({
   createAbortSignal: vi.fn().mockReturnValue(new AbortController().signal),
   logLLMCost: vi.fn(),
   MAX_OUTPUT_TOKENS: 4096,
+  MAX_USER_INPUT_LENGTH: 15000,
   checkDailyBudget: vi.fn().mockReturnValue({ allowed: true, spent: 0, limit: 5 }),
 }));
 
