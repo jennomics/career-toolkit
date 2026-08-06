@@ -1,0 +1,44 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Schema changes, Prisma generation, and all new API routes for the job tracker including ApplicationEvent auto-logging on status change",
+  "status": "in_progress",
+  "steps": [
+    "Create git branch feat/job-tracker from main",
+    "Update prisma/schema.prisma: increment schema version comment to 7, add new fields to Job model (appliedAt DateTime?, salary String?, priority String?, nextAction String?, nextActionDate DateTime?, rejectionReason String?), add new models: ApplicationEvent, Interview, Contact, JobContact, FollowUp with all specified fields and proper indexes and relations",
+    "Update the Job model status comment to reflect the full enhanced status vocabulary: saved, researching, applied, screening, interviewing, final-round, offer, negotiating, accepted, rejected, withdrawn, closed",
+    "Run 'npx prisma generate' to regenerate the Prisma client",
+    "Create src/app/api/tracker/events/route.ts - GET (list events, filterable by jobId/eventType/date) and POST (create event)",
+    "Create src/app/api/tracker/interviews/route.ts - GET (list interviews, filterable by jobId) and POST (create interview)",
+    "Create src/app/api/tracker/interviews/[id]/route.ts - PATCH (update interview) and DELETE (delete interview)",
+    "Create src/app/api/tracker/contacts/route.ts - GET (list all contacts), POST (create contact), and handle query params for filtering",
+    "Create src/app/api/tracker/contacts/[id]/route.ts - PATCH (update contact) and DELETE (delete contact)",
+    "Create src/app/api/tracker/job-contacts/route.ts - GET (list job-contact links for a job) and POST (link a contact to a job with relationship)",
+    "Create src/app/api/tracker/job-contacts/[id]/route.ts - DELETE (unlink a contact from a job)",
+    "Create src/app/api/tracker/follow-ups/route.ts - GET (list follow-ups, filterable by jobId/completed status) and POST (create follow-up)",
+    "Create src/app/api/tracker/follow-ups/[id]/route.ts - PATCH (update/complete follow-up) and DELETE (delete follow-up)",
+    "Create src/app/api/tracker/pipeline/route.ts - GET (returns jobs grouped by status stage with counts)",
+    "Create src/app/api/tracker/analytics/route.ts - GET (funnel metrics, time-in-stage averages, conversion rates)",
+    "Create src/app/api/tracker/attention/route.ts - GET (items needing action: overdue follow-ups, stale applications >14 days without activity)",
+    "Modify src/app/api/jobs/[id]/route.ts PATCH handler to auto-create an ApplicationEvent when status changes (compare old status to new status, create event with eventType 'status_change', fromStatus, toStatus)",
+    "All API routes must follow the existing pattern: try/catch, use formatErrorResponse/validationError/notFoundError from src/lib/api-error.ts, use prisma from src/lib/db",
+    "Add unit tests in src/lib/__tests__/tracker-helpers.test.ts for any utility functions created (e.g., pipeline stage grouping logic, attention detection logic)"
+  ],
+  "acceptance_criteria": [
+    "prisma/schema.prisma has all new models (ApplicationEvent, Interview, Contact, JobContact, FollowUp) with correct fields, types, defaults, and indexes",
+    "Job model has the 6 new optional fields (appliedAt, salary, priority, nextAction, nextActionDate, rejectionReason)",
+    "Schema version comment is incremented to 7",
+    "npx prisma generate succeeds without errors",
+    "All new API routes exist and follow existing error handling patterns",
+    "PATCH /api/jobs/[id] auto-creates ApplicationEvent on status change",
+    "npm run build succeeds",
+    "npm run test passes"
+  ],
+  "verification": [
+    "npx prisma generate (in /projects/sandbox/career-toolkit)",
+    "npm run build (in /projects/sandbox/career-toolkit)",
+    "npm run test (in /projects/sandbox/career-toolkit)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

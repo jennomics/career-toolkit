@@ -1,0 +1,43 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Pipeline board UI (Kanban with drag-and-drop), list view, timeline view, and detail drawer. Add /tracker to Nav. Update JobCard STATUS_OPTIONS and ARCHIVED_STATUSES.",
+  "status": "pending",
+  "steps": [
+    "Update src/components/Nav.tsx: add { href: '/tracker', label: 'Tracker' } to NAV_LINKS array (after Jobs)",
+    "Update src/components/JobCard.tsx: extend STATUS_OPTIONS array to include all new statuses (researching, screening, final-round, negotiating, accepted, withdrawn) with appropriate colors. Add 'withdrawn' to ARCHIVED_STATUSES.",
+    "Update src/app/jobs/page.tsx: add 'withdrawn' to ARCHIVED_STATUSES constant",
+    "Create src/app/tracker/page.tsx - Main tracker page with three view tabs: Pipeline (Kanban), List, Timeline. Uses 'use client' directive.",
+    "Create src/components/tracker/PipelineBoard.tsx - Kanban board with columns for each status stage. Cards are draggable between columns. Each card shows: job title, company, priority indicator, days-in-stage badge, next action text. Dragging a card to a new column calls PATCH /api/jobs/[id] with new status (which auto-logs the ApplicationEvent). Use HTML5 Drag and Drop API (no external library needed).",
+    "Create src/components/tracker/PipelineCard.tsx - Individual card component for the kanban board with priority color coding, days-in-stage calculation, and compact layout",
+    "Create src/components/tracker/ListView.tsx - Table view with sortable columns (company, title, status, applied date, last activity, next action, priority). Include bulk action checkboxes.",
+    "Create src/components/tracker/TimelineView.tsx - Vertical timeline of ApplicationEvents across all jobs, filterable by job/event type/date range. Shows event type icon, timestamp, job title, and description.",
+    "Create src/components/tracker/DetailDrawer.tsx - Slide-over drawer that opens when clicking a job card. Has tabs: Timeline (events for this job), Interviews, Contacts, Follow-ups, Documents. Each tab fetches relevant data from API routes.",
+    "Create src/components/tracker/InterviewsTab.tsx - CRUD interface for interviews within the detail drawer. Add/edit interview form with type, date, interviewers, location/link, notes, outcome.",
+    "Create src/components/tracker/ContactsTab.tsx - CRUD interface for contacts linked to this job. Shows linked contacts, allows adding new contacts or linking existing ones.",
+    "Create src/components/tracker/FollowUpsTab.tsx - CRUD interface for follow-ups. Shows list with due dates, priority badges, completion toggle. Add new follow-up form.",
+    "Create src/components/tracker/DocumentsTab.tsx - Read-only view showing linked ApplicationPackages and ResumeProjects for this job (fetched from existing APIs).",
+    "All components must use extractErrorMessage for error handling, be accessible (ARIA labels, keyboard navigation, semantic HTML), and use Tailwind CSS consistent with existing design patterns",
+    "Ensure the zero-state experience works well - when there are no jobs at all, show helpful empty state messaging"
+  ],
+  "acceptance_criteria": [
+    "/tracker link appears in navigation",
+    "JobCard STATUS_OPTIONS includes all new statuses with color coding",
+    "ARCHIVED_STATUSES includes 'withdrawn' in both JobCard.tsx and jobs/page.tsx",
+    "Pipeline board renders columns for each stage",
+    "Drag-and-drop between columns triggers status update API call",
+    "Detail drawer opens with tabbed interface showing Timeline, Interviews, Contacts, Follow-ups, Documents",
+    "List view shows sortable table with all columns",
+    "Timeline view shows events with filtering",
+    "All UI is accessible with ARIA attributes and keyboard navigation",
+    "npm run build succeeds",
+    "npm run lint passes"
+  ],
+  "verification": [
+    "npm run build (in /projects/sandbox/career-toolkit)",
+    "npm run lint (in /projects/sandbox/career-toolkit)",
+    "npm run test (in /projects/sandbox/career-toolkit)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
