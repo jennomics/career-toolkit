@@ -35,14 +35,20 @@ interface JobCardProps {
 
 const STATUS_OPTIONS = [
   { value: "saved", label: "Saved", color: "bg-gray-100 text-gray-700" },
+  { value: "researching", label: "Researching", color: "bg-indigo-100 text-indigo-700" },
   { value: "applied", label: "Applied", color: "bg-blue-100 text-blue-700" },
+  { value: "screening", label: "Screening", color: "bg-cyan-100 text-cyan-700" },
   { value: "interviewing", label: "Interviewing", color: "bg-yellow-100 text-yellow-700" },
+  { value: "final-round", label: "Final Round", color: "bg-orange-100 text-orange-700" },
   { value: "offer", label: "Offer", color: "bg-green-100 text-green-700" },
+  { value: "negotiating", label: "Negotiating", color: "bg-emerald-100 text-emerald-700" },
+  { value: "accepted", label: "Accepted", color: "bg-green-200 text-green-800" },
   { value: "rejected", label: "Rejected", color: "bg-red-100 text-red-700" },
+  { value: "withdrawn", label: "Withdrawn", color: "bg-amber-100 text-amber-700" },
   { value: "closed", label: "Closed", color: "bg-gray-100 text-gray-500" },
 ];
 
-const ARCHIVED_STATUSES = ["rejected", "closed"];
+const ARCHIVED_STATUSES = ["rejected", "closed", "withdrawn"];
 
 export default function JobCard({ job, onUpdate, onDelete, onKeywordClick }: JobCardProps) {
   const [expanded, setExpanded] = useState(false);

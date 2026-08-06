@@ -27,7 +27,7 @@ interface Job {
 
 type ViewMode = "active" | "all" | "archived";
 
-const ARCHIVED_STATUSES = ["rejected", "closed"];
+const ARCHIVED_STATUSES = ["rejected", "closed", "withdrawn"];
 
 export default function Home() {
   const [jobs, setJobs] = useState<Job[]>([]);
