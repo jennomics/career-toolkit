@@ -1,17 +1,35 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { extractErrorMessage } from "@/lib/extract-error-message";
+import { PIPELINE_STAGES } from "@/lib/tracker-helpers";
 import { type TrackerJob } from "./PipelineCard";
 
 interface ListViewProps {
   jobs: TrackerJob[];
   onJobClick: (job: TrackerJob) => void;
+  onJobUpdated?: () => void;
 }
 
 type SortKey = "company" | "title" | "status" | "appliedAt" | "updatedAt" | "nextAction" | "priority";
 type SortDir = "asc" | "desc";
 
 const PRIORITY_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 };
+
+const STAGE_LABELS: Record<string, string> = {
+  saved: "Saved",
+  researching: "Researching",
+  applied: "Applied",
+  screening: "Screening",
+  interviewing: "Interviewing",
+  "final-round": "Final Round",
+  offer: "Offer",
+  negotiating: "Negotiating",
+  accepted: "Accepted",
+  rejected: "Rejected",
+  withdrawn: "Withdrawn",
+  closed: "Closed",
+};
 
 function SortHeader({
   label,
@@ -42,10 +60,26 @@ function SortHeader({
   );
 }
 
-export default function ListView({ jobs, onJobClick }: ListViewProps) {
+function generateCSV(jobs: TrackerJob[]): string {
+  const headers = ["Title", "Company", "Status", "Applied Date", "Priority", "Next Action", "Salary"];
+  const rows = jobs.map((job) => [
+    `"${(job.title || "").replace(/"/g, '""')}"`,
+    `"${(job.company || "").replace(/"/g, '""')}"`,
+    `"${job.status}"`,
+    `"${job.appliedAt ? new Date(job.appliedAt).toLocaleDateString("en-US") : ""}"`,
+    `"${job.priority || ""}"`,
+    `"${(job.nextAction || "").replace(/"/g, '""')}"`,
+    `"${(job.salary || "").replace(/"/g, '""')}"`,
+  ]);
+  return [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+}
+
+export default function ListView({ jobs, onJobClick, onJobUpdated }: ListViewProps) {
   const [sortKey, setSortKey] = useState<SortKey>("updatedAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkError, setBulkError] = useState<string | null>(null);
 
   const sorted = useMemo(() => {
     return [...jobs].sort((a, b) => {
@@ -109,6 +143,71 @@ export default function ListView({ jobs, onJobClick }: ListViewProps) {
     }
   };
 
+  const handleBulkAction = useCallback(
+    async (action: "status" | "archive" | "delete", newStatus?: string) => {
+      if (selectedIds.size === 0) return;
+      setBulkLoading(true);
+      setBulkError(null);
+
+      const ids = Array.from(selectedIds);
+      try {
+        if (action === "delete") {
+          const results = await Promise.allSettled(
+            ids.map((id) =>
+              fetch(`/api/jobs/${id}`, { method: "DELETE" })
+            )
+          );
+          const failed = results.filter((r) => r.status === "rejected" || (r.status === "fulfilled" && !r.value.ok));
+          if (failed.length > 0) {
+            setBulkError(`Failed to delete ${failed.length} of ${ids.length} jobs`);
+          }
+        } else {
+          const status = action === "archive" ? "closed" : newStatus;
+          if (!status) return;
+          const results = await Promise.allSettled(
+            ids.map((id) =>
+              fetch(`/api/jobs/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status }),
+              })
+            )
+          );
+          const failed = results.filter((r) => r.status === "rejected" || (r.status === "fulfilled" && !r.value.ok));
+          if (failed.length > 0) {
+            const firstFailed = results.find(
+              (r) => r.status === "fulfilled" && !r.value.ok
+            );
+            if (firstFailed && firstFailed.status === "fulfilled") {
+              const errData = await firstFailed.value.json().catch(() => ({}));
+              setBulkError(extractErrorMessage(errData, `Failed to update ${failed.length} jobs`));
+            } else {
+              setBulkError(`Failed to update ${failed.length} of ${ids.length} jobs`);
+            }
+          }
+        }
+        setSelectedIds(new Set());
+        onJobUpdated?.();
+      } catch (err) {
+        setBulkError(err instanceof Error ? err.message : "Bulk operation failed");
+      } finally {
+        setBulkLoading(false);
+      }
+    },
+    [selectedIds, onJobUpdated]
+  );
+
+  const handleExportCSV = useCallback(() => {
+    const csv = generateCSV(sorted);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `job-tracker-export-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [sorted]);
+
   if (jobs.length === 0) {
     return (
       <div className="text-center py-12">
@@ -119,19 +218,87 @@ export default function ListView({ jobs, onJobClick }: ListViewProps) {
 
   return (
     <div className="space-y-3">
+      {/* Bulk Actions Toolbar */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
+        <div
+          className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 flex-wrap"
+          role="toolbar"
+          aria-label="Bulk actions"
+        >
           <span className="text-sm text-blue-700 font-medium">
             {selectedIds.size} selected
           </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <select
+              disabled={bulkLoading}
+              onChange={(e) => {
+                if (e.target.value) {
+                  handleBulkAction("status", e.target.value);
+                  e.target.value = "";
+                }
+              }}
+              className="text-xs border border-blue-300 rounded-md px-2 py-1 bg-white text-gray-700 cursor-pointer disabled:opacity-50"
+              aria-label="Bulk change status"
+              defaultValue=""
+            >
+              <option value="" disabled>
+                Change status...
+              </option>
+              {PIPELINE_STAGES.map((stage) => (
+                <option key={stage} value={stage}>
+                  {STAGE_LABELS[stage] || stage}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => handleBulkAction("archive")}
+              disabled={bulkLoading}
+              className="text-xs px-3 py-1 bg-amber-100 text-amber-700 border border-amber-300 rounded-md hover:bg-amber-200 cursor-pointer disabled:opacity-50"
+              aria-label="Archive selected jobs"
+            >
+              Archive
+            </button>
+            <button
+              onClick={() => {
+                if (window.confirm(`Delete ${selectedIds.size} selected job(s)? This cannot be undone.`)) {
+                  handleBulkAction("delete");
+                }
+              }}
+              disabled={bulkLoading}
+              className="text-xs px-3 py-1 bg-red-100 text-red-700 border border-red-300 rounded-md hover:bg-red-200 cursor-pointer disabled:opacity-50"
+              aria-label="Delete selected jobs"
+            >
+              Delete
+            </button>
+          </div>
           <button
             onClick={() => setSelectedIds(new Set())}
-            className="text-xs text-blue-600 hover:text-blue-800 cursor-pointer"
+            className="text-xs text-blue-600 hover:text-blue-800 cursor-pointer ml-auto"
           >
             Clear selection
           </button>
         </div>
       )}
+
+      {bulkError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm" role="alert">
+          {bulkError}
+        </div>
+      )}
+
+      {/* Export button */}
+      <div className="flex justify-end">
+        <button
+          onClick={handleExportCSV}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+          aria-label="Export jobs as CSV"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Export CSV
+        </button>
+      </div>
 
       <div className="overflow-x-auto rounded-lg border border-gray-200">
         <table className="min-w-full divide-y divide-gray-200" role="grid" aria-label="Jobs list">

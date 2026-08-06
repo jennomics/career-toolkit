@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import { extractErrorMessage } from "@/lib/extract-error-message";
 import { PIPELINE_STAGES, ARCHIVED_STATUSES } from "@/lib/tracker-helpers";
 import PipelineCard, { type TrackerJob } from "./PipelineCard";
@@ -43,12 +43,18 @@ const STAGE_HEADER_COLORS: Record<string, string> = {
 
 export default function PipelineBoard({ jobs, onJobUpdated, onJobClick }: PipelineBoardProps) {
   const [dragOverStage, setDragOverStage] = useState<string | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [announcement, setAnnouncement] = useState("");
+  const announcementRef = useRef<HTMLDivElement>(null);
 
   const activeStages = PIPELINE_STAGES.filter((s) => !ARCHIVED_STATUSES.includes(s));
   const archivedStages = PIPELINE_STAGES.filter((s) => ARCHIVED_STATUSES.includes(s));
-  const visibleStages = showArchived ? [...activeStages, ...archivedStages] : activeStages;
+  const visibleStages = useMemo(
+    () => (showArchived ? [...activeStages, ...archivedStages] : activeStages),
+    [showArchived, activeStages, archivedStages]
+  );
 
   // Group jobs by stage
   const grouped: Record<string, TrackerJob[]> = {};
@@ -64,9 +70,51 @@ export default function PipelineBoard({ jobs, onJobUpdated, onJobClick }: Pipeli
     }
   }
 
+  const announce = (message: string) => {
+    setAnnouncement(message);
+  };
+
+  const moveJobToStage = useCallback(
+    async (jobId: string, newStage: string) => {
+      const job = jobs.find((j) => j.id === jobId);
+      if (!job || job.status === newStage) return;
+
+      try {
+        setError(null);
+        const res = await fetch(`/api/jobs/${jobId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStage }),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          setError(extractErrorMessage(errData, `Failed to move job to ${newStage}`));
+          return;
+        }
+        announce(
+          `${job.title} moved from ${STAGE_LABELS[job.status] || job.status} to ${STAGE_LABELS[newStage] || newStage}`
+        );
+        onJobUpdated();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to update job status");
+      }
+    },
+    [jobs, onJobUpdated]
+  );
+
   const handleDragStart = useCallback((e: React.DragEvent, jobId: string) => {
     e.dataTransfer.setData("text/plain", jobId);
     e.dataTransfer.effectAllowed = "move";
+    setDraggingId(jobId);
+    // Set drag image with slight offset for ghost effect
+    if (e.currentTarget instanceof HTMLElement) {
+      e.dataTransfer.setDragImage(e.currentTarget, 20, 20);
+    }
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    setDraggingId(null);
+    setDragOverStage(null);
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent, stage: string) => {
@@ -83,34 +131,45 @@ export default function PipelineBoard({ jobs, onJobUpdated, onJobClick }: Pipeli
     async (e: React.DragEvent, newStage: string) => {
       e.preventDefault();
       setDragOverStage(null);
+      setDraggingId(null);
       const jobId = e.dataTransfer.getData("text/plain");
       if (!jobId) return;
+      await moveJobToStage(jobId, newStage);
+    },
+    [moveJobToStage]
+  );
 
-      const job = jobs.find((j) => j.id === jobId);
-      if (!job || job.status === newStage) return;
+  const handleCardKeyDown = useCallback(
+    (e: React.KeyboardEvent, job: TrackerJob) => {
+      // Ctrl+ArrowLeft / Ctrl+ArrowRight to move between columns
+      if (e.ctrlKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+        e.preventDefault();
+        const currentIdx = visibleStages.indexOf(job.status as typeof visibleStages[number]);
+        if (currentIdx === -1) return;
 
-      try {
-        setError(null);
-        const res = await fetch(`/api/jobs/${jobId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: newStage }),
-        });
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          setError(extractErrorMessage(errData, `Failed to move job to ${newStage}`));
-          return;
-        }
-        onJobUpdated();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to update job status");
+        const nextIdx = e.key === "ArrowLeft" ? currentIdx - 1 : currentIdx + 1;
+        if (nextIdx < 0 || nextIdx >= visibleStages.length) return;
+
+        const newStage = visibleStages[nextIdx];
+        moveJobToStage(job.id, newStage);
       }
     },
-    [jobs, onJobUpdated]
+    [visibleStages, moveJobToStage]
   );
 
   return (
     <div className="space-y-4">
+      {/* ARIA live region for announcements */}
+      <div
+        ref={announcementRef}
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {announcement}
+      </div>
+
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm" role="alert">
           {error}
@@ -121,13 +180,18 @@ export default function PipelineBoard({ jobs, onJobUpdated, onJobClick }: Pipeli
         <p className="text-sm text-gray-500">
           {jobs.length} job{jobs.length !== 1 ? "s" : ""} across {visibleStages.length} stages
         </p>
-        <button
-          onClick={() => setShowArchived(!showArchived)}
-          className="text-sm text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
-          aria-pressed={showArchived}
-        >
-          {showArchived ? "Hide Archived" : "Show Archived"}
-        </button>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-gray-400">
+            Tip: Ctrl+Arrow Left/Right to move cards
+          </span>
+          <button
+            onClick={() => setShowArchived(!showArchived)}
+            className="text-sm text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+            aria-pressed={showArchived}
+          >
+            {showArchived ? "Hide Archived" : "Show Archived"}
+          </button>
+        </div>
       </div>
 
       <div
@@ -135,46 +199,61 @@ export default function PipelineBoard({ jobs, onJobUpdated, onJobClick }: Pipeli
         role="region"
         aria-label="Pipeline board"
       >
-        {visibleStages.map((stage) => (
-          <div
-            key={stage}
-            onDragOver={(e) => handleDragOver(e, stage)}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, stage)}
-            className={`flex-shrink-0 w-64 bg-gray-50 rounded-lg border-t-4 ${STAGE_HEADER_COLORS[stage] || "border-t-gray-300"} ${
-              dragOverStage === stage ? "ring-2 ring-blue-300 bg-blue-50" : ""
-            }`}
-            role="group"
-            aria-label={`${STAGE_LABELS[stage] || stage} stage, ${grouped[stage].length} jobs`}
-          >
-            <div className="p-3 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-gray-700">
-                  {STAGE_LABELS[stage] || stage}
-                </h3>
-                <span className="text-xs text-gray-400 bg-white px-1.5 py-0.5 rounded-full">
-                  {grouped[stage].length}
-                </span>
+        {visibleStages.map((stage) => {
+          const isDropTarget = dragOverStage === stage;
+          return (
+            <div
+              key={stage}
+              onDragOver={(e) => handleDragOver(e, stage)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, stage)}
+              className={`flex-shrink-0 w-64 rounded-lg border-t-4 transition-all duration-200 ${
+                STAGE_HEADER_COLORS[stage] || "border-t-gray-300"
+              } ${
+                isDropTarget
+                  ? "ring-2 ring-blue-400 bg-blue-50 border-2 border-dashed border-blue-300"
+                  : "bg-gray-50"
+              }`}
+              role="group"
+              aria-label={`${STAGE_LABELS[stage] || stage} stage, ${grouped[stage].length} jobs`}
+            >
+              <div className="p-3 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-gray-700">
+                    {STAGE_LABELS[stage] || stage}
+                  </h3>
+                  <span className="text-xs text-gray-400 bg-white px-1.5 py-0.5 rounded-full">
+                    {grouped[stage].length}
+                  </span>
+                </div>
+              </div>
+              <div className="p-2 space-y-2 min-h-[100px]">
+                {grouped[stage].length === 0 ? (
+                  <p className="text-xs text-gray-400 text-center py-4">
+                    {isDropTarget ? "Drop here" : "Drop jobs here"}
+                  </p>
+                ) : (
+                  grouped[stage].map((job) => (
+                    <div
+                      key={job.id}
+                      onDragEnd={handleDragEnd}
+                      onKeyDown={(e) => handleCardKeyDown(e, job)}
+                      className={`transition-all duration-200 ${
+                        draggingId === job.id ? "opacity-40 scale-95" : ""
+                      }`}
+                    >
+                      <PipelineCard
+                        job={job}
+                        onDragStart={handleDragStart}
+                        onClick={() => onJobClick(job)}
+                      />
+                    </div>
+                  ))
+                )}
               </div>
             </div>
-            <div className="p-2 space-y-2 min-h-[100px]">
-              {grouped[stage].length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-4">
-                  Drop jobs here
-                </p>
-              ) : (
-                grouped[stage].map((job) => (
-                  <PipelineCard
-                    key={job.id}
-                    job={job}
-                    onDragStart={handleDragStart}
-                    onClick={() => onJobClick(job)}
-                  />
-                ))
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

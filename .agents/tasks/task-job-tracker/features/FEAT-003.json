@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "Analytics dashboard, attention widget, dashboard integration, and export/bulk-actions polish",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/components/tracker/AnalyticsDashboard.tsx - Shows conversion funnel visualization (how many jobs at each stage, conversion rates between stages), average time-in-stage chart, and weekly/monthly application velocity. Uses data from GET /api/tracker/analytics.",
     "Create src/components/tracker/AttentionWidget.tsx - Shows items needing action: overdue follow-ups (past due date), stale applications (>14 days without an event), upcoming interviews (next 7 days). Each item is clickable to open the detail drawer. Uses data from GET /api/tracker/attention.",
