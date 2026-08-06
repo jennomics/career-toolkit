@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Pipeline board UI (Kanban with drag-and-drop), list view, timeline view, and detail drawer. Add /tracker to Nav. Update JobCard STATUS_OPTIONS and ARCHIVED_STATUSES.",
-  "status": "pending",
+  "status": "completed",
   "steps": [
     "Update src/components/Nav.tsx: add { href: '/tracker', label: 'Tracker' } to NAV_LINKS array (after Jobs)",
     "Update src/components/JobCard.tsx: extend STATUS_OPTIONS array to include all new statuses (researching, screening, final-round, negotiating, accepted, withdrawn) with appropriate colors. Add 'withdrawn' to ARCHIVED_STATUSES.",
@@ -39,5 +39,5 @@
     "npm run test (in /projects/sandbox/career-toolkit)"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "React 19 strict linting requires cancellation pattern (let cancelled = false) inside useEffect for async data fetching rather than calling useCallback-wrapped fetch functions directly in effects. The react-hooks/set-state-in-effect and react-hooks/refs rules are very strict. Pre-existing test failure in llm-parse-job.test.ts (mock issue with MAX_USER_INPUT_LENGTH) is not related to changes."
 }
