@@ -51,7 +51,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
 // ─── Status Badge ────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string }) {
-  const baseClasses = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium";
+  const baseClasses = "inline-flex items-center px-2 py-0.5 text-xs font-medium";
   let colorClasses: string;
 
   switch (status) {
@@ -62,10 +62,10 @@ function StatusBadge({ status }: { status: string }) {
       colorClasses = "font-mono text-meta text-ink-50 border border-rule";
       break;
     case "superseded":
-      colorClasses = "border border-ink text-ink bg-transparent border border-rule";
+      colorClasses = "font-mono text-meta text-ink-35 border border-rule";
       break;
     default:
-      colorClasses = "border border-ink text-ink bg-transparent border border-rule";
+      colorClasses = "font-mono text-meta text-ink-50 border border-rule";
   }
 
   return (
@@ -122,7 +122,7 @@ function EvidenceDrawer({ claim, isOpen, onToggle }: { claim: Claim; isOpen: boo
             <p className="text-sm text-ink-50 italic">No artifacts recorded.</p>
           ) : (
             claim.artifacts.map((artifact) => (
-              <div key={artifact.id} className="bg-paper border border-rule rounded p-3 text-sm">
+              <div key={artifact.id} className="bg-paper border border-rule p-3 text-sm">
                 <p className="text-ink">{artifact.passageText}</p>
                 {artifact.passageLocation && (
                   <p className="text-ink-50 mt-1 text-xs">Source: {artifact.passageLocation}</p>
@@ -138,7 +138,7 @@ function EvidenceDrawer({ claim, isOpen, onToggle }: { claim: Claim; isOpen: boo
             <div className="mt-3">
               <p className="text-xs font-medium text-ink-72 mb-1">Negative Assertions (never say):</p>
               {claim.negativeAssertions.map((na) => (
-                <div key={na.id} className="border border-rule rounded px-3 py-2 text-sm text-ink mb-1">
+                <div key={na.id} className="border border-rule px-3 py-2 text-sm text-ink mb-1">
                   <span className="font-mono">&ldquo;{na.forbiddenText}&rdquo;</span>
                   <span className="text-ink-72 text-xs ml-2">- {na.reason}</span>
                 </div>
@@ -201,7 +201,7 @@ function InlineEdit({
       <textarea
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className="w-full border border-rule rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-ink"
+        className="w-full border border-rule p-2 text-sm focus:outline-none focus:ring-2 focus:ring-ink"
         rows={2}
         aria-label="Edit claim statement"
         autoFocus
@@ -214,7 +214,7 @@ function InlineEdit({
         <button
           onClick={handleSave}
           disabled={saving || !value.trim()}
-          className="px-3 py-1 border-[1.5px] border-live text-live bg-transparent text-xs rounded disabled:opacity-50"
+          className="px-3 py-1 border-[1.5px] border-live text-live bg-transparent text-xs disabled:opacity-50"
           aria-label="Save changes"
         >
           {saving ? "Saving..." : "Save"}
@@ -338,13 +338,13 @@ function CorrectionModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div ref={modalRef} className="max-w-lg w-full mx-4 p-6">
-        <h3 className="text-lg font-semibold text-ink mb-4">Correct This Claim</h3>
+        <h3 className="text-lg font-medium text-ink mb-4">Correct This Claim</h3>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-medium text-ink-72 mb-1">
               Previous (incorrect) value
             </label>
-            <p className="border border-rule rounded px-3 py-2 text-sm text-ink">
+            <p className="border border-rule px-3 py-2 text-sm text-ink">
               {claim.statement}
             </p>
           </div>
@@ -356,7 +356,7 @@ function CorrectionModal({
               id="corrected-value"
               value={correctedValue}
               onChange={(e) => setCorrectedValue(e.target.value)}
-              className="w-full border border-rule rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-ink"
+              className="w-full border border-rule p-2 text-sm focus:outline-none focus:ring-2 focus:ring-ink"
               rows={3}
               placeholder="Enter the correct statement..."
               aria-required="true"
@@ -423,7 +423,7 @@ function ClaimCard({
         <button
           ref={correctButtonRef}
           onClick={() => setCorrecting(true)}
-          className="shrink-0 px-3 py-1.5 text-xs font-medium text-ink-72 border border-rule rounded"
+          className="shrink-0 px-3 py-1.5 text-xs font-medium text-ink-72 border border-rule"
           aria-label={`Report this claim as wrong: ${claim.statement.slice(0, 40)}`}
         >
           This is wrong
@@ -620,7 +620,7 @@ export default function ClaimsPage() {
 
           return (
             <section key={category} aria-label={`${CATEGORY_LABELS[category]} claims`}>
-              <h2 className="text-lg font-semibold text-ink mb-3 flex items-center gap-2">
+              <h2 className="text-lg font-medium text-ink mb-3 flex items-center gap-2">
                 {CATEGORY_LABELS[category]}
                 <span className="text-sm font-normal text-ink-50">({categoryClaims.length})</span>
               </h2>

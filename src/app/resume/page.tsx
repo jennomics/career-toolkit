@@ -650,7 +650,7 @@ export default function ResumeBuildPage() {
                   ) : (
                     filteredJobs.map((job) => (
                       <label key={job.id} className={`flex items-center gap-3 p-3 cursor-pointer ${
-                        selectedJobId === job.id ? " border " : "hover:bg-paper border border-transparent"
+                        selectedJobId === job.id ? "border-[1.5px] border-ink" : "border border-transparent"
                       }`}>
                         <input type="radio" name="target-job" value={job.id} checked={selectedJobId === job.id}
                           onChange={() => setSelectedJobId(job.id)} className="h-4 w-4 text-ink underline border-rule" />
@@ -769,11 +769,11 @@ export default function ResumeBuildPage() {
                     {gap.status === "gap" && (
                       <div className="flex gap-2">
                         <button onClick={() => handleOpenFillForm(gap.keyword)}
-                          className="px-3 py-1 font-mono text-meta text-ink-50 rounded text-xs font-medium cursor-pointer">
+                          className="px-3 py-1 font-mono text-meta text-ink-50 text-xs font-medium cursor-pointer">
                           I have this
                         </button>
                         <button onClick={() => handleMarkRealGap(gap.keyword)}
-                          className="px-3 py-1 border border-ink text-ink bg-transparent rounded text-xs font-medium cursor-pointer">
+                          className="px-3 py-1 border border-ink text-ink bg-transparent text-xs font-medium cursor-pointer">
                           Real gap
                         </button>
                       </div>
@@ -798,7 +798,7 @@ export default function ResumeBuildPage() {
                                 onChange={(e) => {
                                   if (e.target.checked) setFillSelectedRoles([...fillSelectedRoles, role.id]);
                                   else setFillSelectedRoles(fillSelectedRoles.filter((id) => id !== role.id));
-                                }} className="h-3 w-3 text-ink-72 rounded border-rule" />
+                                }} className="h-3 w-3 text-ink-72 border-rule" />
                               <span className="text-ink-72">{role.title} at {role.company}</span>
                             </label>
                           ))}
@@ -859,7 +859,7 @@ export default function ResumeBuildPage() {
                       <div key={hIdx} className={`p-2.5 border ${h.selected ? "border-rule" : "bg-paper border-rule opacity-50"}`}>
                         <div className="flex items-start gap-2">
                           <input type="checkbox" checked={h.selected} onChange={() => handleToggleHighlight(roleIdx, hIdx)}
-                            className="mt-1 h-4 w-4 text-ink underline rounded border-rule shrink-0 cursor-pointer" />
+                            className="mt-1 h-4 w-4 text-ink underline border-rule shrink-0 cursor-pointer" />
                           <div className="flex-1 min-w-0">
                             <input type="text" value={h.edited || h.text}
                               onChange={(e) => handleEditHighlight(roleIdx, hIdx, e.target.value)}
@@ -868,23 +868,23 @@ export default function ResumeBuildPage() {
                           </div>
                           <button onClick={() => handleImprove(roleIdx, hIdx)}
                             disabled={improvingIdx?.role === roleIdx && improvingIdx?.highlight === hIdx}
-                            className="px-2 py-1 text-[10px] font-medium text-ink underline  rounded cursor-pointer disabled:opacity-50 shrink-0">
+                            className="px-2 py-1 text-[10px] font-medium text-ink underline cursor-pointer disabled:opacity-50 shrink-0">
                             {improvingIdx?.role === roleIdx && improvingIdx?.highlight === hIdx ? "..." : "Improve"}
                           </button>
                         </div>
 
                         {/* Improved version */}
                         {h.showImproved && h.improved && (
-                          <div className="mt-2 ml-6 p-2  rounded border">
+                          <div className="mt-2 ml-6 p-2 border border-rule">
                             <p className="text-sm text-ink">{h.improved}</p>
                             <p className="text-[10px] text-ink-50 mt-1">{h.improvementExplanation}</p>
                             <div className="flex gap-2 mt-2">
                               <button onClick={() => handleAcceptImproved(roleIdx, hIdx)}
-                                className="px-2 py-0.5 border-[1.5px] border-live text-live bg-transparent rounded text-[10px] cursor-pointer">Accept</button>
+                                className="px-2 py-0.5 border-[1.5px] border-live text-live bg-transparent text-[10px] cursor-pointer">Accept</button>
                               <button onClick={() => handleKeepOriginal(roleIdx, hIdx)}
                                 className="px-2 py-0.5 border border-ink text-ink text-[10px] cursor-pointer">Keep Original</button>
                               <button onClick={() => handleKeepBoth(roleIdx, hIdx)}
-                                className="px-2 py-0.5 font-mono text-meta text-ink-50 rounded text-[10px] cursor-pointer">Keep Both</button>
+                                className="px-2 py-0.5 font-mono text-meta text-ink-50 text-[10px] cursor-pointer">Keep Both</button>
                             </div>
                           </div>
                         )}
@@ -932,7 +932,7 @@ export default function ResumeBuildPage() {
                       Copy to clipboard
                     </button>
                     <button onClick={handleGenerateCover} disabled={isGeneratingCover}
-                      className="px-3 py-1 border-[1.5px] border-live text-live bg-transparent rounded text-xs font-medium cursor-pointer disabled:opacity-50">
+                      className="px-3 py-1 border-[1.5px] border-live text-live bg-transparent text-xs font-medium cursor-pointer disabled:opacity-50">
                       {isGeneratingCover ? "Generating..." : "Next: Cover Letter \u2192"}
                     </button>
                   </div>
@@ -956,7 +956,7 @@ export default function ResumeBuildPage() {
                   Copy
                 </button>
                 <button onClick={() => setStep(6)}
-                  className="px-3 py-1 border-[1.5px] border-live text-live bg-transparent rounded text-xs font-medium cursor-pointer">
+                  className="px-3 py-1 border-[1.5px] border-live text-live bg-transparent text-xs font-medium cursor-pointer">
                   Next: Export &rarr;
                 </button>
               </div>
@@ -1038,7 +1038,7 @@ function AddHighlightInline({ onAdd }: { onAdd: (text: string) => void }) {
   if (!open) {
     return (
       <button onClick={() => setOpen(true)}
-        className="text-xs text-ink-50-50 cursor-pointer mt-1">
+        className="text-xs text-ink-50 cursor-pointer mt-1">
         + Add highlight
       </button>
     );
@@ -1048,10 +1048,10 @@ function AddHighlightInline({ onAdd }: { onAdd: (text: string) => void }) {
     <div className="flex gap-2 mt-1">
       <input type="text" value={text} onChange={(e) => setText(e.target.value)}
         placeholder="Add a highlight..."
-        className="flex-1 px-2 py-1 border border-rule rounded text-xs text-ink focus:outline-none focus:ring-1 focus:ring-ink"
+        className="flex-1 px-2 py-1 border border-rule text-xs text-ink focus:outline-none focus:ring-1 focus:ring-ink"
         onKeyDown={(e) => { if (e.key === "Enter" && text.trim()) { onAdd(text); setText(""); setOpen(false); } }} />
       <button onClick={() => { if (text.trim()) { onAdd(text); setText(""); setOpen(false); } }}
-        className="px-2 py-1 font-mono text-meta text-ink-50 rounded text-xs cursor-pointer">Add</button>
+        className="px-2 py-1 font-mono text-meta text-ink-50 text-xs cursor-pointer">Add</button>
       <button onClick={() => { setText(""); setOpen(false); }}
         className="px-2 py-1 text-ink-50 text-xs cursor-pointer">Cancel</button>
     </div>

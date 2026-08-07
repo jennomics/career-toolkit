@@ -130,8 +130,8 @@ export default function ResumeTab({ company }: ResumeTabProps) {
             onClick={() => setMode("targeted")}
             className={`px-3 py-1.5 text-sm font-medium cursor-pointer ${
               mode === "targeted"
-                ? "font-mono text-meta text-ink-50 border border-rule"
-                : "border border-ink text-ink bg-transparent"
+                ? "border-[1.5px] border-ink text-ink"
+                : "border border-rule text-ink-50"
             }`}
           >
             Targeted (for a specific job)
@@ -141,8 +141,8 @@ export default function ResumeTab({ company }: ResumeTabProps) {
             onClick={() => setMode("generic")}
             className={`px-3 py-1.5 text-sm font-medium cursor-pointer ${
               mode === "generic"
-                ? "font-mono text-meta text-ink-50 border "
-                : "border border-ink text-ink bg-transparent"
+                ? "border-[1.5px] border-ink text-ink"
+                : "border border-rule text-ink-50"
             }`}
           >
             Generic (for all jobs at this company)
@@ -174,7 +174,7 @@ export default function ResumeTab({ company }: ResumeTabProps) {
         )}
 
         {mode === "generic" && (
-          <div className=" border  p-4 mb-4">
+          <div className="border border-rule p-4 mb-4">
             <p className="text-xs text-ink-50">
               Generates a resume optimized for all {company.jobs.length} jobs at {company.name}.
               {company.notes ? " Company intelligence will be included in the context." : ""}
@@ -230,7 +230,7 @@ export default function ResumeTab({ company }: ResumeTabProps) {
           <div className="px-6 py-6 space-y-6">
             {/* Summary */}
             <section>
-              <h3 className="text-sm font-semibold text-ink uppercase tracking-wide mb-2">
+              <h3 className="text-sm font-medium text-ink uppercase tracking-wide mb-2">
                 Professional Summary
               </h3>
               <p className="text-sm text-ink-72 leading-relaxed">{resume.summary}</p>
@@ -239,14 +239,14 @@ export default function ResumeTab({ company }: ResumeTabProps) {
             {/* Work Experience */}
             {resume.workExperience && resume.workExperience.length > 0 && (
               <section>
-                <h3 className="text-sm font-semibold text-ink uppercase tracking-wide mb-3">
+                <h3 className="text-sm font-medium text-ink uppercase tracking-wide mb-3">
                   Work Experience
                 </h3>
                 <div className="space-y-5">
                   {resume.workExperience.map((role, i) => (
-                    <div key={i} className="border-l-2  pl-4">
+                    <div key={i} className="border-l border-rule pl-4">
                       <div className="flex items-baseline justify-between gap-2">
-                        <h4 className="text-sm font-semibold text-ink">{role.title}</h4>
+                        <h4 className="text-sm font-medium text-ink">{role.title}</h4>
                         <span className="text-xs text-ink-35 shrink-0">
                           {formatResumeDate(role.startDate)} - {role.isCurrent ? "Present" : role.endDate ? formatResumeDate(role.endDate) : "Present"}
                         </span>
@@ -271,7 +271,7 @@ export default function ResumeTab({ company }: ResumeTabProps) {
             {/* Key Skills */}
             {resume.keySkills.length > 0 && (
               <section>
-                <h3 className="text-sm font-semibold text-ink uppercase tracking-wide mb-2">
+                <h3 className="text-sm font-medium text-ink uppercase tracking-wide mb-2">
                   Key Skills
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -290,7 +290,7 @@ export default function ResumeTab({ company }: ResumeTabProps) {
             {/* Additional Qualifications */}
             {resume.additionalQualifications.length > 0 && (
               <section>
-                <h3 className="text-sm font-semibold text-ink uppercase tracking-wide mb-2">
+                <h3 className="text-sm font-medium text-ink uppercase tracking-wide mb-2">
                   Additional Qualifications
                 </h3>
                 <ul className="space-y-1.5">
