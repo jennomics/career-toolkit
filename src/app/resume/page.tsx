@@ -583,32 +583,32 @@ export default function ResumeBuildPage() {
 
   // ─── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Nav title="Resume Builder" subtitle="Guided workflow: Job → Gap Analysis → Fill Gaps → Build" />
+    <div className="min-h-screen bg-paper">
+      <Nav title="Resume Builder" subtitle="Guided workflow: Job, Gap Analysis, Fill Gaps, Build" />
 
       {/* Step indicator */}
-      <div className="max-w-5xl mx-auto px-6 pt-6">
-        <div className="flex items-center gap-2 text-xs font-medium">
+      <div className="max-w-[720px] mx-auto px-6 pt-s-3">
+        <div className="flex items-center gap-s-2 font-mono text-meta">
           {[1, 2, 3, 4, 5, 6].map((s) => (
-            <div key={s} className={`flex items-center gap-1 ${step >= s ? "text-purple-700" : "text-gray-400"}`}>
-              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-                step > s ? "bg-purple-600 text-white" : step === s ? "bg-purple-100 text-purple-700 ring-2 ring-purple-300" : "bg-gray-200"
+            <div key={s} className={`flex items-center gap-1 ${step >= s ? "text-ink" : "text-ink-35"}`}>
+              <span className={`w-6 h-6 flex items-center justify-center text-meta border ${
+                step > s ? "border-ink text-ink" : step === s ? "border-ink text-ink font-medium" : "border-rule text-ink-35"
               }`}>{step > s ? "\u2713" : s}</span>
-              <span className="hidden sm:inline">{["Select Job", "Gap Analysis", "Fill Gaps", "Build Resume", "Cover Letter", "Export"][s - 1]}</span>
-              {s < 6 && <span className="mx-1 text-gray-300">&rarr;</span>}
+              <span className="hidden sm:inline uppercase tracking-widest">{["Select Job", "Gap Analysis", "Fill Gaps", "Build Resume", "Cover Letter", "Export"][s - 1]}</span>
+              {s < 6 && <span className="mx-1 text-ink-35">&rarr;</span>}
             </div>
           ))}
         </div>
       </div>
 
-      <main className="max-w-5xl mx-auto px-6 py-6 space-y-6">
+      <main className="max-w-[720px] mx-auto px-6 py-s-3 space-y-s-4">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm" role="alert">
-            <strong>Error:</strong> {error}
+          <div className="border border-rule p-s-3 text-ink text-body" role="alert">
+            {error}
             {error.includes("unresolved profile item") && (
               <span className="ml-2">
-                <Link href="/profile" className="text-red-800 underline hover:text-red-900 font-medium">
-                  Resolve items on your Profile page →
+                <Link href="/profile" className="text-ink underline font-medium">
+                  Resolve items on your Profile page
                 </Link>
               </span>
             )}
@@ -618,14 +618,14 @@ export default function ResumeBuildPage() {
 
         {/* ═══ STEP 1: Select Job ═══ */}
         {step === 1 && (
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-2">1. Select a Job to Target</h2>
-            <p className="text-sm text-gray-500 mb-4">Choose a job from your library. The resume will be tailored to this specific role.</p>
+          <div className="border-t border-rule pt-s-3">
+            <h2 className="text-h3 font-zen font-medium text-ink mb-s-2">1. Select a job to target</h2>
+            <p className="text-body text-ink-50 mb-s-3">Choose a job from your library. The resume will be tailored to this specific role.</p>
 
             {jobsLoading ? (
-              <p className="text-sm text-gray-400 py-4">Loading jobs...</p>
+              <p className="text-body text-ink-35 py-s-3">Loading jobs...</p>
             ) : jobs.length === 0 ? (
-              <p className="text-sm text-gray-500">No jobs saved. <Link href="/jobs" className="text-blue-600">Add some first</Link>.</p>
+              <p className="text-body text-ink-50">No jobs saved. <Link href="/jobs" className="text-ink underline">Add some first</Link>.</p>
             ) : (
               <>
                 {/* Search */}
@@ -635,48 +635,43 @@ export default function ResumeBuildPage() {
                     value={jobSearch}
                     onChange={(e) => setJobSearch(e.target.value)}
                     placeholder="Search by title, company, or skill..."
-                    className="w-full px-4 py-2 pl-9 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 pl-9 border border-rule text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ink"
                     aria-label="Search jobs"
                   />
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-35" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
 
                 {/* Job list */}
-                <div className="space-y-2 max-h-80 overflow-y-auto border border-gray-200 rounded-lg p-2">
+                <div className="space-y-2 max-h-80 overflow-y-auto border border-rule p-2">
                   {filteredJobs.length === 0 ? (
-                    <p className="text-sm text-gray-400 p-3">No jobs match &ldquo;{jobSearch}&rdquo;</p>
+                    <p className="text-sm text-ink-35 p-3">No jobs match &ldquo;{jobSearch}&rdquo;</p>
                   ) : (
                     filteredJobs.map((job) => (
-                      <label key={job.id} className={`flex items-center gap-3 p-3 rounded-md cursor-pointer transition-colors ${
-                        selectedJobId === job.id ? "bg-purple-50 border border-purple-200" : "hover:bg-gray-50 border border-transparent"
+                      <label key={job.id} className={`flex items-center gap-3 p-3 cursor-pointer ${
+                        selectedJobId === job.id ? " border " : "hover:bg-paper border border-transparent"
                       }`}>
                         <input type="radio" name="target-job" value={job.id} checked={selectedJobId === job.id}
-                          onChange={() => setSelectedJobId(job.id)} className="h-4 w-4 text-purple-600 border-gray-300" />
+                          onChange={() => setSelectedJobId(job.id)} className="h-4 w-4 text-ink underline border-rule" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{job.title}</p>
-                          <p className="text-xs text-gray-500">{job.company} &middot; {job.skills.length} skills &middot; {new Date(job.createdAt).toLocaleDateString()}</p>
+                          <p className="text-sm font-medium text-ink truncate">{job.title}</p>
+                          <p className="text-xs text-ink-50">{job.company} &middot; {job.skills.length} skills &middot; {new Date(job.createdAt).toLocaleDateString()}</p>
                         </div>
-                        <span className={`text-xs px-2 py-0.5 rounded-full capitalize shrink-0 ${
-                          job.status === "applied" ? "bg-blue-100 text-blue-700" :
-                          job.status === "interviewing" ? "bg-yellow-100 text-yellow-700" :
-                          job.status === "offer" ? "bg-green-100 text-green-700" :
-                          "bg-gray-100 text-gray-600"
-                        }`}>{job.status}</span>
+                        <span className={`text-xs px-2 py-0.5 capitalize shrink-0 font-mono text-meta text-ink-50`}>{job.status}</span>
                       </label>
                     ))
                   )}
                 </div>
                 {jobSearch && (
-                  <p className="text-xs text-gray-400 mt-1">{filteredJobs.length} of {jobs.length} jobs</p>
+                  <p className="text-xs text-ink-35 mt-1">{filteredJobs.length} of {jobs.length} jobs</p>
                 )}
               </>
             )}
 
             <div className="mt-4">
               <button onClick={handleSelectJob} disabled={!selectedJobId}
-                className="px-5 py-2 bg-purple-600 text-white rounded-md text-sm font-medium cursor-pointer hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                className="px-5 py-2 border-[1.5px] border-live text-live bg-transparent text-sm font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                 Next: Run Gap Analysis &rarr;
               </button>
             </div>
@@ -686,35 +681,35 @@ export default function ResumeBuildPage() {
 
         {/* ═══ STEP 2: Gap Analysis ═══ */}
         {step === 2 && (
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <div className="border-t border-rule pt-s-3">
             <h2 className="text-lg font-semibold mb-2">2. Gap Analysis</h2>
 
             {gapLoading ? (
               <div className="text-center py-8">
-                <div className="inline-block w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
-                <p className="text-gray-500 mt-3 text-sm">Analyzing gaps between your experience and this job...</p>
+                <div className="inline-block w-6 h-6 border-2 border-purple-600 border-t-transparent animate-spin" />
+                <p className="text-ink-50 mt-3 text-sm">Analyzing gaps between your experience and this job...</p>
               </div>
             ) : gapResult ? (
               <div className="space-y-4">
                 {/* Coverage */}
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Coverage: <strong>{gapResult.matched.length}</strong> of <strong>{gapResult.jdKeywordsFound}</strong> required skills</span>
-                  <span className={`text-xl font-bold ${gapResult.coverage >= 70 ? "text-green-600" : gapResult.coverage >= 40 ? "text-yellow-600" : "text-red-600"}`}>
+                  <span className="text-sm text-ink-72">Coverage: <strong>{gapResult.matched.length}</strong> of <strong>{gapResult.jdKeywordsFound}</strong> required skills</span>
+                  <span className={`text-xl font-bold ${gapResult.coverage >= 70 ? "text-ink-72" : gapResult.coverage >= 40 ? "text-yellow-600" : "text-ink-72"}`}>
                     {gapResult.coverage}%
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className={`h-2 rounded-full ${gapResult.coverage >= 70 ? "bg-green-500" : gapResult.coverage >= 40 ? "bg-yellow-500" : "bg-red-500"}`}
+                <div className="w-full bg-rule h-[2px]">
+                  <div className="h-[2px] bg-ink"
                     style={{ width: `${gapResult.coverage}%` }} />
                 </div>
 
                 {/* Matched */}
                 {gapResult.matched.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-medium text-green-700 mb-2">You have ({gapResult.matched.length})</h3>
+                    <h3 className="text-sm font-medium text-ink-72 mb-2">You have ({gapResult.matched.length})</h3>
                     <div className="flex flex-wrap gap-1.5">
                       {gapResult.matched.map((m) => (
-                        <span key={m.keyword} className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs">{m.keyword}</span>
+                        <span key={m.keyword} className="px-2 py-0.5 font-mono text-meta text-ink-50 text-xs">{m.keyword}</span>
                       ))}
                     </div>
                   </div>
@@ -723,10 +718,10 @@ export default function ResumeBuildPage() {
                 {/* Gaps */}
                 {gapResult.gaps.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-medium text-red-700 mb-2">Gaps ({gapResult.gaps.length})</h3>
+                    <h3 className="text-sm font-medium text-ink-72 mb-2">Gaps ({gapResult.gaps.length})</h3>
                     <div className="flex flex-wrap gap-1.5">
                       {gapResult.gaps.map((g) => (
-                        <span key={g} className="px-2 py-0.5 bg-red-50 text-red-700 rounded-full text-xs">{g}</span>
+                        <span key={g} className="px-2 py-0.5 text-ink text-xs">{g}</span>
                       ))}
                     </div>
                   </div>
@@ -735,17 +730,17 @@ export default function ResumeBuildPage() {
                 <div className="flex gap-3 pt-2">
                   {gapResult.gaps.length > 0 ? (
                     <button onClick={() => setStep(3)}
-                      className="px-5 py-2 bg-purple-600 text-white rounded-md text-sm font-medium cursor-pointer hover:bg-purple-700">
+                      className="px-5 py-2 border-[1.5px] border-live text-live bg-transparent text-sm font-medium cursor-pointer">
                       Next: Address Gaps &rarr;
                     </button>
                   ) : (
                     <button onClick={handleBuildResume}
-                      className="px-5 py-2 bg-purple-600 text-white rounded-md text-sm font-medium cursor-pointer hover:bg-purple-700">
+                      className="px-5 py-2 border-[1.5px] border-live text-live bg-transparent text-sm font-medium cursor-pointer">
                       Skip to Build Resume &rarr;
                     </button>
                   )}
                   <button onClick={handleBuildResume}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm cursor-pointer">
+                    className="px-4 py-2 text-ink-72 text-sm cursor-pointer">
                     Skip gaps, build anyway
                   </button>
                 </div>
@@ -757,46 +752,46 @@ export default function ResumeBuildPage() {
 
         {/* ═══ STEP 3: Fill Gaps ═══ */}
         {step === 3 && (
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <div className="border-t border-rule pt-s-3">
             <h2 className="text-lg font-semibold mb-2">3. Address Gaps</h2>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-ink-50 mb-4">
               For each gap, either add it to your experience (&quot;I have this&quot;) or mark it as a real gap.
             </p>
 
             <div className="space-y-3">
               {gapItems.map((gap) => (
-                <div key={gap.keyword} className={`p-3 rounded-lg border ${
-                  gap.status === "filled" ? "bg-green-50 border-green-200" :
-                  gap.status === "real-gap" ? "bg-gray-50 border-gray-200 opacity-60" :
-                  "bg-white border-gray-200"
+                <div key={gap.keyword} className={`p-3 border ${
+                  gap.status === "filled" ? "border-rule" :
+                  gap.status === "real-gap" ? "border-rule opacity-60" :
+                  "border-rule"
                 }`}>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-900">{gap.keyword}</span>
+                    <span className="text-sm font-medium text-ink">{gap.keyword}</span>
                     {gap.status === "gap" && (
                       <div className="flex gap-2">
                         <button onClick={() => handleOpenFillForm(gap.keyword)}
-                          className="px-3 py-1 bg-green-100 text-green-700 rounded text-xs font-medium cursor-pointer hover:bg-green-200">
+                          className="px-3 py-1 font-mono text-meta text-ink-50 rounded text-xs font-medium cursor-pointer">
                           I have this
                         </button>
                         <button onClick={() => handleMarkRealGap(gap.keyword)}
-                          className="px-3 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium cursor-pointer hover:bg-gray-200">
+                          className="px-3 py-1 border border-ink text-ink bg-transparent rounded text-xs font-medium cursor-pointer">
                           Real gap
                         </button>
                       </div>
                     )}
-                    {gap.status === "filled" && <span className="text-xs text-green-600 font-medium">Added to experience</span>}
-                    {gap.status === "real-gap" && <span className="text-xs text-gray-400 font-medium">Acknowledged gap</span>}
+                    {gap.status === "filled" && <span className="text-xs text-ink-72 font-medium">Added to experience</span>}
+                    {gap.status === "real-gap" && <span className="text-xs text-ink-35 font-medium">Acknowledged gap</span>}
                   </div>
 
                   {/* Fill form */}
                   {fillFormOpen === gap.keyword && (
-                    <div className="mt-3 p-3 bg-gray-50 rounded-md space-y-2">
+                    <div className="mt-3 p-3 bg-paper space-y-2">
                       <textarea rows={2} value={fillHighlightText}
                         onChange={(e) => setFillHighlightText(e.target.value)}
                         placeholder="Describe how you demonstrate this skill..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500" />
+                        className="w-full px-3 py-2 border border-rule text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ink" />
                       <div>
-                        <p className="text-xs text-gray-500 mb-1">Add to role(s):</p>
+                        <p className="text-xs text-ink-50 mb-1">Add to role(s):</p>
                         <div className="space-y-1 max-h-32 overflow-y-auto">
                           {experienceRoles.map((role) => (
                             <label key={role.id} className="flex items-center gap-2 text-xs cursor-pointer">
@@ -804,8 +799,8 @@ export default function ResumeBuildPage() {
                                 onChange={(e) => {
                                   if (e.target.checked) setFillSelectedRoles([...fillSelectedRoles, role.id]);
                                   else setFillSelectedRoles(fillSelectedRoles.filter((id) => id !== role.id));
-                                }} className="h-3 w-3 text-green-600 rounded border-gray-300" />
-                              <span className="text-gray-700">{role.title} at {role.company}</span>
+                                }} className="h-3 w-3 text-ink-72 rounded border-rule" />
+                              <span className="text-ink-72">{role.title} at {role.company}</span>
                             </label>
                           ))}
                         </div>
@@ -813,11 +808,11 @@ export default function ResumeBuildPage() {
                       <div className="flex gap-2">
                         <button onClick={handleSaveFillGap}
                           disabled={!fillHighlightText.trim() || fillSelectedRoles.length === 0}
-                          className="px-3 py-1 bg-green-600 text-white rounded text-xs cursor-pointer hover:bg-green-700 disabled:opacity-50">
+                          className="px-3 py-1 border-[1.5px] border-live text-live text-xs cursor-pointer disabled:opacity-50">
                           Save
                         </button>
                         <button onClick={() => setFillFormOpen(null)}
-                          className="px-3 py-1 text-gray-600 text-xs cursor-pointer hover:text-gray-800">Cancel</button>
+                          className="px-3 py-1 text-ink-72 text-xs cursor-pointer">Cancel</button>
                       </div>
                     </div>
                   )}
@@ -827,7 +822,7 @@ export default function ResumeBuildPage() {
 
             <div className="mt-4">
               <button onClick={handleBuildResume}
-                className="px-5 py-2 bg-purple-600 text-white rounded-md text-sm font-medium cursor-pointer hover:bg-purple-700">
+                className="px-5 py-2 border-[1.5px] border-live text-live bg-transparent text-sm font-medium cursor-pointer">
                 Next: Build Resume &rarr;
               </button>
             </div>
@@ -838,60 +833,60 @@ export default function ResumeBuildPage() {
         {/* ═══ STEP 4: Build Resume ═══ */}
         {step === 4 && (
           <div className="space-y-4">
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <div className="border-t border-rule pt-s-3">
               <h2 className="text-lg font-semibold mb-2">4. Build Your Resume</h2>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-ink-50 mb-4">
                 Select, edit, or improve highlights for each role. Click &quot;Improve&quot; for GPT-4o suggestions.
               </p>
             </div>
 
             {buildLoading ? (
-              <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-center">
-                <div className="inline-block w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
-                <p className="text-gray-500 mt-3 text-sm">GPT-4o is selecting the best highlights for this job...</p>
+              <div className="border-t border-rule pt-s-3 text-center">
+                <div className="inline-block w-6 h-6 border-2 border-purple-600 border-t-transparent animate-spin" />
+                <p className="text-ink-50 mt-3 text-sm">GPT-4o is selecting the best highlights for this job...</p>
               </div>
             ) : (
               roleBuild.map((role, roleIdx) => (
-                <div key={role.id} className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+                <div key={role.id} className="border-t border-rule pt-s-3">
                   <div className="flex items-baseline justify-between mb-3">
                     <div>
-                      <h3 className="text-sm font-semibold text-gray-900">{role.title}</h3>
-                      <p className="text-xs text-gray-500">{role.company} &middot; {formatDate(role.startDate)} &ndash; {role.isCurrent ? "Present" : formatDate(role.endDate)}</p>
+                      <h3 className="text-sm font-semibold text-ink">{role.title}</h3>
+                      <p className="text-xs text-ink-50">{role.company} &middot; {formatDate(role.startDate)} &ndash; {role.isCurrent ? "Present" : formatDate(role.endDate)}</p>
                     </div>
-                    <span className="text-xs text-gray-400">{role.recommendedHighlights.filter((h) => h.selected).length} selected</span>
+                    <span className="text-xs text-ink-35">{role.recommendedHighlights.filter((h) => h.selected).length} selected</span>
                   </div>
 
                   <div className="space-y-2">
                     {role.recommendedHighlights.map((h, hIdx) => (
-                      <div key={hIdx} className={`p-2.5 rounded-md border ${h.selected ? "bg-white border-gray-200" : "bg-gray-50 border-gray-100 opacity-50"}`}>
+                      <div key={hIdx} className={`p-2.5 border ${h.selected ? "border-rule" : "bg-paper border-rule opacity-50"}`}>
                         <div className="flex items-start gap-2">
                           <input type="checkbox" checked={h.selected} onChange={() => handleToggleHighlight(roleIdx, hIdx)}
-                            className="mt-1 h-4 w-4 text-purple-600 rounded border-gray-300 shrink-0 cursor-pointer" />
+                            className="mt-1 h-4 w-4 text-ink underline rounded border-rule shrink-0 cursor-pointer" />
                           <div className="flex-1 min-w-0">
                             <input type="text" value={h.edited || h.text}
                               onChange={(e) => handleEditHighlight(roleIdx, hIdx, e.target.value)}
-                              className="w-full text-sm text-gray-800 bg-transparent border-0 p-0 focus:outline-none focus:ring-0" />
-                            {h.reason && <p className="text-[10px] text-gray-400 mt-0.5">{h.reason}</p>}
+                              className="w-full text-sm text-ink bg-transparent border-0 p-0 focus:outline-none focus:ring-0" />
+                            {h.reason && <p className="text-[10px] text-ink-35 mt-0.5">{h.reason}</p>}
                           </div>
                           <button onClick={() => handleImprove(roleIdx, hIdx)}
                             disabled={improvingIdx?.role === roleIdx && improvingIdx?.highlight === hIdx}
-                            className="px-2 py-1 text-[10px] font-medium text-purple-600 bg-purple-50 rounded cursor-pointer hover:bg-purple-100 disabled:opacity-50 shrink-0">
+                            className="px-2 py-1 text-[10px] font-medium text-ink underline  rounded cursor-pointer disabled:opacity-50 shrink-0">
                             {improvingIdx?.role === roleIdx && improvingIdx?.highlight === hIdx ? "..." : "Improve"}
                           </button>
                         </div>
 
                         {/* Improved version */}
                         {h.showImproved && h.improved && (
-                          <div className="mt-2 ml-6 p-2 bg-purple-50 rounded border border-purple-100">
-                            <p className="text-sm text-purple-900">{h.improved}</p>
-                            <p className="text-[10px] text-purple-500 mt-1">{h.improvementExplanation}</p>
+                          <div className="mt-2 ml-6 p-2  rounded border">
+                            <p className="text-sm text-ink">{h.improved}</p>
+                            <p className="text-[10px] text-ink-50 mt-1">{h.improvementExplanation}</p>
                             <div className="flex gap-2 mt-2">
                               <button onClick={() => handleAcceptImproved(roleIdx, hIdx)}
-                                className="px-2 py-0.5 bg-purple-600 text-white rounded text-[10px] cursor-pointer hover:bg-purple-700">Accept</button>
+                                className="px-2 py-0.5 border-[1.5px] border-live text-live bg-transparent rounded text-[10px] cursor-pointer">Accept</button>
                               <button onClick={() => handleKeepOriginal(roleIdx, hIdx)}
-                                className="px-2 py-0.5 bg-gray-200 text-gray-700 rounded text-[10px] cursor-pointer hover:bg-gray-300">Keep Original</button>
+                                className="px-2 py-0.5 border border-ink text-ink text-[10px] cursor-pointer">Keep Original</button>
                               <button onClick={() => handleKeepBoth(roleIdx, hIdx)}
-                                className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] cursor-pointer hover:bg-green-200">Keep Both</button>
+                                className="px-2 py-0.5 font-mono text-meta text-ink-50 rounded text-[10px] cursor-pointer">Keep Both</button>
                             </div>
                           </div>
                         )}
@@ -909,18 +904,18 @@ export default function ResumeBuildPage() {
 
             {/* Generate button */}
             {!buildLoading && roleBuild.length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <div className="border-t border-rule pt-s-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-700 font-medium">
+                    <p className="text-sm text-ink-72 font-medium">
                       {roleBuild.reduce((sum, r) => sum + r.recommendedHighlights.filter((h) => h.selected).length, 0)} highlights selected across {roleBuild.filter((r) => r.recommendedHighlights.some((h) => h.selected)).length} roles
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">Ready to generate your tailored resume draft</p>
+                    <p className="text-xs text-ink-35 mt-0.5">Ready to generate your tailored resume draft</p>
                   </div>
                   <button
                     onClick={handleGenerateDraft}
                     disabled={isGeneratingDraft || roleBuild.every((r) => !r.recommendedHighlights.some((h) => h.selected))}
-                    className="px-6 py-2.5 bg-purple-600 text-white rounded-md text-sm font-medium cursor-pointer hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-2.5 border-[1.5px] border-live text-live bg-transparent text-sm font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isGeneratingDraft ? "Generating..." : "Generate Draft Resume"}
                   </button>
@@ -930,21 +925,21 @@ export default function ResumeBuildPage() {
 
             {/* Generated draft */}
             {draftResume && (
-              <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                <div className="bg-gray-50 border-b border-gray-200 px-6 py-3 flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-gray-900">Resume Draft</h3>
+              <div className="border-t border-rule overflow-hidden">
+                <div className="bg-paper border-b border-rule px-6 py-3 flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-ink">Resume Draft</h3>
                   <div className="flex gap-3">
                     <button onClick={() => { navigator.clipboard.writeText(draftResume); }}
-                      className="text-xs text-purple-600 hover:text-purple-800 font-medium cursor-pointer">
+                      className="text-xs text-ink underline font-medium cursor-pointer">
                       Copy to clipboard
                     </button>
                     <button onClick={handleGenerateCover} disabled={isGeneratingCover}
-                      className="px-3 py-1 bg-purple-600 text-white rounded text-xs font-medium cursor-pointer hover:bg-purple-700 disabled:opacity-50">
+                      className="px-3 py-1 border-[1.5px] border-live text-live bg-transparent rounded text-xs font-medium cursor-pointer disabled:opacity-50">
                       {isGeneratingCover ? "Generating..." : "Next: Cover Letter \u2192"}
                     </button>
                   </div>
                 </div>
-                <div className="px-6 py-4 whitespace-pre-wrap text-sm text-gray-800 font-mono leading-relaxed max-h-[600px] overflow-y-auto">
+                <div className="px-6 py-4 whitespace-pre-wrap text-sm text-ink font-mono leading-relaxed max-h-[600px] overflow-y-auto">
                   {draftResume}
                 </div>
               </div>
@@ -954,16 +949,16 @@ export default function ResumeBuildPage() {
 
         {/* ═══ STEP 5: Cover Letter ═══ */}
         {step === 5 && (
-          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-            <div className="bg-gray-50 border-b border-gray-200 px-6 py-3 flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-900">5. Cover Letter Draft</h3>
+          <div className="border-t border-rule overflow-hidden">
+            <div className="bg-paper border-b border-rule px-6 py-3 flex items-center justify-between">
+              <h3 className="text-sm font-medium text-ink">5. Cover Letter Draft</h3>
               <div className="flex gap-3">
                 <button onClick={() => { if (coverLetter) navigator.clipboard.writeText(coverLetter); }}
-                  className="text-xs text-purple-600 hover:text-purple-800 font-medium cursor-pointer">
+                  className="text-xs text-ink underline font-medium cursor-pointer">
                   Copy
                 </button>
                 <button onClick={() => setStep(6)}
-                  className="px-3 py-1 bg-purple-600 text-white rounded text-xs font-medium cursor-pointer hover:bg-purple-700">
+                  className="px-3 py-1 border-[1.5px] border-live text-live bg-transparent rounded text-xs font-medium cursor-pointer">
                   Next: Export &rarr;
                 </button>
               </div>
@@ -973,11 +968,11 @@ export default function ResumeBuildPage() {
                 rows={15}
                 value={coverLetter || ""}
                 onChange={(e) => setCoverLetter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 leading-relaxed"
+                className="w-full px-3 py-2 border border-rule text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ink leading-relaxed"
               />
               <div className="flex gap-3 mt-3">
                 <button onClick={handleGenerateCover} disabled={isGeneratingCover}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm cursor-pointer hover:bg-gray-200 disabled:opacity-50">
+                  className="px-4 py-2 border border-ink text-ink bg-transparent text-sm cursor-pointer disabled:opacity-50">
                   {isGeneratingCover ? "Regenerating..." : "Regenerate"}
                 </button>
               </div>
@@ -987,45 +982,45 @@ export default function ResumeBuildPage() {
 
         {/* ═══ STEP 6: Export ═══ */}
         {step === 6 && (
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <div className="border-t border-rule pt-s-3">
             <h2 className="text-lg font-semibold mb-2">6. Export</h2>
-            <p className="text-sm text-gray-500 mb-4">Download your resume and cover letter as PDF files.</p>
+            <p className="text-sm text-ink-50 mb-4">Download your resume and cover letter as PDF files.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Resume */}
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-900 mb-2">Resume</h3>
-                <p className="text-xs text-gray-400 mb-3">Your tailored resume draft</p>
+              <div className="border border-rule p-4">
+                <h3 className="text-sm font-medium text-ink mb-2">Resume</h3>
+                <p className="text-xs text-ink-35 mb-3">Your tailored resume draft</p>
                 <div className="flex gap-2">
                   <button onClick={() => handleExportPDF("resume")} disabled={!draftResume || isExporting}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-md text-sm cursor-pointer hover:bg-purple-700 disabled:opacity-50">
+                    className="px-4 py-2 border-[1.5px] border-live text-live bg-transparent text-sm cursor-pointer disabled:opacity-50">
                     {isExporting ? "Exporting..." : "Download PDF"}
                   </button>
                   <button onClick={() => { if (draftResume) navigator.clipboard.writeText(draftResume); }}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm cursor-pointer hover:bg-gray-200">
+                    className="px-4 py-2 border border-ink text-ink bg-transparent text-sm cursor-pointer">
                     Copy Text
                   </button>
                 </div>
               </div>
 
               {/* Cover Letter */}
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-900 mb-2">Cover Letter</h3>
-                <p className="text-xs text-gray-400 mb-3">Your tailored half-page cover letter</p>
+              <div className="border border-rule p-4">
+                <h3 className="text-sm font-medium text-ink mb-2">Cover Letter</h3>
+                <p className="text-xs text-ink-35 mb-3">Your tailored half-page cover letter</p>
                 <div className="flex gap-2">
                   <button onClick={() => handleExportPDF("cover-letter")} disabled={!coverLetter || isExporting}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-md text-sm cursor-pointer hover:bg-purple-700 disabled:opacity-50">
+                    className="px-4 py-2 border-[1.5px] border-live text-live bg-transparent text-sm cursor-pointer disabled:opacity-50">
                     {isExporting ? "Exporting..." : "Download PDF"}
                   </button>
                   <button onClick={() => { if (coverLetter) navigator.clipboard.writeText(coverLetter); }}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm cursor-pointer hover:bg-gray-200">
+                    className="px-4 py-2 border border-ink text-ink bg-transparent text-sm cursor-pointer">
                     Copy Text
                   </button>
                 </div>
               </div>
             </div>
 
-            <p className="text-xs text-gray-400 mt-4">
+            <p className="text-xs text-ink-35 mt-4">
               Drafts are autosaved. You can come back to this project later from the Resume Tools page.
             </p>
           </div>
@@ -1045,7 +1040,7 @@ function AddHighlightInline({ onAdd }: { onAdd: (text: string) => void }) {
   if (!open) {
     return (
       <button onClick={() => setOpen(true)}
-        className="text-xs text-purple-500 hover:text-purple-700 cursor-pointer mt-1">
+        className="text-xs text-ink-50-50 cursor-pointer mt-1">
         + Add highlight
       </button>
     );
@@ -1055,12 +1050,12 @@ function AddHighlightInline({ onAdd }: { onAdd: (text: string) => void }) {
     <div className="flex gap-2 mt-1">
       <input type="text" value={text} onChange={(e) => setText(e.target.value)}
         placeholder="Add a highlight..."
-        className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-purple-400"
+        className="flex-1 px-2 py-1 border border-rule rounded text-xs text-ink focus:outline-none focus:ring-1 focus:ring-ink"
         onKeyDown={(e) => { if (e.key === "Enter" && text.trim()) { onAdd(text); setText(""); setOpen(false); } }} />
       <button onClick={() => { if (text.trim()) { onAdd(text); setText(""); setOpen(false); } }}
-        className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs cursor-pointer">Add</button>
+        className="px-2 py-1 font-mono text-meta text-ink-50 rounded text-xs cursor-pointer">Add</button>
       <button onClick={() => { setText(""); setOpen(false); }}
-        className="px-2 py-1 text-gray-500 text-xs cursor-pointer">Cancel</button>
+        className="px-2 py-1 text-ink-50 text-xs cursor-pointer">Cancel</button>
     </div>
   );
 }

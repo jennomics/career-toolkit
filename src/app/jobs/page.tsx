@@ -145,55 +145,55 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper">
       <Nav title="Job Library" subtitle="Save job descriptions, track keywords, build your resume" />
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+      <main className="max-w-[720px] mx-auto px-6 py-s-4 space-y-s-4">
         {/* Error display */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm" role="alert">
-            <strong>Error:</strong> {error}
+          <div className="border border-rule p-s-3 text-ink text-body" role="alert">
+            {error}
           </div>
         )}
 
-        {/* View Mode Toggle: Active / All / Archived */}
+        {/* View Mode Toggle: Active / All / Archived - underline tabs */}
         {jobs.length > 0 && (
-          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 w-fit" role="tablist" aria-label="View mode">
+          <div className="flex items-center gap-s-3 border-b border-rule" role="tablist" aria-label="View mode">
             <button
               role="tab"
               aria-selected={viewMode === "active"}
               onClick={() => { setViewMode("active"); setFilter("all"); }}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+              className={`pb-s-2 text-body font-medium cursor-pointer min-h-[44px] ${
                 viewMode === "active"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "border-b-2 border-ink text-ink"
+                  : "text-ink-50"
               }`}
             >
-              Active ({activeCount})
+              Active (<span className="font-mono">{activeCount}</span>)
             </button>
             <button
               role="tab"
               aria-selected={viewMode === "all"}
               onClick={() => { setViewMode("all"); setFilter("all"); }}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+              className={`pb-s-2 text-body font-medium cursor-pointer min-h-[44px] ${
                 viewMode === "all"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "border-b-2 border-ink text-ink"
+                  : "text-ink-50"
               }`}
             >
-              All ({jobs.length})
+              All (<span className="font-mono">{jobs.length}</span>)
             </button>
             <button
               role="tab"
               aria-selected={viewMode === "archived"}
               onClick={() => { setViewMode("archived"); setFilter("all"); }}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+              className={`pb-s-2 text-body font-medium cursor-pointer min-h-[44px] ${
                 viewMode === "archived"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "border-b-2 border-ink text-ink"
+                  : "text-ink-50"
               }`}
             >
-              Archived ({archivedCount})
+              Archived (<span className="font-mono">{archivedCount}</span>)
             </button>
           </div>
         )}
@@ -215,28 +215,28 @@ export default function Home() {
 
         {/* Status filter pills */}
         {viewFilteredJobs.length > 0 && (
-          <div className="flex flex-wrap gap-3" role="group" aria-label="Filter by status">
+          <div className="flex flex-wrap gap-s-2" role="group" aria-label="Filter by status">
             <button
               onClick={() => setFilter("all")}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium cursor-pointer transition-colors ${
+              className={`px-s-2 min-h-[44px] font-mono text-meta uppercase tracking-widest cursor-pointer ${
                 filter === "all"
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "border-b-2 border-ink text-ink"
+                  : "text-ink-50"
               }`}
             >
-              All ({viewFilteredJobs.length})
+              All (<span className="font-mono">{viewFilteredJobs.length}</span>)
             </button>
             {Object.entries(statusCounts).map(([status, count]) => (
               <button
                 key={status}
                 onClick={() => setFilter(status)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium cursor-pointer transition-colors capitalize ${
+                className={`px-s-2 min-h-[44px] font-mono text-meta uppercase tracking-widest cursor-pointer ${
                   filter === status
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "border-b-2 border-ink text-ink"
+                    : "text-ink-50"
                 }`}
               >
-                {status} ({count})
+                {status} (<span className="font-mono">{count}</span>)
               </button>
             ))}
           </div>
@@ -252,18 +252,18 @@ export default function Home() {
 
         {/* Job List */}
         {loading ? (
-          <p className="text-center text-gray-400 py-12">Loading...</p>
+          <p className="text-center text-ink-35 py-s-5">Loading...</p>
         ) : filteredJobs.length === 0 && jobs.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No jobs saved yet</p>
-            <p className="text-gray-400 text-sm mt-1">
+          <div className="text-center py-s-5">
+            <p className="text-ink-50 text-h3 font-zen">No jobs saved yet</p>
+            <p className="text-ink-35 text-body mt-s-1">
               Click &ldquo;Add a Job Description&rdquo; above to get started.
               Paste a job description from LinkedIn or anywhere else.
             </p>
           </div>
         ) : filteredJobs.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-400">
+          <div className="text-center py-s-4">
+            <p className="text-ink-35 text-body">
               No jobs match your{" "}
               {viewMode === "archived" ? "archived " : viewMode === "active" ? "active " : ""}
               filters
@@ -276,13 +276,13 @@ export default function Home() {
                 setSourceFilter("");
                 setFilter("all");
               }}
-              className="text-sm text-blue-600 hover:text-blue-800 mt-2 cursor-pointer"
+              className="text-body text-ink underline mt-s-2 cursor-pointer"
             >
               Clear all filters
             </button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-0 divide-y divide-rule">
             {filteredJobs.map((job) => (
               <JobCard
                 key={job.id}

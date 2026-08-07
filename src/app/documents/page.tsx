@@ -73,7 +73,7 @@ function CategoryBadge({ category }: { category: string }) {
 
   return (
     <span
-      className={`${baseClasses} bg-blue-100 text-blue-800 border border-blue-300`}
+      className={`${baseClasses} font-mono text-meta text-ink-50 border border-rule`}
       aria-label={`Category: ${label}`}
     >
       {label}
@@ -86,8 +86,8 @@ function AuthorshipBadge({ authorship }: { authorship: string }) {
   const label = AUTHORSHIP_LABELS[authorship as Authorship] || authorship;
   const colorClasses =
     authorship === "user-authored"
-      ? "bg-green-100 text-green-800 border border-green-300"
-      : "bg-gray-100 text-gray-600 border border-gray-300";
+      ? "font-mono text-meta text-ink-50 border border-rule"
+      : "border border-ink text-ink bg-transparent border border-rule";
 
   return (
     <span
@@ -160,14 +160,14 @@ function UploadForm({ onSuccess }: { onSuccess: () => void }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4" aria-label="Upload document form">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-3 text-sm text-red-700" role="alert">
+        <div className="border border-rule rounded p-3 text-sm text-ink-72" role="alert">
           {error}
         </div>
       )}
 
       <div>
-        <label htmlFor="doc-title" className="block text-sm font-medium text-gray-700 mb-1">
-          Title <span className="text-red-500">*</span>
+        <label htmlFor="doc-title" className="block text-sm font-medium text-ink-72 mb-1">
+          Title <span className="text-ink-50">*</span>
         </label>
         <input
           id="doc-title"
@@ -175,22 +175,22 @@ function UploadForm({ onSuccess }: { onSuccess: () => void }) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full border border-rule rounded px-3 py-2 text-sm focus:ring-2 focus:ring-ink"
           aria-required="true"
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="doc-category" className="block text-sm font-medium text-gray-700 mb-1">
-            Category <span className="text-red-500">*</span>
+          <label htmlFor="doc-category" className="block text-sm font-medium text-ink-72 mb-1">
+            Category <span className="text-ink-50">*</span>
           </label>
           <select
             id="doc-category"
             value={category}
             onChange={(e) => setCategory(e.target.value as Category)}
             required
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full border border-rule rounded px-3 py-2 text-sm focus:ring-2 focus:ring-ink"
             aria-required="true"
           >
             {CATEGORIES.map((cat) => (
@@ -202,15 +202,15 @@ function UploadForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
 
         <div>
-          <label htmlFor="doc-authorship" className="block text-sm font-medium text-gray-700 mb-1">
-            Authorship <span className="text-red-500">*</span>
+          <label htmlFor="doc-authorship" className="block text-sm font-medium text-ink-72 mb-1">
+            Authorship <span className="text-ink-50">*</span>
           </label>
           <select
             id="doc-authorship"
             value={authorship}
             onChange={(e) => setAuthorship(e.target.value as Authorship)}
             required
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full border border-rule rounded px-3 py-2 text-sm focus:ring-2 focus:ring-ink"
             aria-required="true"
           >
             {AUTHORSHIPS.map((auth) => (
@@ -224,7 +224,7 @@ function UploadForm({ onSuccess }: { onSuccess: () => void }) {
 
       {authorship !== "user-authored" && (
         <div>
-          <label htmlFor="doc-author-name" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="doc-author-name" className="block text-sm font-medium text-ink-72 mb-1">
             Author Name
           </label>
           <input
@@ -232,14 +232,14 @@ function UploadForm({ onSuccess }: { onSuccess: () => void }) {
             type="text"
             value={authorName}
             onChange={(e) => setAuthorName(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full border border-rule rounded px-3 py-2 text-sm focus:ring-2 focus:ring-ink"
           />
         </div>
       )}
 
       <div>
-        <label htmlFor="doc-date" className="block text-sm font-medium text-gray-700 mb-1">
-          Document Date <span className="text-red-500">*</span>
+        <label htmlFor="doc-date" className="block text-sm font-medium text-ink-72 mb-1">
+          Document Date <span className="text-ink-50">*</span>
         </label>
         <input
           id="doc-date"
@@ -247,14 +247,14 @@ function UploadForm({ onSuccess }: { onSuccess: () => void }) {
           value={documentDate}
           onChange={(e) => setDocumentDate(e.target.value)}
           required
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full border border-rule rounded px-3 py-2 text-sm focus:ring-2 focus:ring-ink"
           aria-required="true"
         />
       </div>
 
       <div>
-        <label htmlFor="doc-content" className="block text-sm font-medium text-gray-700 mb-1">
-          Content <span className="text-red-500">*</span>
+        <label htmlFor="doc-content" className="block text-sm font-medium text-ink-72 mb-1">
+          Content <span className="text-ink-50">*</span>
         </label>
         <textarea
           id="doc-content"
@@ -262,28 +262,28 @@ function UploadForm({ onSuccess }: { onSuccess: () => void }) {
           onChange={(e) => setContent(e.target.value)}
           required
           rows={8}
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full border border-rule rounded px-3 py-2 text-sm focus:ring-2 focus:ring-ink"
           aria-required="true"
           placeholder="Paste the document content here..."
         />
       </div>
 
       <div className="flex gap-6">
-        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-ink-72 cursor-pointer">
           <input
             type="checkbox"
             checked={confidential}
             onChange={(e) => setConfidential(e.target.checked)}
-            className="rounded border-gray-300"
+            className="rounded border-rule"
           />
           Confidential
         </label>
-        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-ink-72 cursor-pointer">
           <input
             type="checkbox"
             checked={currentEmployer}
             onChange={(e) => setCurrentEmployer(e.target.checked)}
-            className="rounded border-gray-300"
+            className="rounded border-rule"
           />
           Current Employer
         </label>
@@ -292,7 +292,7 @@ function UploadForm({ onSuccess }: { onSuccess: () => void }) {
       <button
         type="submit"
         disabled={submitting}
-        className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        className="border-[1.5px] border-live text-live bg-transparent px-4 py-2 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-ink"
         aria-label="Upload document"
       >
         {submitting ? "Uploading..." : "Upload Document"}
@@ -370,16 +370,16 @@ function DocumentDetail({
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6"
+        className="max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6"
       >
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">{document.title}</h2>
+            <h2 className="text-xl font-semibold text-ink">{document.title}</h2>
             <div className="flex gap-2 mt-2">
               <CategoryBadge category={document.category} />
               <AuthorshipBadge authorship={document.authorship} />
               {document.confidential && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 border border-red-300">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium font-mono text-meta text-ink-50 border border-rule">
                   Confidential
                 </span>
               )}
@@ -387,14 +387,14 @@ function DocumentDetail({
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+            className="text-ink-35 text-2xl leading-none"
             aria-label="Close document detail"
           >
             &times;
           </button>
         </div>
 
-        <div className="space-y-3 text-sm text-gray-600 mb-4">
+        <div className="space-y-3 text-sm text-ink-72 mb-4">
           <p>
             <span className="font-medium">Document Date:</span>{" "}
             {new Date(document.documentDate).toLocaleDateString()}
@@ -411,20 +411,20 @@ function DocumentDetail({
         </div>
 
         <div className="border-t pt-4 mb-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Content</h3>
-          <div className="bg-gray-50 border rounded p-3 text-sm text-gray-800 whitespace-pre-wrap max-h-40 overflow-y-auto">
+          <h3 className="text-sm font-medium text-ink-72 mb-2">Content</h3>
+          <div className="bg-paper border rounded p-3 text-sm text-ink whitespace-pre-wrap max-h-40 overflow-y-auto">
             {document.content}
           </div>
         </div>
 
         <div className="border-t pt-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">
+          <h3 className="text-sm font-medium text-ink-72 mb-2">
             Passages ({loading ? "..." : passages.length})
           </h3>
           {loading ? (
-            <p className="text-sm text-gray-500">Loading passages...</p>
+            <p className="text-sm text-ink-50">Loading passages...</p>
           ) : passages.length === 0 ? (
-            <p className="text-sm text-gray-500 italic">
+            <p className="text-sm text-ink-50 italic">
               No passages extracted yet. Run document ingestion to create passages.
             </p>
           ) : (
@@ -432,14 +432,14 @@ function DocumentDetail({
               {passages.map((passage) => (
                 <div
                   key={passage.id}
-                  className="bg-gray-50 border border-gray-200 rounded p-3 text-sm"
+                  className="bg-paper border border-rule rounded p-3 text-sm"
                 >
-                  <p className="text-gray-800">{passage.passageText}</p>
+                  <p className="text-ink">{passage.passageText}</p>
                   <div className="flex gap-1 mt-2 flex-wrap">
                     {passage.topics.map((topic) => (
                       <span
                         key={topic}
-                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-purple-100 text-purple-700"
+                        className="inline-flex items-center px-2 py-0.5 text-xs font-mono text-meta text-ink-50"
                       >
                         {topic}
                       </span>
@@ -455,7 +455,7 @@ function DocumentDetail({
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="bg-red-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-red-700 disabled:opacity-50 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            className="border-[1.5px] border-live bg-transparent text-live px-4 py-2 text-sm font-medium disabled:opacity-50 focus:ring-2 focus:ring-ink"
             aria-label="Delete document"
           >
             {deleting ? "Deleting..." : "Delete Document"}
@@ -528,13 +528,13 @@ export default function DocumentsPage() {
   }, {});
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper">
       <Nav title="Voice Corpus Documents" subtitle="Upload and manage documents for voice analysis" />
-      <main className="max-w-5xl mx-auto px-4 py-8" aria-label="Document management">
+      <main className="max-w-[720px] mx-auto px-4 py-8" aria-label="Document management">
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="border-[1.5px] border-live text-live bg-transparent px-4 py-2 rounded text-sm font-medium focus:ring-2 focus:ring-ink"
           aria-expanded={showForm}
           aria-controls="upload-form"
         >
@@ -543,21 +543,21 @@ export default function DocumentsPage() {
       </div>
 
       {showForm && (
-        <div id="upload-form" className="mb-8 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Upload New Document</h2>
+        <div id="upload-form" className="mb-8 border-t border-rule pt-s-3">
+          <h2 className="text-lg font-semibold text-ink mb-4">Upload New Document</h2>
           <UploadForm onSuccess={handleUploadSuccess} />
         </div>
       )}
 
       <div className="mb-4">
-        <label htmlFor="filter-category" className="text-sm font-medium text-gray-700 mr-2">
+        <label htmlFor="filter-category" className="text-sm font-medium text-ink-72 mr-2">
           Filter by category:
         </label>
         <select
           id="filter-category"
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="border border-rule rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-ink"
           aria-label="Filter documents by category"
         >
           <option value="">All categories</option>
@@ -570,11 +570,11 @@ export default function DocumentsPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500" aria-live="polite">
+        <div className="text-center py-12 text-ink-50" aria-live="polite">
           Loading documents...
         </div>
       ) : documents.length === 0 ? (
-        <div className="text-center py-12 text-gray-500" aria-live="polite">
+        <div className="text-center py-12 text-ink-50" aria-live="polite">
           <p className="text-lg">No documents yet.</p>
           <p className="text-sm mt-1">Upload your first document to start building your voice corpus.</p>
         </div>
@@ -582,9 +582,9 @@ export default function DocumentsPage() {
         <div className="space-y-6" role="list" aria-label="Documents grouped by category">
           {CATEGORIES.filter((cat) => grouped[cat]?.length).map((cat) => (
             <section key={cat} aria-label={`${CATEGORY_LABELS[cat]} documents`}>
-              <h2 className="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">
+              <h2 className="text-lg font-semibold text-ink mb-3 border-b pb-2">
                 {CATEGORY_LABELS[cat]}
-                <span className="text-sm font-normal text-gray-500 ml-2">
+                <span className="text-sm font-normal text-ink-50 ml-2">
                   ({grouped[cat].length})
                 </span>
               </h2>
@@ -593,23 +593,23 @@ export default function DocumentsPage() {
                   <button
                     key={doc.id}
                     onClick={() => setSelectedDoc(doc)}
-                    className="w-full text-left bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-sm transition-all focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full text-left border-t border-rule pt-s-2 hover:border-rule focus:ring-2 focus:ring-ink focus:outline-none"
                     aria-label={`View document: ${doc.title}`}
                     role="listitem"
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="text-sm font-medium text-gray-900">{doc.title}</h3>
+                        <h3 className="text-sm font-medium text-ink">{doc.title}</h3>
                         <div className="flex gap-2 mt-1">
                           <AuthorshipBadge authorship={doc.authorship} />
                           {doc.confidential && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 border border-red-300">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium font-mono text-meta text-ink-50 border border-rule">
                               Confidential
                             </span>
                           )}
                         </div>
                       </div>
-                      <div className="text-right text-xs text-gray-500">
+                      <div className="text-right text-xs text-ink-50">
                         <p>{new Date(doc.documentDate).toLocaleDateString()}</p>
                         <p className="mt-1">
                           {doc._count?.passages ?? 0} passage{(doc._count?.passages ?? 0) !== 1 ? "s" : ""}

@@ -128,45 +128,45 @@ export default async function DashboardPage() {
       : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper">
       <Nav title="Career Toolkit" subtitle="Your career data at a glance" />
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+      <main className="max-w-[720px] mx-auto px-6 py-s-4 space-y-s-5">
         {/* Error banner */}
         {error && (
           <div
-            className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm"
+            className="border border-rule p-s-3 text-ink text-body"
             role="alert"
           >
-            <strong>Database unavailable.</strong> Showing zeros. Check your database connection.
+            Database unavailable. Showing zeros. Check your database connection.
           </div>
         )}
 
-        {/* Stats cards */}
+        {/* Stats section */}
         <section aria-labelledby="stats-heading">
-          <h2 id="stats-heading" className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 id="stats-heading" className="text-h3 font-zen font-medium text-ink border-t border-rule pt-s-3 mb-s-3">
             Overview
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-              <p className="text-sm font-medium text-gray-500">Total Jobs (Active)</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.activeJobs}</p>
-              <p className="text-xs text-gray-400 mt-1">{stats.totalJobs} total saved</p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-s-3">
+            <div className="border-t border-rule pt-s-2">
+              <p className="font-mono text-meta text-ink-50 uppercase tracking-widest">Total jobs (active)</p>
+              <p className="font-mono text-h2 text-ink mt-1">{stats.activeJobs}</p>
+              <p className="font-mono text-meta text-ink-35 mt-1">{stats.totalJobs} total saved</p>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-              <p className="text-sm font-medium text-gray-500">Experience Roles</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.totalExperience}</p>
-              <p className="text-xs text-gray-400 mt-1">{stats.totalHighlights} highlights</p>
+            <div className="border-t border-rule pt-s-2">
+              <p className="font-mono text-meta text-ink-50 uppercase tracking-widest">Experience roles</p>
+              <p className="font-mono text-h2 text-ink mt-1">{stats.totalExperience}</p>
+              <p className="font-mono text-meta text-ink-35 mt-1">{stats.totalHighlights} highlights</p>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-              <p className="text-sm font-medium text-gray-500">Skills Tracked</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.totalSkills}</p>
-              <p className="text-xs text-gray-400 mt-1">across jobs and experience</p>
+            <div className="border-t border-rule pt-s-2">
+              <p className="font-mono text-meta text-ink-50 uppercase tracking-widest">Skills tracked</p>
+              <p className="font-mono text-h2 text-ink mt-1">{stats.totalSkills}</p>
+              <p className="font-mono text-meta text-ink-35 mt-1">across jobs and experience</p>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-              <p className="text-sm font-medium text-gray-500">Skills Normalized</p>
-              <p className="text-3xl font-bold text-green-600 mt-1">{normalizedPercent}%</p>
-              <p className="text-xs text-gray-400 mt-1">
+            <div className="border-t border-rule pt-s-2">
+              <p className="font-mono text-meta text-ink-50 uppercase tracking-widest">Skills normalized</p>
+              <p className="font-mono text-h2 text-ink mt-1">{normalizedPercent}%</p>
+              <p className="font-mono text-meta text-ink-35 mt-1">
                 {stats.normalizedSkills} of {stats.totalSkills} categorized
               </p>
             </div>
@@ -175,152 +175,125 @@ export default async function DashboardPage() {
 
         {/* Pipeline Tracker Stats */}
         <section aria-labelledby="tracker-heading">
-          <h2 id="tracker-heading" className="text-lg font-semibold text-gray-900 mb-4">
-            Application Pipeline
+          <h2 id="tracker-heading" className="text-h3 font-zen font-medium text-ink border-t border-rule pt-s-3 mb-s-3">
+            Application pipeline
           </h2>
-          <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+          <div className="border-t border-rule pt-s-3">
             <DashboardTrackerCard />
           </div>
         </section>
 
-        {/* Feature section cards */}
+        {/* Feature section - ruled list */}
         <section aria-labelledby="features-heading">
-          <h2 id="features-heading" className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 id="features-heading" className="text-h3 font-zen font-medium text-ink border-t border-rule pt-s-3 mb-s-3">
             Features
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="divide-y divide-rule border-t border-rule">
             <Link
               href="/tracker"
-              className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group"
+              className="block py-s-3 cursor-pointer"
             >
-              <h3 className="text-base font-semibold text-gray-900 group-hover:text-purple-600">
-                Application Tracker
+              <h3 className="text-body font-zen font-medium text-ink">
+                Application tracker
               </h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-body text-ink-72 mt-1">
                 Pipeline board, analytics, and attention items
-              </p>
-              <p className="text-xs text-gray-400 mt-2">
-                Track applications through stages with drag-and-drop pipeline
               </p>
             </Link>
 
             <Link
               href="/jobs"
-              className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group"
+              className="block py-s-3 cursor-pointer"
             >
-              <h3 className="text-base font-semibold text-gray-900 group-hover:text-purple-600">
-                Job Library
+              <h3 className="text-body font-zen font-medium text-ink">
+                Job library
               </h3>
-              <p className="text-sm text-gray-500 mt-1">
-                {stats.totalJobs} jobs saved, {stats.activeJobs} active
-              </p>
-              <p className="text-xs text-gray-400 mt-2">
-                Save job descriptions, extract skills, track application status
+              <p className="text-body text-ink-72 mt-1">
+                <span className="font-mono">{stats.totalJobs}</span> jobs saved, <span className="font-mono">{stats.activeJobs}</span> active
               </p>
             </Link>
 
             <Link
               href="/experience"
-              className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group"
+              className="block py-s-3 cursor-pointer"
             >
-              <h3 className="text-base font-semibold text-gray-900 group-hover:text-purple-600">
-                My Experience
+              <h3 className="text-body font-zen font-medium text-ink">
+                My experience
               </h3>
-              <p className="text-sm text-gray-500 mt-1">
-                {stats.totalExperience} roles, {stats.totalHighlights} highlights
-              </p>
-              <p className="text-xs text-gray-400 mt-2">
-                Manage your work history with achievements and metrics
+              <p className="text-body text-ink-72 mt-1">
+                <span className="font-mono">{stats.totalExperience}</span> roles, <span className="font-mono">{stats.totalHighlights}</span> highlights
               </p>
             </Link>
 
             <Link
               href="/skills"
-              className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group"
+              className="block py-s-3 cursor-pointer"
             >
-              <h3 className="text-base font-semibold text-gray-900 group-hover:text-purple-600">
-                Skills Taxonomy
+              <h3 className="text-body font-zen font-medium text-ink">
+                Skills taxonomy
               </h3>
-              <p className="text-sm text-gray-500 mt-1">
-                {stats.normalizedSkills} skills mapped, {stats.unmappedSkills} unmapped
-              </p>
-              <p className="text-xs text-gray-400 mt-2">
-                Normalize and categorize skills across your career data
+              <p className="text-body text-ink-72 mt-1">
+                <span className="font-mono">{stats.normalizedSkills}</span> skills mapped, <span className="font-mono">{stats.unmappedSkills}</span> unmapped
               </p>
             </Link>
 
             <Link
               href="/resume"
-              className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group"
+              className="block py-s-3 cursor-pointer"
             >
-              <h3 className="text-base font-semibold text-gray-900 group-hover:text-purple-600">
-                Resume Builder
+              <h3 className="text-body font-zen font-medium text-ink">
+                Resume builder
               </h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-body text-ink-72 mt-1">
                 Generate tailored resumes with AI
-              </p>
-              <p className="text-xs text-gray-400 mt-2">
-                Create targeted or generic resumes from your experience data
               </p>
             </Link>
 
             <Link
               href="/phrases"
-              className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group"
+              className="block py-s-3 cursor-pointer"
             >
-              <h3 className="text-base font-semibold text-gray-900 group-hover:text-purple-600">
-                Resume Phrases
+              <h3 className="text-body font-zen font-medium text-ink">
+                Resume phrases
               </h3>
-              <p className="text-sm text-gray-500 mt-1">
-                {stats.totalPhrases} phrases saved
-              </p>
-              <p className="text-xs text-gray-400 mt-2">
-                Extracted phrases grouped by keyword for resume building
+              <p className="text-body text-ink-72 mt-1">
+                <span className="font-mono">{stats.totalPhrases}</span> phrases saved
               </p>
             </Link>
 
             <Link
               href="/dedup"
-              className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group"
+              className="block py-s-3 cursor-pointer"
             >
-              <h3 className="text-base font-semibold text-gray-900 group-hover:text-purple-600">
+              <h3 className="text-body font-zen font-medium text-ink">
                 De-duplication
               </h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-body text-ink-72 mt-1">
                 Find and merge duplicates
-              </p>
-              <p className="text-xs text-gray-400 mt-2">
-                Detect duplicate companies and jobs, merge them interactively
               </p>
             </Link>
 
             <Link
               href="/companies"
-              className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group"
+              className="block py-s-3 cursor-pointer"
             >
-              <h3 className="text-base font-semibold text-gray-900 group-hover:text-purple-600">
+              <h3 className="text-body font-zen font-medium text-ink">
                 Companies
               </h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-body text-ink-72 mt-1">
                 Company intelligence hub
-              </p>
-              <p className="text-xs text-gray-400 mt-2">
-                Track companies, view jobs by company, and build targeted resumes
               </p>
             </Link>
 
             <Link
               href="/profile"
-              className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group"
+              className="block py-s-3 cursor-pointer"
             >
-              <h3 className="text-base font-semibold text-gray-900 group-hover:text-purple-600">
-                Candidate Profile
+              <h3 className="text-body font-zen font-medium text-ink">
+                Candidate profile
               </h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-body text-ink-72 mt-1">
                 Your complete career narrative
-              </p>
-              <p className="text-xs text-gray-400 mt-2">
-                Positioning, stories, metrics, and resume-writer context
               </p>
             </Link>
           </div>
@@ -328,31 +301,31 @@ export default async function DashboardPage() {
 
         {/* Quick Actions */}
         <section aria-labelledby="actions-heading">
-          <h2 id="actions-heading" className="text-lg font-semibold text-gray-900 mb-4">
-            Quick Actions
+          <h2 id="actions-heading" className="text-h3 font-zen font-medium text-ink border-t border-rule pt-s-3 mb-s-3">
+            Quick actions
           </h2>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-s-2">
             <Link
               href="/jobs"
-              className="inline-flex items-center px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+              className="inline-flex items-center px-s-3 border-[1.5px] border-live text-live text-body font-medium h-[48px] cursor-pointer"
             >
-              Add Job
+              Add job
             </Link>
             <Link
               href="/resume"
-              className="inline-flex items-center px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+              className="inline-flex items-center px-s-3 border-[1.5px] border-live text-live text-body font-medium h-[48px] cursor-pointer"
             >
-              Build Resume
+              Build resume
             </Link>
             <Link
               href="/skills"
-              className="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 border border-gray-200 transition-colors"
+              className="inline-flex items-center px-s-3 border border-ink text-ink text-body font-medium h-[48px] cursor-pointer"
             >
-              View Skills
+              View skills
             </Link>
             <Link
               href="/dedup"
-              className="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 border border-gray-200 transition-colors"
+              className="inline-flex items-center px-s-3 border border-ink text-ink text-body font-medium h-[48px] cursor-pointer"
             >
               De-duplication
             </Link>
@@ -362,25 +335,23 @@ export default async function DashboardPage() {
         {/* Top Skills */}
         {stats.topSkills.length > 0 && (
           <section aria-labelledby="top-skills-heading">
-            <h2 id="top-skills-heading" className="text-lg font-semibold text-gray-900 mb-4">
-              Top Skills (Most Demanded)
+            <h2 id="top-skills-heading" className="text-h3 font-zen font-medium text-ink border-t border-rule pt-s-3 mb-s-3">
+              Top skills (most demanded)
             </h2>
-            <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-              <div className="flex flex-wrap gap-2">
-                {stats.topSkills.map((skill) => (
-                  <span
-                    key={skill.name}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-700 text-sm font-medium rounded-full border border-purple-200"
-                  >
-                    {skill.name}
-                    <span className="text-xs text-purple-400">({skill.count})</span>
-                  </span>
-                ))}
-              </div>
-              <p className="text-xs text-gray-400 mt-3">
-                Based on frequency across your saved job descriptions
-              </p>
+            <div className="divide-y divide-rule border-t border-rule">
+              {stats.topSkills.map((skill) => (
+                <div
+                  key={skill.name}
+                  className="flex items-center justify-between py-s-2"
+                >
+                  <span className="text-body text-ink">{skill.name}</span>
+                  <span className="font-mono text-meta text-ink-50">{skill.count}</span>
+                </div>
+              ))}
             </div>
+            <p className="font-mono text-meta text-ink-35 mt-s-2">
+              Based on frequency across your saved job descriptions
+            </p>
           </section>
         )}
       </main>

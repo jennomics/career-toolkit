@@ -188,22 +188,19 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Loading profile...</p>
+      <div className="min-h-screen bg-paper flex items-center justify-center">
+        <p className="text-ink-50 text-body">Loading profile...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-paper">
         <Nav title="Candidate Profile" />
-        <main className="max-w-5xl mx-auto px-6 py-8">
-          <div
-            className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm"
-            role="alert"
-          >
-            <strong>Error:</strong> {error}
+        <main className="max-w-[720px] mx-auto px-6 py-s-4">
+          <div className="border border-rule p-s-3 text-ink text-body" role="alert">
+            {error}
           </div>
         </main>
       </div>
@@ -212,14 +209,14 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-paper">
         <Nav title="Candidate Profile" />
-        <main className="max-w-5xl mx-auto px-6 py-8">
-          <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-            <p className="text-gray-500 mb-4">
+        <main className="max-w-[720px] mx-auto px-6 py-s-4">
+          <div className="border-t border-rule pt-s-4 text-center">
+            <p className="text-ink-50 text-body mb-s-3">
               No profile found. Run the seed script to populate your profile data.
             </p>
-            <code className="text-sm bg-gray-100 px-3 py-1.5 rounded-md text-gray-700">
+            <code className="font-mono text-body text-ink border-b border-rule pb-s-1">
               npm run seed:profile
             </code>
           </div>
@@ -233,32 +230,15 @@ export default function ProfilePage() {
   ).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper">
       <Nav title="Candidate Profile" subtitle="Everything a resume writer needs to know" />
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-4">
+      <main className="max-w-[720px] mx-auto px-6 py-s-4 space-y-s-3">
         {/* Unresolved items warning banner */}
         {unresolvedCount > 0 && (
-          <div
-            className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center gap-3"
-            role="alert"
-          >
-            <svg
-              className="w-5 h-5 text-amber-600 shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-              />
-            </svg>
-            <p className="text-sm font-medium text-amber-800">
-              {unresolvedCount} unresolved item{unresolvedCount !== 1 ? "s" : ""}{" "}
+          <div className="border border-rule p-s-3 flex items-center gap-s-2" role="alert">
+            <p className="text-body text-ink">
+              <span className="font-mono">{unresolvedCount}</span> unresolved item{unresolvedCount !== 1 ? "s" : ""}{" "}
               need your decision before resume generation can proceed.
             </p>
           </div>
@@ -397,7 +377,7 @@ export default function ProfilePage() {
         <CollapsibleSection title="Writing & Communication Style">
           <div className="space-y-6">
             <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-gray-700">Informal Register</h4>
+              <h4 className="text-body font-medium text-ink">Informal register</h4>
               <TextFieldEditor
                 value={profile.writingStyle}
                 onSave={async (value) => updateProfile({ writingStyle: value })}
@@ -406,7 +386,7 @@ export default function ProfilePage() {
               />
             </div>
             <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-gray-700">Formal Register</h4>
+              <h4 className="text-body font-medium text-ink">Formal register</h4>
               <TextFieldEditor
                 value={profile.writingStyleFormal}
                 onSave={async (value) => updateProfile({ writingStyleFormal: value })}
@@ -443,7 +423,7 @@ export default function ProfilePage() {
               label="Geography"
             />
             <div>
-              <p className="text-xs font-medium text-gray-500 mb-2">
+              <p className="font-mono text-meta text-ink-50 uppercase tracking-widest mb-2">
                 Target Companies
               </p>
               <StringListEditor
@@ -456,7 +436,7 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-500 mb-2">
+              <p className="font-mono text-meta text-ink-50 uppercase tracking-widest mb-2">
                 Search Firms
               </p>
               <StringListEditor

@@ -158,18 +158,18 @@ export default function CompanyDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-400">Loading...</p>
+      <div className="min-h-screen bg-paper flex items-center justify-center">
+        <p className="text-ink-35">Loading...</p>
       </div>
     );
   }
 
   if (error && !company) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-paper">
         <Nav title="Company" />
-        <main className="max-w-5xl mx-auto px-6 py-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm" role="alert">
+        <main className="max-w-[720px] mx-auto px-6 py-8">
+          <div className="border border-rule p-s-3 text-ink text-body" role="alert">
             <strong>Error:</strong> {error}
           </div>
         </main>
@@ -180,19 +180,19 @@ export default function CompanyDetailPage() {
   if (!company) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper">
       <Nav title={company.name} />
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
-        <div className="flex items-center gap-4">
-          <Link href="/companies" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-            &larr; Companies
+      <main className="max-w-[720px] mx-auto px-6 py-8 space-y-6">
+        <div className="flex items-center gap-s-3">
+          <Link href="/companies" className="text-body text-ink underline">
+            Companies
           </Link>
           <button
             onClick={toggleDreamCompany}
             disabled={togglingDream}
-            className={`text-2xl cursor-pointer transition-colors ${
-              dreamCompany ? "text-yellow-500" : "text-gray-300 hover:text-yellow-400"
+            className={`text-2xl cursor-pointer ${
+              dreamCompany ? "text-ink" : "text-ink-35"
             }`}
             title={dreamCompany ? "Dream Company (click to remove)" : "Mark as Dream Company"}
           >
@@ -200,48 +200,48 @@ export default function CompanyDetailPage() {
           </button>
         </div>
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm" role="alert">
+          <div className="border border-rule p-s-3 text-ink text-body" role="alert">
             <strong>Error:</strong> {error}
           </div>
         )}
 
         {/* Company Intelligence */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div className="border-t border-rule">
           <button
             onClick={() => setNotesOpen(!notesOpen)}
-            className="w-full px-6 py-4 flex items-center justify-between cursor-pointer"
+            className="w-full py-s-3 flex items-center justify-between cursor-pointer min-h-[44px]"
           >
-            <h2 className="text-sm font-semibold text-gray-900">Company Intelligence</h2>
-            <span className="text-gray-400 text-sm">{notesOpen ? "▼" : "▶"}</span>
+            <h2 className="text-body font-medium text-ink">Company intelligence</h2>
+            <span className="text-ink-35 text-body">{notesOpen ? "v" : ">"}</span>
           </button>
           {notesOpen && (
-            <div className="px-6 pb-4">
+            <div className="pb-s-3">
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 onBlur={saveNotes}
-                placeholder="Add notes about this company - culture, interview process, key contacts, strategy... This information will be used by the AI when generating resumes for this company's jobs."
-                className="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-y"
+                placeholder="Add notes about this company - culture, interview process, key contacts, strategy..."
+                className="w-full h-32 px-0 py-s-2 border-0 border-b border-rule bg-transparent text-body text-ink placeholder:text-ink-35 focus:outline-none focus:border-ink resize-y"
               />
               {savingNotes && (
-                <p className="text-xs text-gray-400 mt-1">Saving...</p>
+                <p className="font-mono text-meta text-ink-35 mt-s-1">Saving...</p>
               )}
             </div>
           )}
         </div>
 
         {/* Tabs */}
-        <div className="flex flex-wrap items-center gap-1 bg-gray-100 rounded-lg p-1" role="tablist">
+        <div className="flex flex-wrap items-center gap-s-3 border-b border-rule" role="tablist">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               role="tab"
               aria-selected={activeTab === tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+              className={`pb-s-2 text-body font-medium cursor-pointer min-h-[44px] ${
                 activeTab === tab.key
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "border-b-2 border-ink text-ink"
+                  : "text-ink-50"
               }`}
             >
               {tab.label}

@@ -103,52 +103,50 @@ export default function CompaniesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper">
       <Nav title="Companies" subtitle="Track companies, their jobs, and build targeted resumes" />
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+      <main className="max-w-[720px] mx-auto px-6 py-s-4 space-y-s-4">
         {/* Error display */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm" role="alert">
-            <strong>Error:</strong> {error}
+          <div className="border border-rule p-s-3 text-ink text-body" role="alert">
+            {error}
           </div>
         )}
 
         {/* Sync result */}
         {syncResult && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-700 text-sm">
+          <div className="border border-rule p-s-3 text-ink text-body">
             {syncResult}
           </div>
         )}
 
         {/* Actions: Search + Add + Sync */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm space-y-4">
+        <div className="space-y-s-3 border-t border-rule pt-s-3">
           {/* Search */}
-          <div>
-            <input
-              type="text"
-              placeholder="Search companies..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Search companies..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-0 py-s-2 border-0 border-b border-rule bg-transparent text-body text-ink placeholder:text-ink-35 focus:outline-none focus:border-ink"
+          />
 
           {/* Add company form */}
-          <form onSubmit={handleAddCompany} className="flex gap-3">
+          <form onSubmit={handleAddCompany} className="flex gap-s-2">
             <input
               type="text"
               placeholder="Add a new company..."
               value={newCompanyName}
               onChange={(e) => setNewCompanyName(e.target.value)}
-              className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="flex-1 px-0 py-s-2 border-0 border-b border-rule bg-transparent text-body text-ink placeholder:text-ink-35 focus:outline-none focus:border-ink"
             />
             <button
               type="submit"
               disabled={!newCompanyName.trim() || adding}
-              className="px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed cursor-pointer"
+              className="px-s-3 h-[48px] border-[1.5px] border-live text-live text-body font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              {adding ? "Adding..." : "Add Company"}
+              {adding ? "Adding..." : "Add company"}
             </button>
           </form>
 
@@ -156,48 +154,48 @@ export default function CompaniesPage() {
           <button
             onClick={handleSync}
             disabled={syncing}
-            className="px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 border border-gray-200 transition-colors disabled:opacity-50 cursor-pointer"
+            className="px-s-3 h-[48px] border border-ink text-ink text-body font-medium disabled:opacity-50 cursor-pointer"
           >
-            {syncing ? "Syncing..." : "Sync Companies from Jobs"}
+            {syncing ? "Syncing..." : "Sync companies from jobs"}
           </button>
         </div>
 
-        {/* Companies grid */}
+        {/* Companies list */}
         {loading ? (
-          <p className="text-center text-gray-400 py-12">Loading...</p>
+          <p className="text-center text-ink-35 py-s-5">Loading...</p>
         ) : filteredCompanies.length === 0 && companies.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No companies yet.</p>
-            <p className="text-gray-400 text-sm mt-1">
+          <div className="text-center py-s-5">
+            <p className="text-ink-50 text-h3 font-zen">No companies yet</p>
+            <p className="text-ink-35 text-body mt-s-1">
               Sync from existing jobs or add one manually.
             </p>
           </div>
         ) : filteredCompanies.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-400">No companies match your search</p>
+          <div className="text-center py-s-4">
+            <p className="text-ink-35 text-body">No companies match your search</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="divide-y divide-rule border-t border-rule">
             {filteredCompanies.map((company) => (
               <Link
                 key={company.id}
                 href={`/company/${company.slug}`}
-                className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group"
+                className="block py-s-3 cursor-pointer"
               >
                 <div className="flex items-start justify-between">
-                  <h3 className="text-base font-semibold text-gray-900 group-hover:text-purple-600">
+                  <h3 className="text-body font-medium text-ink">
                     {company.name}
                   </h3>
                   {company.dreamCompany && (
-                    <span className="text-yellow-500 text-lg" title="Dream Company">
+                    <span className="text-ink-50" title="Dream Company">
                       &#9733;
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="font-mono text-meta text-ink-50 mt-1">
                   {company._count.jobs} {company._count.jobs === 1 ? "job" : "jobs"}
                 </p>
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="font-mono text-meta text-ink-35 mt-1">
                   Last updated {new Date(company.updatedAt).toLocaleDateString()}
                 </p>
               </Link>

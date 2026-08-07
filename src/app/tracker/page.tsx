@@ -95,85 +95,59 @@ export default function TrackerPage() {
     fetchJobs();
   };
 
+  const viewTabs: { key: ViewTab; label: string }[] = [
+    { key: "pipeline", label: "Pipeline" },
+    { key: "list", label: "List" },
+    { key: "timeline", label: "Timeline" },
+    { key: "analytics", label: "Analytics" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper">
       <Nav title="Application Tracker" subtitle="Pipeline board, timeline, and application details" />
 
-      <main className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+      <main className="max-w-[720px] mx-auto px-6 py-s-4 space-y-s-4">
         {/* Error display */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm" role="alert">
-            <strong>Error:</strong> {error}
+          <div className="border border-rule p-s-3 text-ink text-body" role="alert">
+            {error}
           </div>
         )}
 
-        {/* View tabs */}
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 w-fit" role="tablist" aria-label="Tracker view mode">
-          <button
-            role="tab"
-            aria-selected={activeView === "pipeline"}
-            onClick={() => setActiveView("pipeline")}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-              activeView === "pipeline"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Pipeline
-          </button>
-          <button
-            role="tab"
-            aria-selected={activeView === "list"}
-            onClick={() => setActiveView("list")}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-              activeView === "list"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            List
-          </button>
-          <button
-            role="tab"
-            aria-selected={activeView === "timeline"}
-            onClick={() => setActiveView("timeline")}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-              activeView === "timeline"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Timeline
-          </button>
-          <button
-            role="tab"
-            aria-selected={activeView === "analytics"}
-            onClick={() => setActiveView("analytics")}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-              activeView === "analytics"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Analytics
-          </button>
+        {/* View tabs - underline pattern */}
+        <div className="flex items-center gap-s-3 border-b border-rule" role="tablist" aria-label="Tracker view mode">
+          {viewTabs.map((tab) => (
+            <button
+              key={tab.key}
+              role="tab"
+              aria-selected={activeView === tab.key}
+              onClick={() => setActiveView(tab.key)}
+              className={`pb-s-2 text-body font-medium cursor-pointer min-h-[44px] ${
+                activeView === tab.key
+                  ? "border-b-2 border-ink text-ink"
+                  : "text-ink-50"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Content */}
         {loading ? (
-          <p className="text-center text-gray-400 py-12">Loading tracker...</p>
+          <p className="text-center text-ink-35 py-s-5">Loading tracker...</p>
         ) : jobs.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="bg-white border border-gray-200 rounded-lg p-8 max-w-md mx-auto shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900">No jobs in your pipeline</h2>
-              <p className="text-sm text-gray-500 mt-2">
-                Add jobs from the Job Library to start tracking your applications through the pipeline.
+          <div className="text-center py-s-5">
+            <div className="border-t border-rule pt-s-4 max-w-md mx-auto">
+              <h2 className="text-h3 font-zen font-medium text-ink">No jobs in your pipeline</h2>
+              <p className="text-body text-ink-50 mt-s-2">
+                Add jobs from the job library to start tracking your applications through the pipeline.
               </p>
               <a
                 href="/jobs"
-                className="inline-flex items-center mt-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center mt-s-3 px-s-3 border-[1.5px] border-live text-live text-body font-medium h-[48px] cursor-pointer"
               >
-                Go to Job Library
+                Go to job library
               </a>
             </div>
           </div>
@@ -195,11 +169,11 @@ export default function TrackerPage() {
               />
             )}
             {activeView === "analytics" && (
-              <div className="space-y-8">
+              <div className="space-y-s-4">
                 <AnalyticsDashboard />
-                <section aria-labelledby="attention-heading" className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-                  <h3 id="attention-heading" className="text-base font-semibold text-gray-900 mb-4">
-                    Needs Attention
+                <section aria-labelledby="attention-heading" className="border-t border-rule pt-s-3">
+                  <h3 id="attention-heading" className="text-h3 font-zen font-medium text-ink mb-s-3">
+                    Needs attention
                   </h3>
                   <AttentionWidget onJobClick={handleAttentionJobClick} />
                 </section>

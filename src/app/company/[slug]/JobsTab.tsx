@@ -33,9 +33,9 @@ export default function JobsTab({ jobs, onUpdate }: JobsTabProps) {
 
   if (jobs.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-        <p className="text-gray-500">No jobs for this company yet.</p>
-        <p className="text-xs text-gray-400 mt-1">
+      <div className="border-t border-rule pt-s-4 text-center">
+        <p className="text-ink-50">No jobs for this company yet.</p>
+        <p className="text-xs text-ink-35 mt-1">
           Add jobs from the Job Library or sync companies from jobs.
         </p>
       </div>
@@ -47,19 +47,19 @@ export default function JobsTab({ jobs, onUpdate }: JobsTabProps) {
       {jobs.map((job) => (
         <div
           key={job.id}
-          className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm"
+          className="border-t border-rule pt-s-3"
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-gray-900 truncate">
+                <h3 className="text-sm font-semibold text-ink truncate">
                   {job.title}
                 </h3>
                 {job.dreamJob && (
-                  <span className="text-yellow-500 text-sm" title="Dream Job">&#9733;</span>
+                  <span className="text-ink-50 text-sm" title="Dream Job">&#9733;</span>
                 )}
               </div>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-ink-35 mt-1">
                 Added {new Date(job.createdAt).toLocaleDateString()}
               </p>
             </div>
@@ -68,7 +68,7 @@ export default function JobsTab({ jobs, onUpdate }: JobsTabProps) {
                 value={job.status}
                 onChange={(e) => handleStatusChange(job.id, e.target.value)}
                 disabled={updatingId === job.id}
-                className="text-xs px-2 py-1 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
+                className="text-xs px-2 py-1 border border-rule text-ink-72 focus:outline-none focus:ring-2 focus:ring-ink cursor-pointer"
               >
                 {STATUS_OPTIONS.map((s) => (
                   <option key={s} value={s}>
@@ -83,13 +83,13 @@ export default function JobsTab({ jobs, onUpdate }: JobsTabProps) {
               {job.skills.slice(0, 10).map((skill) => (
                 <span
                   key={skill.id}
-                  className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full text-xs font-medium"
+                  className="px-2 py-0.5 font-mono text-meta text-ink-50 text-xs font-medium"
                 >
                   {skill.name}
                 </span>
               ))}
               {job.skills.length > 10 && (
-                <span className="text-xs text-gray-400">+{job.skills.length - 10} more</span>
+                <span className="text-xs text-ink-35">+{job.skills.length - 10} more</span>
               )}
             </div>
           )}

@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Restyle all page layouts and the dashboard (src/app/page.tsx) to follow the 'One Filled Thing' style guide. Convert card-based layouts to ruled rows. Apply the 720px single column, 24px side pad grid. Restyle all pages in src/app/ to use paper background, ink typography, ruled sections instead of cards.",
+  "status": "in_progress",
+  "steps": [
+    "Restyle src/app/page.tsx (Dashboard): Remove bg-gray-50 page background (use bg-paper). Replace all card divs (bg-white border border-gray-200 rounded-lg shadow-sm) with ruled rows (border-t border-rule, no background, no rounded corners, no shadow). Stats section: numbers in font-mono, labels in text-meta font-mono uppercase. Feature links: replace card grid with a ruled list where each item is a border-t border-rule row with h3 in text-body weight 500 ink, description in text-body ink-72. Quick actions: buttons become Primary (1.5px border-live text-live h-[48px]) and Secondary (1px border-ink text-ink h-[48px]) with no fills, no rounded corners. Top skills: replace pill badges with plain text items separated by rules. Use max-w-[720px] mx-auto px-[24px] for main container.",
+    "Restyle src/app/jobs/page.tsx: Same pattern - bg-paper page, ruled sections, no cards. Job list items separated by border-t border-rule.",
+    "Restyle src/app/tracker/page.tsx: Remove bg-gray-50. View tabs: replace bg-gray-100 pill container with ruled underline tabs (active tab gets border-b-2 border-ink, others are ink-50). Use bg-paper overall. Error alerts use border border-rule with text in ink, no red fills.",
+    "Restyle src/app/experience/page.tsx: Same ruled-row pattern. Stats bar in font-mono. Search input becomes underline field (border-b border-rule, no box border, bg-transparent). Merge mode indicators use ink-50 text instead of purple fills.",
+    "Restyle src/app/skills/page.tsx: Remove card styling, use ruled expandable sections.",
+    "Restyle src/app/resume/page.tsx: Same ruled pattern.",
+    "Restyle src/app/phrases/page.tsx: Same ruled pattern.",
+    "Restyle src/app/companies/page.tsx: Same ruled pattern.",
+    "Restyle src/app/profile/page.tsx: Same ruled pattern.",
+    "Restyle src/app/claims/page.tsx: Same ruled pattern.",
+    "Restyle src/app/documents/page.tsx: Same ruled pattern.",
+    "Restyle src/app/eval/page.tsx: Same ruled pattern.",
+    "Restyle src/app/dedup/page.tsx: Same ruled pattern.",
+    "Restyle src/app/company/[slug]/page.tsx and all tab components (ApplicationsTab.tsx, DraftsTab.tsx, JobsTab.tsx, NetworkingTab.tsx, PhrasesTab.tsx, ResumeTab.tsx, SkillsTab.tsx): Same ruled pattern, tab navigation uses ink underline for active.",
+    "Common patterns to apply everywhere: Replace 'bg-gray-50' with 'bg-paper'. Replace 'bg-white' containers with no background (inherits paper). Replace 'rounded-lg' / 'rounded-md' with 'rounded-none'. Replace 'shadow-sm' / 'shadow-md' with nothing (remove). Replace 'border-gray-200' with 'border-rule'. Replace text-gray-900 with text-ink. Replace text-gray-500/600 with text-ink-72. Replace text-gray-400 with text-ink-50. Replace text-gray-300 with text-ink-35. Replace blue/purple color theming with ink or live as appropriate. Max content width 720px with 24px padding."
+  ],
+  "acceptance_criteria": [
+    "All pages use bg-paper background, no bg-gray-50 or bg-white cards",
+    "No rounded corners (rounded-none or no rounded class) anywhere",
+    "No shadows anywhere",
+    "Sections separated by border-t border-rule lines, not card borders",
+    "Main content areas use max-w-[720px] mx-auto px-6 (24px)",
+    "Numbers and status values use font-mono",
+    "Meta labels use text-meta font-mono uppercase tracking-widest",
+    "No colored badges/pills - status shown as plain text in mono",
+    "Primary actions use 1.5px live outline, secondary use 1px ink outline",
+    "npx next build succeeds"
+  ],
+  "verification": [
+    "cd /projects/career-toolkit && npx next build"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

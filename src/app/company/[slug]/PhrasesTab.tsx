@@ -45,9 +45,9 @@ export default function PhrasesTab({ jobs }: PhrasesTabProps) {
 
   if (totalPhrases === 0) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-        <p className="text-gray-500">No phrases extracted yet.</p>
-        <p className="text-xs text-gray-400 mt-1">
+      <div className="border-t border-rule pt-s-4 text-center">
+        <p className="text-ink-50">No phrases extracted yet.</p>
+        <p className="text-xs text-ink-35 mt-1">
           Phrases are extracted from job descriptions when jobs are added.
         </p>
       </div>
@@ -57,22 +57,22 @@ export default function PhrasesTab({ jobs }: PhrasesTabProps) {
   return (
     <div className="space-y-4">
       {grouped.map(([category, phrases]) => (
-        <div key={category} className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3 capitalize">
-            {category} <span className="text-gray-400 font-normal">({phrases.length})</span>
+        <div key={category} className="border-t border-rule pt-s-3">
+          <h3 className="text-sm font-semibold text-ink mb-3 capitalize">
+            {category} <span className="text-ink-35 font-normal">({phrases.length})</span>
           </h3>
           <div className="space-y-3">
             {phrases.map((phrase) => (
-              <div key={phrase.id} className="border-l-2 border-gray-200 pl-3">
-                <p className="text-sm text-gray-700">{phrase.text}</p>
+              <div key={phrase.id} className="border-l-2 border-rule pl-3">
+                <p className="text-sm text-ink-72">{phrase.text}</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-gray-400">from: {phrase.jobTitle}</span>
+                  <span className="text-xs text-ink-35">from: {phrase.jobTitle}</span>
                   {phrase.keywords.length > 0 && (
                     <div className="flex gap-1">
                       {phrase.keywords.slice(0, 5).map((kw, idx) => (
                         <span
                           key={idx}
-                          className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-xs"
+                          className="px-1.5 py-0.5 border border-rule text-ink-50 text-xs font-mono"
                         >
                           {kw}
                         </span>

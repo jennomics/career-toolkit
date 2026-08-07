@@ -55,12 +55,12 @@ export default function DraftsTab({ companySlug, jobs }: DraftsTabProps) {
   }
 
   if (loading) {
-    return <p className="text-center text-gray-400 py-8">Loading drafts...</p>;
+    return <p className="text-center text-ink-35 py-8">Loading drafts...</p>;
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">
+      <div className="border border-rule p-s-3 text-ink text-body">
         <strong>Error:</strong> {error}
       </div>
     );
@@ -68,9 +68,9 @@ export default function DraftsTab({ companySlug, jobs }: DraftsTabProps) {
 
   if (drafts.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-        <p className="text-gray-500">No resume drafts yet.</p>
-        <p className="text-xs text-gray-400 mt-1">
+      <div className="border-t border-rule pt-s-4 text-center">
+        <p className="text-ink-50">No resume drafts yet.</p>
+        <p className="text-xs text-ink-35 mt-1">
           Use the Resume tab to generate one.
         </p>
       </div>
@@ -82,19 +82,19 @@ export default function DraftsTab({ companySlug, jobs }: DraftsTabProps) {
       {drafts.map((draft) => (
         <div
           key={draft.id}
-          className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm flex items-center justify-between"
+          className="border-t border-rule pt-s-3 flex items-center justify-between"
         >
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">
+            <h3 className="text-sm font-semibold text-ink">
               {getJobTitle(draft.jobId)}
             </h3>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-ink-50 mt-1">
               Status: <span className="capitalize">{draft.status}</span> &middot; Step {draft.step}/4 &middot; Updated {new Date(draft.updatedAt).toLocaleDateString()}
             </p>
           </div>
           <Link
             href="/resume"
-            className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+            className="text-sm text-ink underline font-medium"
           >
             Continue &rarr;
           </Link>

@@ -190,28 +190,28 @@ export default function ExperiencePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Nav title="My Experience" subtitle="Your work history — used for resume building and job matching" />
+    <div className="min-h-screen bg-paper">
+      <Nav title="My Experience" subtitle="Your work history, used for resume building and job matching" />
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+      <main className="max-w-[720px] mx-auto px-6 py-s-4 space-y-s-4">
         {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm" role="alert">
-            <strong>Error:</strong> {error}
+          <div className="border border-rule p-s-3 text-ink text-body" role="alert">
+            {error}
           </div>
         )}
 
         {/* Database setup needed */}
         {needsSetup && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-5" role="alert">
-            <h3 className="text-sm font-semibold text-amber-800 mb-1">Database Setup Required</h3>
-            <p className="text-sm text-amber-700 mb-3">
+          <div className="border border-rule p-s-3" role="alert">
+            <h3 className="font-mono text-meta text-ink-50 uppercase tracking-widest mb-s-1">Database setup required</h3>
+            <p className="text-body text-ink-72 mb-s-2">
               The Experience tables haven&apos;t been created in your database yet. Run this command in your career-toolkit directory:
             </p>
-            <code className="block bg-amber-100 text-amber-900 px-3 py-2 rounded text-sm font-mono">
+            <code className="block font-mono text-body text-ink px-s-2 py-s-1 border-b border-rule">
               npx prisma migrate dev
             </code>
-            <p className="text-xs text-amber-600 mt-2">
+            <p className="font-mono text-meta text-ink-35 mt-s-2">
               This only needs to be done once. After that, this page will work normally.
             </p>
           </div>
@@ -219,18 +219,18 @@ export default function ExperiencePage() {
 
         {/* Stats bar */}
         {experiences.length > 0 && (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6 text-sm text-gray-600">
+          <div className="flex items-center justify-between border-t border-rule pt-s-2">
+            <div className="flex items-center gap-s-3 text-body text-ink-72">
               <span>
-                <strong className="text-gray-900">{experiences.length}</strong>{" "}
+                <span className="font-mono text-ink">{experiences.length}</span>{" "}
                 {experiences.length === 1 ? "role" : "roles"}
               </span>
               <span>
-                <strong className="text-gray-900">{totalYears}</strong>{" "}
+                <span className="font-mono text-ink">{totalYears}</span>{" "}
                 {totalYears === 1 ? "year" : "years"} total experience
               </span>
               <span>
-                <strong className="text-gray-900">{uniqueSkills}</strong> unique skills
+                <span className="font-mono text-ink">{uniqueSkills}</span> unique skills
               </span>
             </div>
             <button
@@ -239,39 +239,39 @@ export default function ExperiencePage() {
                 setSelectedForMerge(new Set());
                 setShowMergeEditor(false);
               }}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium cursor-pointer transition-colors ${
+              className={`px-s-2 min-h-[44px] text-body font-medium cursor-pointer ${
                 mergeMode
-                  ? "bg-purple-100 text-purple-700 hover:bg-purple-200"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "border-b-2 border-ink text-ink"
+                  : "text-ink-50"
               }`}
             >
-              {mergeMode ? "Exit Merge Mode" : "Merge Roles"}
+              {mergeMode ? "Exit merge mode" : "Merge roles"}
             </button>
           </div>
         )}
 
         {/* Merge mode toolbar */}
         {mergeMode && selectedForMerge.size >= 2 && !showMergeEditor && (
-          <div className="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg">
-            <span className="text-sm text-purple-700">
-              <strong>{selectedForMerge.size}</strong> roles selected for merge
+          <div className="flex items-center justify-between p-s-2 border border-rule">
+            <span className="text-body text-ink-72">
+              <span className="font-mono text-ink">{selectedForMerge.size}</span> roles selected for merge
             </span>
             <button
               onClick={() => setShowMergeEditor(true)}
-              className="px-4 py-2 bg-purple-600 text-white rounded-md text-sm font-medium cursor-pointer hover:bg-purple-700"
+              className="px-s-3 h-[48px] border-[1.5px] border-live text-live text-body font-medium cursor-pointer"
             >
-              Merge Selected
+              Merge selected
             </button>
           </div>
         )}
 
         {mergeMode && selectedForMerge.size < 2 && (
-          <p className="text-sm text-purple-500 bg-purple-50 border border-purple-100 rounded-lg p-3">
+          <p className="text-body text-ink-50 border border-rule p-s-2">
             Select 2 or more roles to merge them. Click the checkboxes below.
           </p>
         )}
 
-        {/* Search */}
+        {/* Search - underline field */}
         {experiences.length > 0 && (
           <div className="relative">
             <input
@@ -279,25 +279,11 @@ export default function ExperiencePage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search experience by title, company, skill..."
-              className="w-full px-4 py-2.5 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900"
+              className="w-full px-0 py-s-2 border-0 border-b border-rule bg-transparent focus:outline-none focus:border-ink text-body text-ink placeholder:text-ink-35"
               aria-label="Search experience"
             />
-            <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
             {searchQuery && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+              <span className="absolute right-0 top-1/2 -translate-y-1/2 font-mono text-meta text-ink-35">
                 {filteredExperiences.length} of {experiences.length}
               </span>
             )}
@@ -320,9 +306,9 @@ export default function ExperiencePage() {
                 setEditingData(undefined);
                 setShowForm(true);
               }}
-              className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors cursor-pointer"
+              className="w-full p-s-3 border border-dashed border-rule text-ink-50 cursor-pointer text-body min-h-[48px]"
             >
-              + Add Experience Manually
+              + Add experience manually
             </button>
           )}
         </div>
@@ -343,31 +329,31 @@ export default function ExperiencePage() {
 
         {/* Experience List */}
         {loading ? (
-          <p className="text-center text-gray-400 py-12">Loading...</p>
+          <p className="text-center text-ink-35 py-s-5">Loading...</p>
         ) : filteredExperiences.length === 0 && experiences.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No experience added yet</p>
-            <p className="text-gray-400 text-sm mt-1">
+          <div className="text-center py-s-5">
+            <p className="text-ink-50 text-h3 font-zen">No experience added yet</p>
+            <p className="text-ink-35 text-body mt-s-1">
               Add your work history above. Your experience will be used to match against job
               postings and build tailored resumes.
             </p>
           </div>
         ) : filteredExperiences.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-400">
+          <div className="text-center py-s-4">
+            <p className="text-ink-35 text-body">
               No experience matches &ldquo;{searchQuery}&rdquo;
             </p>
             <button
               onClick={() => setSearchQuery("")}
-              className="text-sm text-blue-600 hover:text-blue-800 mt-2 cursor-pointer"
+              className="text-body text-ink underline mt-s-2 cursor-pointer"
             >
               Clear search
             </button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="divide-y divide-rule">
             {filteredExperiences.map((exp) => (
-              <div key={exp.id} className="flex gap-3 items-start">
+              <div key={exp.id} className="flex gap-s-2 items-start py-s-2">
                 {mergeMode && (
                   <input
                     type="checkbox"
@@ -383,7 +369,7 @@ export default function ExperiencePage() {
                         return next;
                       });
                     }}
-                    className="mt-5 h-5 w-5 text-purple-600 rounded border-gray-300 focus:ring-purple-500 shrink-0 cursor-pointer"
+                    className="mt-5 h-5 w-5 border-rule shrink-0 cursor-pointer"
                     aria-label={`Select ${exp.title} at ${exp.company} for merge`}
                   />
                 )}

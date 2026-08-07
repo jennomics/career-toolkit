@@ -200,20 +200,20 @@ export default function DedupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper">
       <Nav title="De-duplication" subtitle="Find and merge duplicate companies and jobs" />
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+      <main className="max-w-[720px] mx-auto px-6 py-8 space-y-6">
         {/* Tabs */}
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 w-fit" role="tablist">
+        <div className="flex items-center gap-s-3 border-b border-rule" role="tablist">
           <button
             role="tab"
             aria-selected={activeTab === "companies"}
             onClick={() => setActiveTab("companies")}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+            className={`pb-s-2 text-body font-medium cursor-pointer min-h-[44px] ${
               activeTab === "companies"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
+                ? "border-b-2 border-ink text-ink"
+                : "text-ink-50"
             }`}
           >
             Companies
@@ -222,10 +222,10 @@ export default function DedupPage() {
             role="tab"
             aria-selected={activeTab === "jobs"}
             onClick={() => setActiveTab("jobs")}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+            className={`pb-s-2 text-body font-medium cursor-pointer min-h-[44px] ${
               activeTab === "jobs"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
+                ? "border-b-2 border-ink text-ink"
+                : "text-ink-50"
             }`}
           >
             Jobs
@@ -236,24 +236,24 @@ export default function DedupPage() {
         {activeTab === "companies" && (
           <div className="space-y-4">
             {companyError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm" role="alert">
+              <div className="border border-rule p-s-3 text-ink text-body" role="alert">
                 <strong>Error:</strong> {companyError}
               </div>
             )}
 
             {/* Success messages */}
             {Object.entries(companySuccess).map(([key, msg]) => (
-              <div key={key} className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-700 text-sm">
+              <div key={key} className="border border-rule p-4 text-ink-72 text-sm">
                 {msg}
               </div>
             ))}
 
             {companyLoading ? (
-              <p className="text-center text-gray-400 py-12">Loading...</p>
+              <p className="text-center text-ink-35 py-12">Loading...</p>
             ) : companyGroups.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">No company duplicates found</p>
-                <p className="text-gray-400 text-sm mt-1">
+                <p className="text-ink-50 text-lg">No company duplicates found</p>
+                <p className="text-ink-35 text-sm mt-1">
                   All company names are unique after normalization.
                 </p>
               </div>
@@ -261,22 +261,22 @@ export default function DedupPage() {
               companyGroups.map((group) => (
                 <div
                   key={group.normalizedName}
-                  className="bg-white border border-gray-200 rounded-lg shadow-sm p-5"
+                  className="border-t border-rule p-5"
                 >
-                  <h3 className="text-base font-semibold text-gray-900 mb-3">
+                  <h3 className="text-base font-semibold text-ink mb-3">
                     &ldquo;{group.normalizedName}&rdquo;
                   </h3>
-                  <p className="text-sm text-gray-500 mb-4">
+                  <p className="text-sm text-ink-50 mb-4">
                     {group.companies.length} variants found. Select which to keep:
                   </p>
                   <div className="space-y-2">
                     {group.companies.map((company) => (
                       <label
                         key={company.id}
-                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        className={`flex items-center gap-3 p-3 border cursor-pointer ${
                           companySelections[group.normalizedName] === company.id
-                            ? "border-purple-300 bg-purple-50"
-                            : "border-gray-200 hover:border-gray-300"
+                            ? " "
+                            : "border-rule hover:border-rule"
                         }`}
                       >
                         <input
@@ -290,19 +290,19 @@ export default function DedupPage() {
                               [group.normalizedName]: company.id,
                             }))
                           }
-                          className="text-purple-600"
+                          className="text-ink underline"
                         />
                         <div className="flex-1">
-                          <span className="text-sm font-medium text-gray-900">
+                          <span className="text-sm font-medium text-ink">
                             {company.name}
                           </span>
-                          <span className="text-xs text-gray-500 ml-2">
+                          <span className="text-xs text-ink-50 ml-2">
                             ({company.jobCount} jobs, created{" "}
                             {new Date(company.createdAt).toLocaleDateString()})
                           </span>
                         </div>
                         {group.suggestedKeepId === company.id && (
-                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                          <span className="text-xs font-mono text-meta text-ink-50 px-2 py-0.5">
                             Suggested
                           </span>
                         )}
@@ -313,7 +313,7 @@ export default function DedupPage() {
                     <button
                       onClick={() => handleCompanyMerge(group)}
                       disabled={companyMerging[group.normalizedName]}
-                      className="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      className="px-4 py-2 border-[1.5px] border-live text-live bg-transparent text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       {companyMerging[group.normalizedName] ? "Merging..." : "Merge"}
                     </button>
@@ -328,24 +328,24 @@ export default function DedupPage() {
         {activeTab === "jobs" && (
           <div className="space-y-4">
             {jobError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm" role="alert">
+              <div className="border border-rule p-s-3 text-ink text-body" role="alert">
                 <strong>Error:</strong> {jobError}
               </div>
             )}
 
             {/* Success messages */}
             {Object.entries(jobSuccess).map(([key, msg]) => (
-              <div key={key} className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-700 text-sm">
+              <div key={key} className="border border-rule p-4 text-ink-72 text-sm">
                 {msg}
               </div>
             ))}
 
             {jobLoading ? (
-              <p className="text-center text-gray-400 py-12">Loading...</p>
+              <p className="text-center text-ink-35 py-12">Loading...</p>
             ) : jobGroups.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">No job duplicates found</p>
-                <p className="text-gray-400 text-sm mt-1">
+                <p className="text-ink-50 text-lg">No job duplicates found</p>
+                <p className="text-ink-35 text-sm mt-1">
                   All jobs appear to be unique.
                 </p>
               </div>
@@ -353,12 +353,12 @@ export default function DedupPage() {
               jobGroups.map((group, groupIndex) => (
                 <div
                   key={groupIndex}
-                  className="bg-white border border-gray-200 rounded-lg shadow-sm p-5"
+                  className="border-t border-rule p-5"
                 >
-                  <h3 className="text-base font-semibold text-gray-900 mb-3">
+                  <h3 className="text-base font-semibold text-ink mb-3">
                     {group.reason}
                   </h3>
-                  <p className="text-sm text-gray-500 mb-4">
+                  <p className="text-sm text-ink-50 mb-4">
                     {group.jobs.length} potential duplicates. Select which to keep:
                   </p>
                   <div className="space-y-2">
@@ -369,12 +369,12 @@ export default function DedupPage() {
                       return (
                         <label
                           key={job.id}
-                          className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                          className={`flex items-center gap-3 p-3 border cursor-pointer ${
                             jobSelections[groupIndex] === job.id
-                              ? "border-purple-300 bg-purple-50"
+                              ? " "
                               : isRichest
-                              ? "border-green-200 bg-green-50/50"
-                              : "border-gray-200 hover:border-gray-300"
+                              ? "border-rule "
+                              : "border-rule hover:border-rule"
                           }`}
                         >
                           <input
@@ -388,26 +388,26 @@ export default function DedupPage() {
                                 [groupIndex]: job.id,
                               }))
                             }
-                            className="text-purple-600"
+                            className="text-ink underline"
                           />
                           <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
                             <div>
-                              <span className="font-medium text-gray-900">
+                              <span className="font-medium text-ink">
                                 {job.title}
                               </span>
                               <br />
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-ink-50">
                                 {job.company}
                               </span>
                             </div>
-                            <div className="text-gray-600">
+                            <div className="text-ink-72">
                               <span className="text-xs">Skills: {job.skillCount}</span>
                               <br />
                               <span className="text-xs">
                                 Responsibilities: {job.responsibilityCount}
                               </span>
                             </div>
-                            <div className="text-gray-600">
+                            <div className="text-ink-72">
                               <span className="text-xs">
                                 Desc: {job.descriptionLength} chars
                               </span>
@@ -416,7 +416,7 @@ export default function DedupPage() {
                                 Status: {job.status}
                               </span>
                             </div>
-                            <div className="text-gray-500 text-xs">
+                            <div className="text-ink-50 text-xs">
                               {new Date(job.createdAt).toLocaleDateString()}
                               <br />
                               <span className="font-medium">
@@ -425,7 +425,7 @@ export default function DedupPage() {
                             </div>
                           </div>
                           {isRichest && (
-                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full whitespace-nowrap">
+                            <span className="text-xs font-mono text-meta text-ink-50 px-2 py-0.5 whitespace-nowrap">
                               Richest
                             </span>
                           )}
@@ -437,7 +437,7 @@ export default function DedupPage() {
                     <button
                       onClick={() => handleJobMerge(groupIndex, group)}
                       disabled={jobMerging[groupIndex]}
-                      className="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      className="px-4 py-2 border-[1.5px] border-live text-live bg-transparent text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       {jobMerging[groupIndex] ? "Merging..." : "Merge"}
                     </button>

@@ -139,11 +139,7 @@ export default function SkillsPage() {
   const toggleCategory = (name: string) => {
     setExpandedCategories((prev) => {
       const next = new Set(prev);
-      if (next.has(name)) {
-        next.delete(name);
-      } else {
-        next.add(name);
-      }
+      if (next.has(name)) { next.delete(name); } else { next.add(name); }
       return next;
     });
   };
@@ -151,108 +147,90 @@ export default function SkillsPage() {
   const toggleSubcategory = (key: string) => {
     setExpandedSubcategories((prev) => {
       const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
+      if (next.has(key)) { next.delete(key); } else { next.add(key); }
       return next;
     });
   };
 
   const getCategoryTotals = (cat: TaxonomyCategory) => {
-    let jobs = 0;
-    let exp = 0;
-    for (const sub of cat.subcategories) {
-      for (const skill of sub.skills) {
-        jobs += skill.jobCount;
-        exp += skill.experienceCount;
-      }
-    }
+    let jobs = 0; let exp = 0;
+    for (const sub of cat.subcategories) { for (const skill of sub.skills) { jobs += skill.jobCount; exp += skill.experienceCount; } }
     return { jobs, exp };
   };
 
   const getSubcategoryTotals = (sub: TaxonomySubcategory) => {
-    let jobs = 0;
-    let exp = 0;
-    for (const skill of sub.skills) {
-      jobs += skill.jobCount;
-      exp += skill.experienceCount;
-    }
+    let jobs = 0; let exp = 0;
+    for (const skill of sub.skills) { jobs += skill.jobCount; exp += skill.experienceCount; }
     return { jobs, exp };
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper">
       <Nav title="Skills Taxonomy" subtitle="Browse and normalize your skills across jobs and experience" />
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+      <main className="max-w-[720px] mx-auto px-6 py-s-4 space-y-s-4">
         {/* Error display */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm" role="alert">
-            <strong>Error:</strong> {error}
+          <div className="border border-rule p-s-3 text-ink text-body" role="alert">
+            {error}
           </div>
         )}
 
         {/* Stats and Normalize button */}
         {taxonomy && (
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="border-t border-rule pt-s-3">
             <div className="flex items-center justify-between">
-              <div className="flex gap-6">
+              <div className="flex gap-s-4">
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{taxonomy.stats.totalJobSkills}</p>
-                  <p className="text-sm text-gray-500">Job Skills</p>
+                  <p className="font-mono text-h3 text-ink">{taxonomy.stats.totalJobSkills}</p>
+                  <p className="font-mono text-meta text-ink-50 uppercase tracking-widest">Job skills</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{taxonomy.stats.totalExperienceSkills}</p>
-                  <p className="text-sm text-gray-500">Experience Skills</p>
+                  <p className="font-mono text-h3 text-ink">{taxonomy.stats.totalExperienceSkills}</p>
+                  <p className="font-mono text-meta text-ink-50 uppercase tracking-widest">Experience skills</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{taxonomy.stats.taxonomySkillCount}</p>
-                  <p className="text-sm text-gray-500">Taxonomy Skills</p>
+                  <p className="font-mono text-h3 text-ink">{taxonomy.stats.taxonomySkillCount}</p>
+                  <p className="font-mono text-meta text-ink-50 uppercase tracking-widest">Taxonomy skills</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-orange-600">{taxonomy.unmapped.length}</p>
-                  <p className="text-sm text-gray-500">Unmapped</p>
+                  <p className="font-mono text-h3 text-ink">{taxonomy.unmapped.length}</p>
+                  <p className="font-mono text-meta text-ink-50 uppercase tracking-widest">Unmapped</p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-s-2">
                 <button
                   onClick={handleNormalize}
                   disabled={normalizing}
-                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="px-s-3 h-[48px] border-[1.5px] border-live text-live text-body font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
-                  {normalizing ? "Normalizing..." : "Normalize New Skills"}
+                  {normalizing ? "Normalizing..." : "Normalize new skills"}
                 </button>
                 <button
                   onClick={handleForceNormalize}
                   disabled={normalizing}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="px-s-3 h-[48px] border border-ink text-ink text-body font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   title="Re-process all skills against the latest taxonomy (use after taxonomy updates)"
                 >
-                  {normalizing ? "..." : "Re-normalize All"}
+                  {normalizing ? "..." : "Re-normalize all"}
                 </button>
               </div>
             </div>
 
             {/* Normalize result */}
             {normalizeResult && (
-              <div className={`mt-4 rounded-lg p-4 text-sm ${
-                normalizeResult.totalProcessed === 0
-                  ? "bg-blue-50 border border-blue-200"
-                  : "bg-green-50 border border-green-200"
-              }`}>
+              <div className="mt-s-3 border border-rule p-s-3 text-body">
                 {normalizeResult.totalProcessed === 0 ? (
                   <>
-                    <p className="font-medium text-blue-800">All skills already normalized</p>
-                    <p className="text-blue-700 mt-1">
+                    <p className="text-ink font-medium">All skills already normalized</p>
+                    <p className="text-ink-72 mt-1">
                       Skills are automatically categorized when jobs are saved. Use &quot;Re-normalize All&quot; to re-process against the latest taxonomy.
                     </p>
                   </>
                 ) : (
                   <>
-                    <p className="font-medium text-green-800">Normalization complete!</p>
-                    <p className="text-green-700 mt-1">
+                    <p className="text-ink font-medium">Normalization complete</p>
+                    <p className="text-ink-72 mt-1">
                       Processed {normalizeResult.totalProcessed} skills:
                       {" "}{normalizeResult.normalized} names normalized,
                       {" "}{normalizeResult.categorized} categorized
@@ -269,95 +247,87 @@ export default function SkillsPage() {
 
         {/* Loading state */}
         {loading && (
-          <p className="text-center text-gray-400 py-12">Loading taxonomy...</p>
+          <p className="text-center text-ink-35 py-s-5">Loading taxonomy...</p>
         )}
 
         {/* Taxonomy tree */}
         {taxonomy && (
-          <div className="space-y-4">
+          <div className="divide-y divide-rule border-t border-rule">
             {taxonomy.categories.map((category) => {
               const catTotals = getCategoryTotals(category);
               const isExpanded = expandedCategories.has(category.name);
 
               return (
-                <div key={category.name} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div key={category.name}>
                   <button
                     onClick={() => toggleCategory(category.name)}
-                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer"
+                    className="w-full py-s-3 flex items-center justify-between cursor-pointer min-h-[44px]"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg">{isExpanded ? "▼" : "▶"}</span>
-                      <h2 className="text-lg font-semibold text-gray-900">{category.name}</h2>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        category.type === "hard"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-purple-100 text-purple-700"
-                      }`}>
-                        {category.type === "hard" ? "Technical" : "Interpersonal"}
+                    <div className="flex items-center gap-s-2">
+                      <span className="text-body text-ink-35">{isExpanded ? "v" : ">"}</span>
+                      <h2 className="text-body font-medium text-ink">{category.name}</h2>
+                      <span className="font-mono text-meta text-ink-50 uppercase tracking-widest">
+                        {category.type === "hard" ? "TECHNICAL" : "INTERPERSONAL"}
                       </span>
                     </div>
-                    <div className="flex gap-4 text-sm text-gray-500">
-                      {catTotals.jobs > 0 && (
-                        <span>{catTotals.jobs} job mentions</span>
-                      )}
-                      {catTotals.exp > 0 && (
-                        <span>{catTotals.exp} experience mentions</span>
-                      )}
+                    <div className="flex gap-s-3 font-mono text-meta text-ink-50">
+                      {catTotals.jobs > 0 && <span>{catTotals.jobs} job mentions</span>}
+                      {catTotals.exp > 0 && <span>{catTotals.exp} experience mentions</span>}
                     </div>
                   </button>
 
                   {isExpanded && (
-                    <div className="border-t border-gray-100 px-6 pb-4">
+                    <div className="pl-s-3 pb-s-3">
                       {category.subcategories.map((subcategory) => {
                         const subKey = `${category.name}:${subcategory.name}`;
                         const subTotals = getSubcategoryTotals(subcategory);
                         const subExpanded = expandedSubcategories.has(subKey);
 
                         return (
-                          <div key={subKey} className="mt-3">
+                          <div key={subKey} className="mt-s-2">
                             <button
                               onClick={() => toggleSubcategory(subKey)}
-                              className="w-full flex items-center justify-between py-2 hover:bg-gray-50 rounded cursor-pointer px-2"
+                              className="w-full flex items-center justify-between py-s-1 cursor-pointer min-h-[44px]"
                             >
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-400">{subExpanded ? "▼" : "▶"}</span>
-                                <h3 className="text-sm font-medium text-gray-700">{subcategory.name}</h3>
-                                <span className="text-xs text-gray-400">({subcategory.skills.length} skills)</span>
+                              <div className="flex items-center gap-s-1">
+                                <span className="text-meta text-ink-35">{subExpanded ? "v" : ">"}</span>
+                                <h3 className="text-body text-ink-72">{subcategory.name}</h3>
+                                <span className="font-mono text-meta text-ink-35">({subcategory.skills.length} skills)</span>
                               </div>
-                              <div className="flex gap-3 text-xs text-gray-400">
+                              <div className="flex gap-s-2 font-mono text-meta text-ink-35">
                                 {subTotals.jobs > 0 && <span>{subTotals.jobs} jobs</span>}
                                 {subTotals.exp > 0 && <span>{subTotals.exp} exp</span>}
                               </div>
                             </button>
 
                             {subExpanded && (
-                              <div className="ml-6 mt-1 space-y-1">
+                              <div className="ml-s-3 mt-s-1 divide-y divide-rule">
                                 {subcategory.skills.map((skill) => (
                                   <div
                                     key={skill.canonicalName}
-                                    className="flex items-center justify-between py-1.5 px-3 rounded hover:bg-gray-50"
+                                    className="flex items-center justify-between py-s-1"
                                   >
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-sm text-gray-800">{skill.canonicalName}</span>
+                                    <div className="flex items-center gap-s-1">
+                                      <span className="text-body text-ink">{skill.canonicalName}</span>
                                       {skill.aliases.length > 0 && (
-                                        <span className="text-xs text-gray-400 truncate max-w-xs" title={skill.aliases.join(", ")}>
+                                        <span className="font-mono text-meta text-ink-35 truncate max-w-xs" title={skill.aliases.join(", ")}>
                                           ({skill.aliases.slice(0, 3).join(", ")}{skill.aliases.length > 3 ? "..." : ""})
                                         </span>
                                       )}
                                     </div>
-                                    <div className="flex gap-3">
+                                    <div className="flex gap-s-2">
                                       {skill.jobCount > 0 && (
-                                        <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
+                                        <span className="font-mono text-meta text-ink-50">
                                           {skill.jobCount} jobs
                                         </span>
                                       )}
                                       {skill.experienceCount > 0 && (
-                                        <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full">
+                                        <span className="font-mono text-meta text-ink-50">
                                           {skill.experienceCount} exp
                                         </span>
                                       )}
                                       {skill.jobCount === 0 && skill.experienceCount === 0 && (
-                                        <span className="text-xs text-gray-300">--</span>
+                                        <span className="font-mono text-meta text-ink-35">--</span>
                                       )}
                                     </div>
                                   </div>
@@ -377,36 +347,28 @@ export default function SkillsPage() {
 
         {/* Unmapped skills */}
         {taxonomy && taxonomy.unmapped.length > 0 && (
-          <div className="bg-white rounded-lg border border-orange-200 overflow-hidden">
-            <div className="px-6 py-4 bg-orange-50 border-b border-orange-200">
-              <h2 className="text-lg font-semibold text-orange-800">
-                Unmapped Skills ({taxonomy.unmapped.length})
-              </h2>
-              <p className="text-sm text-orange-600 mt-1">
-                These skills were found in your data but are not yet in the taxonomy.
-              </p>
-            </div>
-            <div className="px-6 py-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {taxonomy.unmapped.map((skill) => (
-                  <div
-                    key={skill.name}
-                    className="flex items-center justify-between py-1.5 px-3 rounded bg-gray-50"
-                  >
-                    <span className="text-sm text-gray-700 truncate">{skill.name}</span>
-                    <div className="flex gap-2 shrink-0">
-                      {skill.jobCount > 0 && (
-                        <span className="text-xs text-blue-600">{skill.jobCount}j</span>
-                      )}
-                      {skill.experienceCount > 0 && (
-                        <span className="text-xs text-green-600">{skill.experienceCount}e</span>
-                      )}
-                    </div>
+          <section className="border-t border-rule pt-s-3">
+            <h2 className="text-h3 font-zen font-medium text-ink mb-s-2">
+              Unmapped skills (<span className="font-mono">{taxonomy.unmapped.length}</span>)
+            </h2>
+            <p className="text-body text-ink-50 mb-s-3">
+              These skills were found in your data but are not yet in the taxonomy.
+            </p>
+            <div className="divide-y divide-rule border-t border-rule">
+              {taxonomy.unmapped.map((skill) => (
+                <div
+                  key={skill.name}
+                  className="flex items-center justify-between py-s-1"
+                >
+                  <span className="text-body text-ink">{skill.name}</span>
+                  <div className="flex gap-s-2 font-mono text-meta text-ink-50">
+                    {skill.jobCount > 0 && <span>{skill.jobCount}j</span>}
+                    {skill.experienceCount > 0 && <span>{skill.experienceCount}e</span>}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          </div>
+          </section>
         )}
       </main>
     </div>

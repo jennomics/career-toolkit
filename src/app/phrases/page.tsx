@@ -65,16 +65,8 @@ function EditablePhrase({
 
   if (isEditing) {
     return (
-      <div className="flex items-start gap-2 text-sm">
-        <span
-          className={`mt-1.5 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase shrink-0 ${
-            phrase.category === "responsibility"
-              ? "bg-green-100 text-green-700"
-              : phrase.category === "requirement"
-              ? "bg-purple-100 text-purple-700"
-              : "bg-gray-100 text-gray-600"
-          }`}
-        >
+      <div className="flex items-start gap-2">
+        <span className="mt-1.5 font-mono text-meta text-ink-50 uppercase tracking-widest shrink-0">
           {phrase.category === "responsibility" ? "DO" : phrase.category === "requirement" ? "NEED" : "NICE"}
         </span>
         <div className="flex-1">
@@ -84,21 +76,21 @@ function EditablePhrase({
             onChange={(e) => setEditText(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={2}
-            className="w-full px-2 py-1 border border-blue-300 rounded text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="w-full px-0 py-s-1 border-0 border-b border-rule bg-transparent text-body text-ink focus:outline-none focus:border-ink resize-none"
             autoFocus
             aria-label="Edit phrase text"
           />
-          <div className="flex gap-2 mt-1">
+          <div className="flex gap-s-2 mt-s-1">
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="text-xs text-blue-600 hover:text-blue-800 font-medium cursor-pointer disabled:opacity-50"
+              className="text-body text-ink underline font-medium cursor-pointer disabled:opacity-50"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
             <button
               onClick={() => { setIsEditing(false); setEditText(phrase.text); }}
-              className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer"
+              className="text-body text-ink-35 cursor-pointer"
             >
               Cancel
             </button>
@@ -109,34 +101,26 @@ function EditablePhrase({
   }
 
   return (
-    <div className="group flex items-start gap-2 text-sm">
-      <span
-        className={`mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase shrink-0 ${
-          phrase.category === "responsibility"
-            ? "bg-green-100 text-green-700"
-            : phrase.category === "requirement"
-            ? "bg-purple-100 text-purple-700"
-            : "bg-gray-100 text-gray-600"
-        }`}
-      >
+    <div className="group flex items-start gap-2">
+      <span className="mt-0.5 font-mono text-meta text-ink-50 uppercase tracking-widest shrink-0">
         {phrase.category === "responsibility" ? "DO" : phrase.category === "requirement" ? "NEED" : "NICE"}
       </span>
       <div className="flex-1">
-        <p className="text-gray-800">{phrase.text}</p>
-        <div className="flex items-center gap-2 mt-0.5">
-          <p className="text-xs text-gray-400">
+        <p className="text-body text-ink">{phrase.text}</p>
+        <div className="flex items-center gap-s-2 mt-0.5">
+          <p className="font-mono text-meta text-ink-35">
             {phrase.jobTitle} at {phrase.company}
           </p>
           <button
             onClick={() => setIsEditing(true)}
-            className="text-xs text-blue-500 hover:text-blue-700 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            className="text-body text-ink underline opacity-0 group-hover:opacity-100 cursor-pointer"
             aria-label={`Edit phrase: ${phrase.text.slice(0, 30)}`}
           >
             Edit
           </button>
           <button
             onClick={handleDelete}
-            className="text-xs text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            className="text-body text-ink-50 underline opacity-0 group-hover:opacity-100 cursor-pointer"
             aria-label={`Delete phrase: ${phrase.text.slice(0, 30)}`}
           >
             Delete
@@ -267,18 +251,18 @@ export default function PhrasesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-400">Loading phrases...</p>
+      <div className="min-h-screen bg-paper flex items-center justify-center">
+        <p className="text-ink-35 text-body">Loading phrases...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700" role="alert">
-            <strong>Error:</strong> {error}
+      <div className="min-h-screen bg-paper p-s-4">
+        <div className="max-w-[720px] mx-auto">
+          <div className="border border-rule p-s-3 text-ink text-body" role="alert">
+            {error}
           </div>
         </div>
       </div>
@@ -286,49 +270,49 @@ export default function PhrasesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper">
       <Nav title="Resume Phrases" subtitle="All extracted phrases grouped by keyword, sorted by frequency" />
 
-      <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+      <main className="max-w-[720px] mx-auto px-6 py-s-4 space-y-s-4">
         {/* Summary stats */}
         {data && (
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold text-gray-900">
+          <div className="grid grid-cols-3 gap-s-3 border-t border-rule pt-s-3">
+            <div className="border-t border-rule pt-s-2">
+              <p className="font-mono text-h3 text-ink">
                 {data.summary.totalPhrases}
               </p>
-              <p className="text-sm text-gray-500">Total Phrases</p>
+              <p className="font-mono text-meta text-ink-50 uppercase tracking-widest">Total phrases</p>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold text-gray-900">
+            <div className="border-t border-rule pt-s-2">
+              <p className="font-mono text-h3 text-ink">
                 {data.summary.totalKeywords}
               </p>
-              <p className="text-sm text-gray-500">Keywords</p>
+              <p className="font-mono text-meta text-ink-50 uppercase tracking-widest">Keywords</p>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold text-gray-900">
+            <div className="border-t border-rule pt-s-2">
+              <p className="font-mono text-h3 text-ink">
                 {data.summary.totalJobs}
               </p>
-              <p className="text-sm text-gray-500">Jobs Analyzed</p>
+              <p className="font-mono text-meta text-ink-50 uppercase tracking-widest">Jobs analyzed</p>
             </div>
           </div>
         )}
 
         {/* Backfill button */}
         {data && (
-          <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between">
+          <div className="border-t border-rule pt-s-3 flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-700">
+              <p className="text-body font-medium text-ink">
                 Tag phrases with keywords via AI
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="font-mono text-meta text-ink-35 mt-0.5">
                 Uses GPT-4o-mini to associate each phrase with relevant skills
               </p>
             </div>
             <button
               onClick={runBackfill}
               disabled={backfillStatus?.startsWith("Running")}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed cursor-pointer"
+              className="px-s-3 h-[48px] border-[1.5px] border-live text-live text-body font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               aria-label="Run AI tagging on phrases"
             >
               {backfillStatus?.startsWith("Running") ? "Tagging..." : "Tag with AI"}
@@ -337,53 +321,37 @@ export default function PhrasesPage() {
         )}
 
         {backfillStatus && !backfillStatus.startsWith("Running") && (
-          <div className={`text-sm p-3 rounded-lg ${backfillStatus.startsWith("Error") ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"}`}>
+          <div className="border border-rule p-s-2 text-body text-ink">
             {backfillStatus}
           </div>
         )}
 
         {/* Search and filters */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-          <div className="relative">
-            <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search phrases, keywords, companies..."
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              aria-label="Search phrases"
-            />
-          </div>
+        <div className="space-y-s-2">
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search phrases, keywords, companies..."
+            className="w-full px-0 py-s-2 border-0 border-b border-rule bg-transparent text-body text-ink placeholder:text-ink-35 focus:outline-none focus:border-ink"
+            aria-label="Search phrases"
+          />
 
-          <div className="flex items-center gap-3">
-            <div className="flex gap-2" role="group" aria-label="Filter by category">
+          <div className="flex items-center gap-s-3">
+            <div className="flex gap-s-2" role="group" aria-label="Filter by category">
               {[
-                { value: "all", label: "All" },
-                { value: "responsibility", label: "DO", color: "bg-green-100 text-green-700" },
-                { value: "requirement", label: "NEED", color: "bg-purple-100 text-purple-700" },
-                { value: "qualification", label: "NICE", color: "bg-gray-100 text-gray-600" },
+                { value: "all", label: "ALL" },
+                { value: "responsibility", label: "DO" },
+                { value: "requirement", label: "NEED" },
+                { value: "qualification", label: "NICE" },
               ].map((cat) => (
                 <button
                   key={cat.value}
                   onClick={() => setCategoryFilter(cat.value)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium cursor-pointer transition-colors ${
+                  className={`px-s-2 min-h-[44px] font-mono text-meta uppercase tracking-widest cursor-pointer ${
                     categoryFilter === cat.value
-                      ? "bg-gray-900 text-white"
-                      : cat.color || "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      ? "border-b-2 border-ink text-ink"
+                      : "text-ink-50"
                   }`}
                 >
                   {cat.label}
@@ -392,7 +360,7 @@ export default function PhrasesPage() {
             </div>
 
             {(searchQuery || categoryFilter !== "all") && (
-              <span className="text-xs text-gray-400 ml-auto">
+              <span className="font-mono text-meta text-ink-35 ml-auto">
                 {totalFilteredPhrases} phrases in {filteredKeywords.length} keywords
               </span>
             )}
@@ -401,25 +369,22 @@ export default function PhrasesPage() {
 
         {/* Keywords list */}
         {filteredKeywords.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No phrases found</p>
+          <div className="text-center py-s-5">
+            <p className="text-ink-50 text-h3 font-zen">No phrases found</p>
             {data && data.summary.totalJobs === 0 ? (
-              <p className="text-gray-400 text-sm mt-1">
-                Add some job descriptions first — phrases will be extracted automatically.
+              <p className="text-ink-35 text-body mt-s-1">
+                Add some job descriptions first. Phrases will be extracted automatically.
               </p>
             ) : (
-              <p className="text-gray-400 text-sm mt-1">
+              <p className="text-ink-35 text-body mt-s-1">
                 Try a different search or category filter.
               </p>
             )}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="divide-y divide-rule border-t border-rule">
             {filteredKeywords.map((kw) => (
-              <div
-                key={kw.keyword}
-                className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
-              >
+              <div key={kw.keyword}>
                 {/* Keyword header */}
                 <button
                   onClick={() =>
@@ -427,49 +392,36 @@ export default function PhrasesPage() {
                       expandedKeyword === kw.keyword ? null : kw.keyword
                     )
                   }
-                  className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="w-full py-s-2 flex items-center justify-between cursor-pointer min-h-[44px]"
                   aria-expanded={expandedKeyword === kw.keyword}
                   aria-label={`${kw.keyword}: ${kw.phraseCount} phrases from ${kw.jobCount} jobs`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium text-gray-900">
+                  <div className="flex items-center gap-s-2">
+                    <span className="text-body font-medium text-ink">
                       {kw.keyword}
                     </span>
-                    <span className="text-xs text-gray-400">
+                    <span className="font-mono text-meta text-ink-35">
                       {kw.jobCount} job{kw.jobCount !== 1 ? "s" : ""}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
+                  <div className="flex items-center gap-s-2">
+                    <span className="font-mono text-meta text-ink-50">
                       {kw.phrases.length} phrase{kw.phrases.length !== 1 ? "s" : ""}
                     </span>
-                    <svg
-                      className={`w-4 h-4 text-gray-400 transition-transform ${
-                        expandedKeyword === kw.keyword ? "rotate-180" : ""
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
+                    <span className="text-ink-35 text-body">
+                      {expandedKeyword === kw.keyword ? "v" : ">"}
+                    </span>
                   </div>
                 </button>
 
                 {/* Expanded phrases */}
                 {expandedKeyword === kw.keyword && kw.phrases.length > 0 && (
-                  <div className="border-t border-gray-100 px-4 py-3 space-y-2">
+                  <div className="border-t border-rule pl-s-3 py-s-2 space-y-s-2">
                     {kw.phrases.map((phrase, i) => (
                       <EditablePhrase
                         key={`${phrase.id || phrase.jobId}-${i}`}
                         phrase={phrase}
                         onSave={(updated) => {
-                          // Update local state optimistically
                           setData((prev) => {
                             if (!prev) return prev;
                             return {
@@ -484,7 +436,6 @@ export default function PhrasesPage() {
                           });
                         }}
                         onDelete={() => {
-                          // Remove from local state
                           setData((prev) => {
                             if (!prev) return prev;
                             return {
@@ -507,8 +458,8 @@ export default function PhrasesPage() {
                 )}
 
                 {expandedKeyword === kw.keyword && kw.phrases.length === 0 && (
-                  <div className="border-t border-gray-100 px-4 py-3">
-                    <p className="text-sm text-gray-400">
+                  <div className="border-t border-rule pl-s-3 py-s-2">
+                    <p className="text-body text-ink-35">
                       No phrases directly associated with this keyword yet.
                     </p>
                   </div>

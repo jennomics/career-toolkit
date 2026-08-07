@@ -2,10 +2,10 @@
 
 export default function NetworkingTab() {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
+    <div className="border-t border-rule pt-s-4 text-center">
       <div className="text-4xl mb-3">
         <svg
-          className="w-12 h-12 mx-auto text-gray-300"
+          className="w-12 h-12 mx-auto text-ink-35"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -19,8 +19,8 @@ export default function NetworkingTab() {
           />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-gray-700">Networking features coming soon</h3>
-      <p className="text-sm text-gray-400 mt-2">
+      <h3 className="text-lg font-semibold text-ink-72">Networking features coming soon</h3>
+      <p className="text-sm text-ink-35 mt-2">
         Track contacts, outreach, and relationship building for this company.
       </p>
     </div>

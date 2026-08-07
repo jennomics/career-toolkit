@@ -62,10 +62,10 @@ export default function EvalDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-paper">
         <Nav title="Eval Dashboard" />
-        <main className="max-w-6xl mx-auto px-6 py-8">
-          <p className="text-gray-500">Loading evaluation results...</p>
+        <main className="max-w-[720px] mx-auto px-6 py-8">
+          <p className="text-ink-50">Loading evaluation results...</p>
         </main>
       </div>
     );
@@ -73,10 +73,10 @@ export default function EvalDashboardPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-paper">
         <Nav title="Eval Dashboard" />
-        <main className="max-w-6xl mx-auto px-6 py-8">
-          <p className="text-red-600">Error: {error}</p>
+        <main className="max-w-[720px] mx-auto px-6 py-8">
+          <p className="text-ink-72">Error: {error}</p>
         </main>
       </div>
     );
@@ -84,10 +84,10 @@ export default function EvalDashboardPage() {
 
   if (!data || data.runs.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-paper">
         <Nav title="Eval Dashboard" />
-        <main className="max-w-6xl mx-auto px-6 py-8">
-          <p className="text-gray-500">No evaluation runs yet.</p>
+        <main className="max-w-[720px] mx-auto px-6 py-8">
+          <p className="text-ink-50">No evaluation runs yet.</p>
         </main>
       </div>
     );
@@ -96,13 +96,13 @@ export default function EvalDashboardPage() {
   const { metrics, runs, trend } = data;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper">
       <Nav title="Eval Dashboard" subtitle="Monitor evaluation metrics and run history" />
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main className="max-w-[720px] mx-auto px-6 py-8">
 
       {/* Primary Metric: Edit Distance */}
-      <div className="mb-8 p-6 bg-white border rounded-lg shadow-sm">
-        <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">
+      <div className="mb-8 p-6 border">
+        <h2 className="text-sm font-medium text-ink-50 uppercase tracking-wide mb-1">
           Primary Metric: Edit Distance
         </h2>
         <div className="flex items-baseline gap-3">
@@ -111,7 +111,7 @@ export default function EvalDashboardPage() {
           </span>
           <TrendIndicator trend={trend} />
         </div>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-ink-50 mt-1">
           Normalized character-level Levenshtein distance (lower is better)
         </p>
       </div>
@@ -119,8 +119,8 @@ export default function EvalDashboardPage() {
       {/* Separate Fact and Voice Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {/* Fact Score Section */}
-        <div className="p-6 bg-white border rounded-lg shadow-sm">
-          <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
+        <div className="p-6 border">
+          <h2 className="text-sm font-medium text-ink-50 uppercase tracking-wide mb-2">
             Fact Score
           </h2>
           <div className="flex items-baseline gap-2">
@@ -128,24 +128,24 @@ export default function EvalDashboardPage() {
               {(metrics.factScore * 100).toFixed(0)}%
             </span>
             {metrics.regressionPassRate < 1.0 && (
-              <span className="text-red-600 text-sm font-medium">
+              <span className="text-ink-72 text-sm font-medium">
                 REGRESSION
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-ink-50 mt-1">
             Assertion pass rate: {(metrics.regressionPassRate * 100).toFixed(0)}%
           </p>
           {metrics.regressionPassRate < 1.0 && (
-            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+            <div className="mt-2 p-2 border border-rule rounded text-ink-72 text-sm">
               Fact assertions failing - generation blocked regardless of voice score
             </div>
           )}
         </div>
 
         {/* Voice Score Section */}
-        <div className="p-6 bg-white border rounded-lg shadow-sm">
-          <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
+        <div className="p-6 border">
+          <h2 className="text-sm font-medium text-ink-50 uppercase tracking-wide mb-2">
             Voice / Structure Score
           </h2>
           <div className="flex items-baseline gap-2">
@@ -153,22 +153,22 @@ export default function EvalDashboardPage() {
               {(metrics.voiceScore * 100).toFixed(0)}%
             </span>
           </div>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-ink-50 mt-1">
             Violations per 1000 words: {metrics.propertyViolationsPerThousandWords.toFixed(1)}
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-ink-50">
             Anchor discrimination: {metrics.anchorDiscrimination.toFixed(2)}
           </p>
         </div>
       </div>
 
       {/* Overall Status */}
-      <div className={`mb-8 p-4 rounded-lg border ${metrics.overallPass ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}`}>
-        <span className={`font-semibold ${metrics.overallPass ? "text-green-700" : "text-red-700"}`}>
+      <div className={`mb-8 p-4 border border-rule`}>
+        <span className={`font-medium ${metrics.overallPass ? "text-ink" : "text-ink"}`}>
           Overall: {metrics.overallPass ? "PASS" : "FAIL"}
         </span>
         {!metrics.overallPass && (
-          <span className="text-sm text-red-600 ml-2">
+          <span className="text-sm text-ink-50 ml-2">
             {metrics.regressionPassRate < 1.0
               ? "Fact assertions failing"
               : "Voice score below threshold"}
@@ -177,12 +177,12 @@ export default function EvalDashboardPage() {
       </div>
 
       {/* Last 10 Runs Table */}
-      <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
-        <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide p-4 border-b">
+      <div className="border overflow-hidden">
+        <h2 className="text-sm font-medium text-ink-50 uppercase tracking-wide p-4 border-b">
           Recent Runs ({runs.length})
         </h2>
         <table className="w-full text-sm">
-          <thead className="bg-gray-50">
+          <thead className="bg-paper">
             <tr>
               <th className="px-4 py-2 text-left">Date</th>
               <th className="px-4 py-2 text-left">Model</th>
@@ -228,8 +228,8 @@ export default function EvalDashboardPage() {
       </div>
 
       {/* Variance */}
-      <div className="mt-6 p-4 bg-gray-50 border rounded-lg">
-        <p className="text-sm text-gray-600">
+      <div className="mt-6 p-4 bg-paper border">
+        <p className="text-sm text-ink-72">
           <span className="font-medium">Variance:</span>{" "}
           {metrics.variance.toFixed(4)} (standard deviation of edit distances across runs)
         </p>
@@ -244,11 +244,11 @@ export default function EvalDashboardPage() {
 function TrendIndicator({ trend }: { trend: "improving" | "declining" | "stable" }) {
   switch (trend) {
     case "improving":
-      return <span className="text-green-600 text-lg" aria-label="improving">&#x2191;</span>;
+      return <span className="text-ink-72 text-lg" aria-label="improving">&#x2191;</span>;
     case "declining":
-      return <span className="text-red-600 text-lg" aria-label="declining">&#x2193;</span>;
+      return <span className="text-ink-72 text-lg" aria-label="declining">&#x2193;</span>;
     default:
-      return <span className="text-gray-400 text-lg" aria-label="stable">&#x2192;</span>;
+      return <span className="text-ink-35 text-lg" aria-label="stable">&#x2192;</span>;
   }
 }
 
