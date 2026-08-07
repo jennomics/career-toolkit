@@ -41,13 +41,6 @@ const EMPLOYMENT_TYPE_LABELS: Record<string, string> = {
   internship: "Internship",
 };
 
-const HIGHLIGHT_CATEGORY_STYLES: Record<string, string> = {
-  achievement: "bg-green-100 text-green-700",
-  responsibility: "bg-blue-100 text-blue-700",
-  project: "bg-purple-100 text-purple-700",
-  award: "bg-amber-100 text-amber-700",
-};
-
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
   return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
@@ -80,7 +73,7 @@ export default function ExperienceCard({ experience, onEdit, onDelete }: Experie
         onDelete();
       }
     } catch {
-      // Silently fail — user can retry
+      // Silently fail
     }
     setIsDeleting(false);
   };
@@ -88,41 +81,39 @@ export default function ExperienceCard({ experience, onEdit, onDelete }: Experie
   const duration = getDuration(experience.startDate, experience.endDate);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-3">
+    <div className="border-t border-rule py-s-3">
+      <div className="flex items-start justify-between gap-s-2">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-gray-900 truncate">{experience.title}</h3>
+          <div className="flex items-center gap-s-2 mb-s-1">
+            <h3 className="text-body font-medium text-ink truncate">{experience.title}</h3>
             {experience.isCurrent && (
-              <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                Current
-              </span>
+              <span className="font-mono text-meta text-live">current</span>
             )}
           </div>
-          <p className="text-sm text-gray-600">
+          <p className="text-body text-ink-72">
             {experience.company}
-            {experience.location && ` \u2022 ${experience.location}`}
+            {experience.location && ` / ${experience.location}`}
           </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="font-mono text-meta text-ink-50 mt-s-1">
             {formatDate(experience.startDate)} &ndash;{" "}
             {experience.isCurrent ? "Present" : experience.endDate ? formatDate(experience.endDate) : "Present"}
-            {" \u2022 "}
+            {" / "}
             {duration}
             {experience.employmentType !== "full-time" && (
-              <> &middot; {EMPLOYMENT_TYPE_LABELS[experience.employmentType] || experience.employmentType}</>
+              <> / {EMPLOYMENT_TYPE_LABELS[experience.employmentType] || experience.employmentType}</>
             )}
           </p>
           {(experience.industry || experience.department) && (
-            <p className="text-xs text-gray-400 mt-0.5">
-              {[experience.department, experience.industry].filter(Boolean).join(" \u2022 ")}
+            <p className="font-mono text-meta text-ink-50 mt-0.5">
+              {[experience.department, experience.industry].filter(Boolean).join(" / ")}
             </p>
           )}
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-s-2 shrink-0">
           <button
             onClick={() => setExpanded(!expanded)}
-            className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 cursor-pointer"
+            className="text-ink-50 underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer text-meta"
             aria-expanded={expanded}
             aria-label={expanded ? "Show less details" : "Show more details"}
           >
@@ -130,7 +121,7 @@ export default function ExperienceCard({ experience, onEdit, onDelete }: Experie
           </button>
           <button
             onClick={() => onEdit(experience)}
-            className="text-xs text-blue-500 hover:text-blue-700 px-2 py-1 cursor-pointer"
+            className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer text-meta"
             aria-label={`Edit ${experience.title} at ${experience.company}`}
           >
             Edit
@@ -138,7 +129,7 @@ export default function ExperienceCard({ experience, onEdit, onDelete }: Experie
           <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className="text-xs text-red-400 hover:text-red-600 px-2 py-1 cursor-pointer disabled:opacity-50"
+            className="text-ink-50 underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer text-meta disabled:opacity-50"
             aria-label={`Delete ${experience.title} at ${experience.company}`}
           >
             {isDeleting ? "..." : "Delete"}
@@ -148,60 +139,42 @@ export default function ExperienceCard({ experience, onEdit, onDelete }: Experie
 
       {/* Skills */}
       {experience.skills.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-3">
-          {experience.skills.map((skill) => (
-            <span
-              key={skill.id}
-              className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs"
-            >
-              {skill.name}
-            </span>
-          ))}
-        </div>
+        <p className="font-mono text-body text-ink-72 mt-s-2">
+          {experience.skills.map((skill) => skill.name).join(", ")}
+        </p>
       )}
 
       {/* Expanded details */}
       {expanded && (
-        <div className="mt-4 pt-3 border-t border-gray-100 space-y-3">
+        <div className="mt-s-3 pt-s-2 border-t border-rule space-y-s-2">
           {/* Description */}
           {experience.description && (
-            <p className="text-sm text-gray-700">{experience.description}</p>
+            <p className="text-body text-ink-72">{experience.description}</p>
           )}
 
           {/* Highlights */}
           {experience.highlights.length > 0 && (
             <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-2">
-                Key Highlights
+              <h4 className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">
+                Key highlights
               </h4>
-              <ul className="space-y-2">
+              <ul className="space-y-s-1">
                 {experience.highlights.map((h) => (
-                  <li key={h.id} className="flex items-start gap-2 text-sm text-gray-800">
-                    <span
-                      className={`mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase shrink-0 ${
-                        HIGHLIGHT_CATEGORY_STYLES[h.category] || "bg-gray-100 text-gray-600"
-                      }`}
-                    >
+                  <li key={h.id} className="flex items-start gap-s-1 text-body text-ink-72">
+                    <span className="font-mono text-meta uppercase text-ink-50 shrink-0 mt-0.5">
                       {h.category}
                     </span>
                     <div>
                       <span>{h.text}</span>
                       {h.metrics && (
-                        <span className="ml-1 text-green-600 font-medium text-xs">
+                        <span className="font-mono text-meta text-ink-50 ml-s-1">
                           ({h.metrics})
                         </span>
                       )}
                       {h.keywords.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {h.keywords.map((kw) => (
-                            <span
-                              key={kw}
-                              className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px]"
-                            >
-                              {kw}
-                            </span>
-                          ))}
-                        </div>
+                        <span className="font-mono text-meta text-ink-50 ml-s-1">
+                          [{h.keywords.join(", ")}]
+                        </span>
                       )}
                     </div>
                   </li>

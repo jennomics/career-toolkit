@@ -18,24 +18,24 @@ export default function CollapsibleSection({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <section className="bg-white border border-gray-200 rounded-lg shadow-sm">
+    <section className="border-t border-rule">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-controls={`section-${title.replace(/\s+/g, "-").toLowerCase()}`}
-        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors rounded-lg"
+        className="w-full flex items-center justify-between py-s-3 text-left cursor-pointer"
       >
-        <div className="flex items-center gap-3">
-          <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+        <div className="flex items-center gap-s-2">
+          <h2 className="text-h3 font-medium text-ink">{title}</h2>
           {badge !== undefined && (
-            <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
+            <span className="font-mono text-meta text-ink-50">
               {badge}
             </span>
           )}
         </div>
         <svg
-          className={`w-5 h-5 text-gray-400 transition-transform ${
+          className={`w-5 h-5 text-ink-50 transition-transform ${
             isOpen ? "rotate-180" : ""
           }`}
           fill="none"
@@ -54,7 +54,7 @@ export default function CollapsibleSection({
       {isOpen && (
         <div
           id={`section-${title.replace(/\s+/g, "-").toLowerCase()}`}
-          className="px-5 pb-5"
+          className="pb-s-3"
           role="region"
           aria-label={title}
         >

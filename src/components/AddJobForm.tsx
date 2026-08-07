@@ -64,7 +64,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
       setParsedSkills(parsed.skills || []);
       setParsedResponsibilities(parsed.responsibilities || []);
 
-      // Check for duplicates (non-blocking — wrapped in try/catch)
+      // Check for duplicates (non-blocking)
       try {
         const dupRes = await fetch("/api/jobs/check-duplicate", {
           method: "POST",
@@ -82,7 +82,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
           }
         }
       } catch {
-        // Duplicate check failure is non-critical — proceed silently
+        // Duplicate check failure is non-critical
       }
 
       setStep("review");
@@ -164,11 +164,9 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="w-full p-4 border-2 border-dashed border-gray-300
-          rounded-lg text-gray-500 hover:border-blue-400
-          hover:text-blue-500 transition-colors cursor-pointer"
+        className="w-full border-[1.5px] border-live text-live bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center justify-center cursor-pointer transition-colors"
       >
-        + Add a Job Description
+        Add a job description
       </button>
     );
   }
@@ -176,37 +174,33 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
   // Step 1: Paste
   if (step === "paste") {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-        <h2 className="text-lg font-semibold mb-2">
-          Paste a Job Description
+      <div className="border-t border-rule pt-s-3">
+        <h2 className="text-h3 font-medium text-ink mb-s-1">
+          Paste a job description
         </h2>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-body text-ink-72 mb-s-3">
           Copy the entire job posting from LinkedIn (or anywhere) and paste it
-          below. I&apos;ll extract the title, company, location, and skills
+          below. Title, company, location, and skills will be extracted
           automatically.
         </p>
         <textarea
           rows={12}
           value={rawText}
           onChange={(e) => setRawText(e.target.value)}
-          placeholder={`Paste the full job posting here...\n\nExample:\nSenior Product Manager\nAcme Corp · San Francisco, CA · 2 days ago\n\nAbout the role:\nWe're looking for a Senior Product Manager to lead...\n\nRequirements:\n- 5+ years of product management experience\n- Experience with agile methodologies...`}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md
-            focus:outline-none focus:ring-2 focus:ring-blue-500
-            font-mono text-sm text-gray-900"
+          placeholder="Paste the full job posting here..."
+          className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none font-mono"
         />
-        <div className="flex gap-3 mt-4">
+        <div className="flex gap-s-3 mt-s-3">
           <button
             onClick={handlePaste}
             disabled={rawText.length < 20 || isParsing}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md
-              hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+            className="border-[1.5px] border-live text-live bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer disabled:opacity-50"
           >
-            {isParsing ? "Extracting..." : "Extract Details"}
+            {isParsing ? "Extracting..." : "Extract details"}
           </button>
           <button
             onClick={handleReset}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800
-              cursor-pointer"
+            className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
           >
             Cancel
           </button>
@@ -219,46 +213,39 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm"
+      className="border-t border-rule pt-s-3"
     >
-      <h2 className="text-lg font-semibold mb-1">Review Extracted Details</h2>
-      <p className="text-sm text-gray-500 mb-4">
-        I pulled these from the description. Fix anything that looks wrong.
+      <h2 className="text-h3 font-medium text-ink mb-s-1">Review extracted details</h2>
+      <p className="text-body text-ink-72 mb-s-3">
+        These were pulled from the description. Fix anything that looks wrong.
       </p>
 
       {/* Duplicate warning */}
       {duplicateWarning && (
-        <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg" role="alert">
-          <div className="flex items-start gap-2">
-            <svg className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-            <div>
-              <p className="text-sm font-medium text-amber-800">
-                Possible duplicate detected
-              </p>
-              <ul className="mt-1 text-sm text-amber-700">
-                {duplicateWarning.matches.map((m) => (
-                  <li key={m.id}>
-                    <strong>{m.title}</strong> at {m.company} — {m.reason}
-                    <span className="text-amber-500 ml-1">
-                      (saved {new Date(m.createdAt).toLocaleDateString()})
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-2 text-xs text-amber-600">
-                You can still save this job if it&apos;s a different posting.
-              </p>
-            </div>
-          </div>
+        <div className="mb-s-3 border border-rule p-s-2 text-body text-ink" role="alert">
+          <p className="font-medium mb-s-1">
+            Possible duplicate detected
+          </p>
+          <ul className="text-body text-ink-72">
+            {duplicateWarning.matches.map((m) => (
+              <li key={m.id}>
+                {m.title} at {m.company} - {m.reason}
+                <span className="text-ink-50 ml-s-1">
+                  (saved {new Date(m.createdAt).toLocaleDateString()})
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-s-1 text-meta font-mono text-ink-50">
+            You can still save this job if it is a different posting.
+          </p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-s-3 mb-s-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Job Title *
+          <label className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">
+            Job title
           </label>
           <input
             type="text"
@@ -267,14 +254,13 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
             onChange={(e) =>
               setFormData({ ...formData, title: e.target.value })
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md
-              focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Company *
+          <label className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">
+            Company
           </label>
           <input
             type="text"
@@ -283,13 +269,12 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
             onChange={(e) =>
               setFormData({ ...formData, company: e.target.value })
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md
-              focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">
             Location
           </label>
           <input
@@ -298,13 +283,12 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
             onChange={(e) =>
               setFormData({ ...formData, location: e.target.value })
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md
-              focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">
             Source
           </label>
           <select
@@ -312,8 +296,7 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
             onChange={(e) =>
               setFormData({ ...formData, source: e.target.value })
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md
-              focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none"
           >
             <option value="linkedin">LinkedIn</option>
             <option value="company-site">Company Website</option>
@@ -324,8 +307,8 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Job Posting URL
+          <label className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">
+            Job posting URL
           </label>
           <input
             type="url"
@@ -334,71 +317,52 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
               setFormData({ ...formData, url: e.target.value })
             }
             placeholder="https://..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md
-              focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
           />
         </div>
       </div>
 
       {parsedSkills.length > 0 && (
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Detected Keywords
+        <div className="mb-s-3">
+          <label className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">
+            Detected keywords
           </label>
-          <div className="flex flex-wrap gap-2">
-            {parsedSkills.map((skill) => (
-              <span
-                key={skill}
-                className="px-2 py-1 bg-blue-100 text-blue-700
-                  rounded-full text-xs font-medium"
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
+          <p className="font-mono text-body text-ink-72">
+            {parsedSkills.join(", ")}
+          </p>
         </div>
       )}
 
       {parsedResponsibilities.length > 0 && (
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Resume-Ready Phrases
+        <div className="mb-s-3">
+          <label className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">
+            Resume-ready phrases
           </label>
-          <p className="text-xs text-gray-500 mb-2">
-            Action-driven statements extracted from the description. Use these as starting points for resume bullets.
+          <p className="text-meta text-ink-50 mb-s-1">
+            Action-driven statements extracted from the description.
           </p>
-          <ul className="space-y-2">
+          <ul className="space-y-s-1">
             {parsedResponsibilities.map((r, i) => (
-              <li key={i} className="text-sm text-gray-800">
-                <div className="flex items-start gap-2">
-                  <span className={`mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase shrink-0 ${
-                    r.category === "responsibility"
-                      ? "bg-green-100 text-green-700"
-                      : r.category === "requirement"
-                      ? "bg-purple-100 text-purple-700"
-                      : "bg-gray-100 text-gray-600"
-                  }`}>
-                    {r.category === "responsibility" ? "DO" : r.category === "requirement" ? "NEED" : "NICE"}
-                  </span>
+              <li key={i} className="flex items-start gap-s-1 text-body text-ink-72">
+                <span className="font-mono text-meta uppercase text-ink-50 shrink-0 mt-0.5">
+                  {r.category === "responsibility" ? "DO" : r.category === "requirement" ? "NEED" : "NICE"}
+                </span>
+                <div>
                   <span>{r.text}</span>
+                  {r.keywords && r.keywords.length > 0 && (
+                    <span className="font-mono text-ink-50 ml-s-1">
+                      [{r.keywords.join(", ")}]
+                    </span>
+                  )}
                 </div>
-                {r.keywords && r.keywords.length > 0 && (
-                  <div className="flex flex-wrap gap-1 ml-8 mt-1">
-                    {r.keywords.map((kw) => (
-                      <span key={kw} className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px]">
-                        {kw}
-                      </span>
-                    ))}
-                  </div>
-                )}
               </li>
             ))}
           </ul>
         </div>
       )}
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+      <div className="mb-s-3">
+        <label className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">
           Notes
         </label>
         <textarea
@@ -408,39 +372,35 @@ export default function AddJobForm({ onJobAdded }: AddJobFormProps) {
             setFormData({ ...formData, notes: e.target.value })
           }
           placeholder="Why does this role interest you? Anyone you know there?"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md
-            focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
         />
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
+        <div className="mb-s-3 border border-rule p-s-2 text-body text-ink" role="alert">
           {error}
         </div>
       )}
 
-      <div className="flex gap-3">
+      <div className="flex gap-s-3">
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md
-            hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+          className="border-[1.5px] border-live text-live bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer disabled:opacity-50"
         >
-          {isSubmitting ? "Saving..." : "Save Job"}
+          {isSubmitting ? "Saving..." : "Save job"}
         </button>
         <button
           type="button"
           onClick={() => setStep("paste")}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800
-            cursor-pointer"
+          className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
         >
           Back
         </button>
         <button
           type="button"
           onClick={handleReset}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800
-            cursor-pointer"
+          className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
         >
           Cancel
         </button>

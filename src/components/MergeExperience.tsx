@@ -54,14 +54,12 @@ export default function MergeExperience({ experiences, onMerged, onCancel }: Mer
   const earliest = sortedByStart[0];
   const latest = sortedByEnd[0];
 
-  // Use the most common title, or the longest one
   const titleCounts = new Map<string, number>();
   for (const exp of experiences) {
     titleCounts.set(exp.title, (titleCounts.get(exp.title) || 0) + 1);
   }
   const bestTitle = [...titleCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || experiences[0].title;
 
-  // Use the most common company
   const companyCounts = new Map<string, number>();
   for (const exp of experiences) {
     companyCounts.set(exp.company, (companyCounts.get(exp.company) || 0) + 1);
@@ -75,7 +73,7 @@ export default function MergeExperience({ experiences, onMerged, onCancel }: Mer
       const isDup = allHighlights.some((existing) => similarity(existing.text, h.text) > 0.7);
       allHighlights.push({
         ...h,
-        _selected: !isDup, // auto-deselect likely duplicates
+        _selected: !isDup,
       });
     }
   }
@@ -89,10 +87,7 @@ export default function MergeExperience({ experiences, onMerged, onCancel }: Mer
   }
   const allSkills = Array.from(allSkillsSet).sort();
 
-  // Best location (most specific / non-null)
   const bestLocation = experiences.find((e) => e.location)?.location || null;
-
-  // Best description (longest)
   const bestDescription = experiences
     .map((e) => e.description)
     .filter(Boolean)
@@ -150,7 +145,6 @@ export default function MergeExperience({ experiences, onMerged, onCancel }: Mer
     setError(null);
 
     try {
-      // 1. Create the merged role
       const selectedHighlights = highlights.filter((h) => h._selected);
 
       const res = await fetch("/api/experience", {
@@ -184,7 +178,7 @@ export default function MergeExperience({ experiences, onMerged, onCancel }: Mer
         return;
       }
 
-      // 2. Delete the original roles
+      // Delete the original roles
       let deleteErrors = 0;
       for (const exp of experiences) {
         try {
@@ -195,7 +189,6 @@ export default function MergeExperience({ experiences, onMerged, onCancel }: Mer
       }
 
       if (deleteErrors > 0) {
-        // Non-fatal — merged role was created, some originals might remain
         console.warn(`${deleteErrors} original roles could not be deleted`);
       }
 
@@ -209,64 +202,64 @@ export default function MergeExperience({ experiences, onMerged, onCancel }: Mer
   const selectedHighlightCount = highlights.filter((h) => h._selected).length;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-      <h2 className="text-lg font-semibold mb-1">Merge {experiences.length} Roles</h2>
-      <p className="text-sm text-gray-500 mb-4">
+    <div className="border-t border-rule pt-s-3">
+      <h2 className="text-h3 font-medium text-ink mb-s-1">Merge {experiences.length} roles</h2>
+      <p className="text-body text-ink-72 mb-s-3">
         Confirm the details for the merged role. All unique highlights will be kept.
         Near-duplicates are auto-deselected but you can adjust.
       </p>
 
       {/* Source roles being merged */}
-      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-        <p className="text-xs text-gray-500 font-medium mb-1">Merging from:</p>
-        <ul className="text-xs text-gray-600 space-y-0.5">
+      <div className="mb-s-3 border-t border-rule pt-s-2">
+        <p className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">Merging from:</p>
+        <ul className="text-body text-ink-72 space-y-s-1">
           {experiences.map((exp) => (
             <li key={exp.id}>
-              &bull; {exp.title} at {exp.company} ({exp.highlights.length} highlights, {exp.skills.length} skills)
+              {exp.title} at {exp.company} ({exp.highlights.length} highlights, {exp.skills.length} skills)
             </li>
           ))}
         </ul>
       </div>
 
       {/* Role Details */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-s-3 mb-s-3">
         <div>
-          <label htmlFor="merge-title" className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
+          <label htmlFor="merge-title" className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">Job title</label>
           <input
             id="merge-title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
           />
         </div>
         <div>
-          <label htmlFor="merge-company" className="block text-sm font-medium text-gray-700 mb-1">Company</label>
+          <label htmlFor="merge-company" className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">Company</label>
           <input
             id="merge-company"
             type="text"
             value={company}
             onChange={(e) => setCompany(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
           />
         </div>
         <div>
-          <label htmlFor="merge-location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+          <label htmlFor="merge-location" className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">Location (optional)</label>
           <input
             id="merge-location"
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
           />
         </div>
         <div>
-          <label htmlFor="merge-type" className="block text-sm font-medium text-gray-700 mb-1">Employment Type</label>
+          <label htmlFor="merge-type" className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">Employment type</label>
           <select
             id="merge-type"
             value={employmentType}
             onChange={(e) => setEmploymentType(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none"
           >
             <option value="full-time">Full-time</option>
             <option value="part-time">Part-time</option>
@@ -276,143 +269,140 @@ export default function MergeExperience({ experiences, onMerged, onCancel }: Mer
           </select>
         </div>
         <div>
-          <label htmlFor="merge-industry" className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+          <label htmlFor="merge-industry" className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">Industry (optional)</label>
           <input
             id="merge-industry"
             type="text"
             value={industry}
             onChange={(e) => setIndustry(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
           />
         </div>
         <div>
-          <label htmlFor="merge-department" className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+          <label htmlFor="merge-department" className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">Department (optional)</label>
           <input
             id="merge-department"
             type="text"
             value={department}
             onChange={(e) => setDepartment(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
           />
         </div>
       </div>
 
       {/* Dates */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 items-end">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-s-3 mb-s-3 items-end">
         <div>
-          <label htmlFor="merge-start" className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+          <label htmlFor="merge-start" className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">Start date</label>
           <input
             id="merge-start"
             type="month"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none"
           />
         </div>
         <div>
-          <label htmlFor="merge-end" className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+          <label htmlFor="merge-end" className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">End date (optional)</label>
           <input
             id="merge-end"
             type="month"
             value={endDate}
             disabled={isCurrent}
             onChange={(e) => setEndDate(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 text-gray-900 text-sm"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none disabled:text-ink-35"
           />
         </div>
-        <div className="flex items-center gap-2 pb-2">
+        <div className="flex items-center gap-s-1 pb-s-1">
           <input
             id="merge-current"
             type="checkbox"
             checked={isCurrent}
             onChange={(e) => { setIsCurrent(e.target.checked); if (e.target.checked) setEndDate(""); }}
-            className="h-4 w-4 text-blue-600 rounded border-gray-300"
+            className="h-4 w-4 border-rule text-ink focus:outline-none"
           />
-          <label htmlFor="merge-current" className="text-sm text-gray-700">Current role</label>
+          <label htmlFor="merge-current" className="text-body text-ink">Current role</label>
         </div>
       </div>
 
       {/* Description */}
-      <div className="mb-4">
-        <label htmlFor="merge-desc" className="block text-sm font-medium text-gray-700 mb-1">Role Summary</label>
+      <div className="mb-s-3">
+        <label htmlFor="merge-desc" className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">Role summary (optional)</label>
         <textarea
           id="merge-desc"
           rows={2}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm"
+          className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
         />
       </div>
 
       {/* Skills */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+      <div className="mb-s-3">
+        <label className="block text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1">
           Skills ({skills.length})
         </label>
-        <div className="flex gap-2 mb-2">
+        <div className="flex gap-s-2 mb-s-2">
           <input
             type="text"
             value={skillInput}
             onChange={(e) => setSkillInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); handleAddSkill(); } }}
             placeholder="Add skill..."
-            className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            className="flex-1 border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
           />
-          <button type="button" onClick={handleAddSkill} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md text-sm cursor-pointer hover:bg-gray-200">Add</button>
+          <button type="button" onClick={handleAddSkill} className="border border-ink text-ink bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer text-meta">Add</button>
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {skills.map((skill) => (
-            <span key={skill} className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">
-              {skill}
-              <button type="button" onClick={() => handleRemoveSkill(skill)} className="text-blue-400 hover:text-blue-700 cursor-pointer" aria-label={`Remove ${skill}`}>&times;</button>
+        <p className="font-mono text-body text-ink-72">
+          {skills.map((skill, i) => (
+            <span key={skill}>
+              <span className="underline cursor-pointer" onClick={() => handleRemoveSkill(skill)}>
+                {skill}
+              </span>
+              {i < skills.length - 1 ? ", " : ""}
             </span>
           ))}
-        </div>
+        </p>
       </div>
 
       {/* Highlights */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Key Highlights ({selectedHighlightCount} of {highlights.length} selected)
+      <div className="mb-s-3">
+        <div className="flex items-center justify-between mb-s-1">
+          <label className="block text-meta font-mono uppercase tracking-widest text-ink-50">
+            Key highlights ({selectedHighlightCount} of {highlights.length} selected)
           </label>
           <button
             type="button"
             onClick={handleSelectAllHighlights}
-            className="text-xs text-purple-600 hover:text-purple-800 cursor-pointer"
+            className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer text-meta"
           >
             {highlights.every((h) => h._selected) ? "Deselect all" : "Select all"}
           </button>
         </div>
-        <p className="text-xs text-gray-400 mb-2">
+        <p className="text-meta text-ink-50 mb-s-2">
           Near-duplicates are auto-deselected. Check the ones you want to keep.
         </p>
-        <div className="space-y-1.5 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-2">
+        <div className="space-y-s-1 max-h-64 overflow-y-auto border-t border-rule pt-s-1">
           {highlights.map((h, i) => (
             <label
               key={i}
-              className={`flex items-start gap-2 p-2 rounded cursor-pointer transition-colors ${
-                h._selected ? "bg-green-50" : "bg-gray-50 opacity-60"
+              className={`flex items-start gap-s-1 py-s-1 cursor-pointer border-b border-rule ${
+                !h._selected ? "opacity-50" : ""
               }`}
             >
               <input
                 type="checkbox"
                 checked={h._selected}
                 onChange={() => handleToggleHighlight(i)}
-                className="h-3.5 w-3.5 mt-0.5 text-green-600 rounded border-gray-300 shrink-0"
+                className="h-4 w-4 mt-0.5 border-rule text-ink shrink-0 focus:outline-none"
               />
               <div className="flex-1 min-w-0">
-                <span className="text-xs text-gray-700">{h.text}</span>
+                <span className="text-body text-ink-72">{h.text}</span>
                 {h.metrics && (
-                  <span className="ml-1 text-xs text-green-600">({h.metrics})</span>
+                  <span className="font-mono text-meta text-ink-50 ml-s-1">({h.metrics})</span>
                 )}
               </div>
-              <span className={`text-[9px] px-1 py-0.5 rounded uppercase font-medium shrink-0 ${
-                h.category === "achievement" ? "bg-green-100 text-green-700" :
-                h.category === "project" ? "bg-purple-100 text-purple-700" :
-                h.category === "award" ? "bg-amber-100 text-amber-700" :
-                "bg-blue-100 text-blue-700"
-              }`}>
+              <span className="font-mono text-meta uppercase text-ink-50 shrink-0">
                 {h.category}
               </span>
             </label>
@@ -422,30 +412,30 @@ export default function MergeExperience({ experiences, onMerged, onCancel }: Mer
 
       {/* Error */}
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700" role="alert">
+        <div className="mb-s-3 border border-rule p-s-2 text-body text-ink" role="alert">
           {error}
         </div>
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-        <p className="text-xs text-gray-400">
+      <div className="flex items-center justify-between pt-s-3 border-t border-rule">
+        <p className="font-mono text-meta text-ink-50">
           This will create 1 merged role and delete {experiences.length} originals.
         </p>
-        <div className="flex gap-3">
+        <div className="flex gap-s-3">
           <button
             onClick={onCancel}
             disabled={isSaving}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 cursor-pointer text-sm"
+            className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving || !title || !company || !startDate}
-            className="px-5 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm font-medium"
+            className="border-[1.5px] border-live text-live bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer disabled:opacity-50"
           >
-            {isSaving ? "Merging..." : `Merge into 1 Role (${selectedHighlightCount} highlights)`}
+            {isSaving ? "Merging..." : `Merge into 1 role (${selectedHighlightCount} highlights)`}
           </button>
         </div>
       </div>

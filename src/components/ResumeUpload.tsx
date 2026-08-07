@@ -25,7 +25,7 @@ interface ExtractedExperience {
   highlights: ExtractedHighlight[];
   // UI state
   _selected: boolean;
-  _sources: string[]; // which files this role was found in
+  _sources: string[];
 }
 
 interface ResumeUploadProps {
@@ -37,76 +37,9 @@ type InputMode = "file" | "paste";
 
 /**
  * Generates a key for deduplicating roles.
- * Two roles are considered the same if title + company match (case-insensitive).
  */
 function roleKey(title: string, company: string): string {
   return `${title.toLowerCase().trim()}|||${company.toLowerCase().trim()}`;
-}
-
-/**
- * Merges extracted experiences from multiple resumes.
- * Same role (by title+company) accumulates all unique highlights and skills.
- */
-function mergeExperiences(
-  existing: ExtractedExperience[],
-  incoming: ExtractedExperience[],
-  sourceName: string
-): ExtractedExperience[] {
-  const merged = new Map<string, ExtractedExperience>();
-
-  // Index existing
-  for (const exp of existing) {
-    merged.set(roleKey(exp.title, exp.company), exp);
-  }
-
-  // Merge incoming
-  for (const exp of incoming) {
-    const key = roleKey(exp.title, exp.company);
-    const existing = merged.get(key);
-
-    if (existing) {
-      // Merge highlights — add any that are substantially different
-      for (const h of exp.highlights) {
-        const isDuplicate = existing.highlights.some(
-          (eh) => similarity(eh.text, h.text) > 0.8
-        );
-        if (!isDuplicate) {
-          existing.highlights.push(h);
-        }
-      }
-
-      // Merge skills — add new ones
-      for (const skill of exp.skills) {
-        if (!existing.skills.some((s) => s.toLowerCase() === skill.toLowerCase())) {
-          existing.skills.push(skill);
-        }
-      }
-
-      // Track source
-      if (!existing._sources.includes(sourceName)) {
-        existing._sources.push(sourceName);
-      }
-
-      // Use longer description
-      if (exp.description && (!existing.description || exp.description.length > existing.description.length)) {
-        existing.description = exp.description;
-      }
-
-      // Use more specific location
-      if (exp.location && !existing.location) {
-        existing.location = exp.location;
-      }
-    } else {
-      // New role
-      merged.set(key, {
-        ...exp,
-        _selected: true,
-        _sources: [sourceName],
-      });
-    }
-  }
-
-  return Array.from(merged.values());
 }
 
 /**
@@ -118,6 +51,63 @@ function similarity(a: string, b: string): number {
   const intersection = [...wordsA].filter((w) => wordsB.has(w));
   const union = new Set([...wordsA, ...wordsB]);
   return union.size === 0 ? 0 : intersection.length / union.size;
+}
+
+/**
+ * Merges extracted experiences from multiple resumes.
+ */
+function mergeExperiences(
+  existing: ExtractedExperience[],
+  incoming: ExtractedExperience[],
+  sourceName: string
+): ExtractedExperience[] {
+  const merged = new Map<string, ExtractedExperience>();
+
+  for (const exp of existing) {
+    merged.set(roleKey(exp.title, exp.company), exp);
+  }
+
+  for (const exp of incoming) {
+    const key = roleKey(exp.title, exp.company);
+    const existing = merged.get(key);
+
+    if (existing) {
+      for (const h of exp.highlights) {
+        const isDuplicate = existing.highlights.some(
+          (eh) => similarity(eh.text, h.text) > 0.8
+        );
+        if (!isDuplicate) {
+          existing.highlights.push(h);
+        }
+      }
+
+      for (const skill of exp.skills) {
+        if (!existing.skills.some((s) => s.toLowerCase() === skill.toLowerCase())) {
+          existing.skills.push(skill);
+        }
+      }
+
+      if (!existing._sources.includes(sourceName)) {
+        existing._sources.push(sourceName);
+      }
+
+      if (exp.description && (!existing.description || exp.description.length > existing.description.length)) {
+        existing.description = exp.description;
+      }
+
+      if (exp.location && !existing.location) {
+        existing.location = exp.location;
+      }
+    } else {
+      merged.set(key, {
+        ...exp,
+        _selected: true,
+        _sources: [sourceName],
+      });
+    }
+  }
+
+  return Array.from(merged.values());
 }
 
 export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
@@ -138,7 +128,6 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
 
     try {
       if (inputMode === "file" && files.length > 0) {
-        // Multi-file batch extraction
         setExtractProgress({ done: 0, total: files.length, current: files[0].name });
         let merged: ExtractedExperience[] = [];
 
@@ -160,9 +149,8 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
             if (res.ok && data.experiences && data.experiences.length > 0) {
               merged = mergeExperiences(merged, data.experiences, file.name);
             }
-            // If one file fails, continue with the others
           } catch {
-            // Skip failed file, continue
+            // Skip failed file
           }
         }
 
@@ -174,7 +162,6 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
           return;
         }
 
-        // Sort by start date (most recent first)
         merged.sort((a, b) => (b.startDate || "").localeCompare(a.startDate || ""));
 
         setExtracted(merged);
@@ -185,7 +172,6 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
         );
         setStep("review");
       } else if (inputMode === "paste") {
-        // Single text extraction
         setExtractProgress({ done: 0, total: 1, current: "pasted text" });
 
         const formData = new FormData();
@@ -277,7 +263,7 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
           setSaveProgress({ saved: savedCount, total: selected.length });
         }
       } catch {
-        // Continue saving others even if one fails
+        // Continue saving others
       }
     }
 
@@ -311,69 +297,69 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="w-full p-4 border-2 border-dashed border-purple-300 rounded-lg text-purple-500 hover:border-purple-400 hover:text-purple-600 transition-colors cursor-pointer bg-purple-50/50"
+        className="w-full border border-ink border-dashed bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center justify-center cursor-pointer text-ink transition-colors"
       >
-        Upload Resumes to Extract Experience
+        Upload resumes to extract experience
       </button>
     );
   }
 
-  // ─── UPLOAD STEP ──────────────────────────────────────────────────────────────
+  // UPLOAD STEP
   if (step === "upload") {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-        <h2 className="text-lg font-semibold mb-1">Upload Resumes</h2>
-        <p className="text-sm text-gray-500 mb-4">
-          Upload multiple resumes (PDF, Word, or text). I&apos;ll extract your work history from all of them, merge duplicates, and accumulate all unique highlights and skills.
+      <div className="border-t border-rule pt-s-3">
+        <h2 className="text-h3 font-medium text-ink mb-s-1">Upload resumes</h2>
+        <p className="text-body text-ink-72 mb-s-3">
+          Upload multiple resumes (PDF, Word, or text). Work history will be extracted from all of them, duplicates merged, and all unique highlights and skills accumulated.
         </p>
 
         {/* Input mode toggle */}
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 w-fit mb-4" role="radiogroup" aria-label="Input method">
+        <div className="flex items-center gap-s-3 mb-s-3" role="radiogroup" aria-label="Input method">
           <button
             type="button"
             role="radio"
             aria-checked={inputMode === "file"}
             onClick={() => setInputMode("file")}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-              inputMode === "file" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+            className={`text-ink min-h-[var(--target-min)] inline-flex items-center cursor-pointer text-meta ${
+              inputMode === "file" ? "underline font-medium" : "text-ink-50"
             }`}
           >
-            Upload Files
+            Upload files
           </button>
           <button
             type="button"
             role="radio"
             aria-checked={inputMode === "paste"}
             onClick={() => setInputMode("paste")}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-              inputMode === "paste" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+            className={`text-ink min-h-[var(--target-min)] inline-flex items-center cursor-pointer text-meta ${
+              inputMode === "paste" ? "underline font-medium" : "text-ink-50"
             }`}
           >
-            Paste Text
+            Paste text
           </button>
         </div>
 
         {inputMode === "file" && (
-          <div className="space-y-3">
+          <div className="space-y-s-2">
             <label
               htmlFor="resume-files"
-              className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
-                files.length > 0 ? "border-blue-400 bg-blue-50" : "border-gray-300 hover:border-gray-400 bg-gray-50"
+              className={`flex flex-col items-center justify-center w-full h-32 border border-dashed cursor-pointer transition-colors ${
+                files.length > 0 ? "border-ink" : "border-rule"
               }`}
             >
               {files.length > 0 ? (
                 <div className="text-center">
-                  <p className="text-sm font-medium text-blue-700">
+                  <p className="text-body font-medium text-ink">
                     {files.length} file{files.length > 1 ? "s" : ""} selected
                   </p>
-                  <p className="text-xs text-blue-500 mt-1">
+                  <p className="font-mono text-meta text-ink-50 mt-s-1">
                     {files.map((f) => f.name).join(", ")}
                   </p>
                 </div>
               ) : (
                 <div className="text-center">
-                  <p className="text-sm text-gray-500">Click to select files (or drag and drop)</p>
-                  <p className="text-xs text-gray-400 mt-1">PDF, DOCX, or TXT &mdash; select multiple</p>
+                  <p className="text-body text-ink-72">Click to select files (or drag and drop)</p>
+                  <p className="font-mono text-meta text-ink-50 mt-s-1">PDF, DOCX, or TXT - select multiple</p>
                 </div>
               )}
               <input
@@ -395,9 +381,9 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
               />
             </label>
             {files.length > 0 && (
-              <ul className="text-xs text-gray-500 space-y-0.5">
+              <ul className="font-mono text-meta text-ink-50 space-y-s-1">
                 {files.map((f, i) => (
-                  <li key={i}>&bull; {f.name} ({(f.size / 1024).toFixed(0)} KB)</li>
+                  <li key={i}>{f.name} ({(f.size / 1024).toFixed(0)} KB)</li>
                 ))}
               </ul>
             )}
@@ -410,30 +396,30 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
             value={pastedText}
             onChange={(e) => setPastedText(e.target.value)}
             placeholder="Paste your resume text here..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none font-mono"
           />
         )}
 
         {error && (
-          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700" role="alert">
+          <div className="mt-s-2 border border-rule p-s-2 text-body text-ink" role="alert">
             {error}
           </div>
         )}
 
-        <div className="flex gap-3 mt-4">
+        <div className="flex gap-s-3 mt-s-3">
           <button
             onClick={handleExtract}
             disabled={
               (inputMode === "file" && files.length === 0) ||
               (inputMode === "paste" && pastedText.length < 20)
             }
-            className="px-5 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm font-medium"
+            className="border-[1.5px] border-live text-live bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer disabled:opacity-50"
           >
-            Extract Experience{files.length > 1 ? ` from ${files.length} Files` : ""}
+            Extract experience{files.length > 1 ? ` from ${files.length} files` : ""}
           </button>
           <button
             onClick={handleReset}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 cursor-pointer text-sm"
+            className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
           >
             Cancel
           </button>
@@ -442,21 +428,20 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
     );
   }
 
-  // ─── EXTRACTING STEP ──────────────────────────────────────────────────────────
+  // EXTRACTING STEP
   if (step === "extracting") {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-center">
-        <div className="inline-block w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" role="status" aria-label="Extracting experience" />
-        <p className="text-gray-600 mt-4 text-sm">
+      <div className="border-t border-rule pt-s-3 text-center py-s-5">
+        <p className="text-body text-ink-72">
           Extracting experience from {extractProgress.total > 1 ? `file ${extractProgress.done + 1} of ${extractProgress.total}` : "your resume"}...
         </p>
         {extractProgress.current && (
-          <p className="text-gray-400 text-xs mt-1 truncate max-w-xs mx-auto">{extractProgress.current}</p>
+          <p className="font-mono text-meta text-ink-50 mt-s-1 truncate max-w-xs mx-auto">{extractProgress.current}</p>
         )}
         {extractProgress.total > 1 && (
-          <div className="w-48 mx-auto mt-3 bg-gray-200 rounded-full h-1.5">
+          <div className="w-48 mx-auto mt-s-2 bg-rule h-[2px]">
             <div
-              className="bg-purple-500 h-1.5 rounded-full transition-all"
+              className="bg-ink h-[2px] transition-all"
               style={{ width: `${(extractProgress.done / extractProgress.total) * 100}%` }}
             />
           </div>
@@ -465,129 +450,115 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
     );
   }
 
-  // ─── SAVING STEP ──────────────────────────────────────────────────────────────
+  // SAVING STEP
   if (step === "saving") {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-center">
-        <div className="inline-block w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" role="status" aria-label="Saving experience" />
-        <p className="text-gray-600 mt-4 text-sm">
+      <div className="border-t border-rule pt-s-3 text-center py-s-5">
+        <p className="text-body text-ink-72">
           Saving experience entries... ({saveProgress.saved}/{saveProgress.total})
         </p>
       </div>
     );
   }
 
-  // ─── REVIEW STEP ──────────────────────────────────────────────────────────────
+  // REVIEW STEP
   const selectedCount = extracted.filter((e) => e._selected).length;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-semibold">Review Extracted Experience</h2>
-        <span className="text-xs text-gray-400">{summary}</span>
+    <div className="border-t border-rule pt-s-3">
+      <div className="flex items-center justify-between mb-s-1">
+        <h2 className="text-h3 font-medium text-ink">Review extracted experience</h2>
+        <span className="font-mono text-meta text-ink-50">{summary}</span>
       </div>
-      <p className="text-sm text-gray-500 mb-4">
-        Roles have been merged across resumes. All unique highlights and skills are accumulated. Uncheck any you don&apos;t want.
+      <p className="text-body text-ink-72 mb-s-3">
+        Roles have been merged across resumes. All unique highlights and skills are accumulated. Uncheck any you do not want.
       </p>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700" role="alert">
+        <div className="mb-s-3 border border-rule p-s-2 text-body text-ink" role="alert">
           {error}
         </div>
       )}
 
       {/* Select all toggle */}
-      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100">
+      <div className="flex items-center gap-s-1 mb-s-2 pb-s-2 border-b border-rule">
         <input
           type="checkbox"
           id="select-all"
           checked={extracted.every((e) => e._selected)}
           onChange={handleSelectAll}
-          className="h-4 w-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+          className="h-4 w-4 border-rule text-ink focus:outline-none"
         />
-        <label htmlFor="select-all" className="text-sm text-gray-700 font-medium">
+        <label htmlFor="select-all" className="text-body text-ink font-medium">
           Select all ({extracted.length} roles)
         </label>
       </div>
 
       {/* Experience list */}
-      <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+      <div className="space-y-s-1 max-h-[500px] overflow-y-auto">
         {extracted.map((exp, i) => (
           <label
             key={i}
-            className={`flex gap-3 p-4 rounded-lg cursor-pointer transition-colors border ${
-              exp._selected
-                ? "bg-purple-50 border-purple-200"
-                : "bg-gray-50 border-gray-200 opacity-60"
+            className={`flex gap-s-2 py-s-2 cursor-pointer border-t border-rule ${
+              !exp._selected ? "opacity-50" : ""
             }`}
           >
             <input
               type="checkbox"
               checked={exp._selected}
               onChange={() => handleToggleSelect(i)}
-              className="h-4 w-4 mt-1 text-purple-600 rounded border-gray-300 focus:ring-purple-500 shrink-0"
+              className="h-4 w-4 mt-s-1 border-rule text-ink shrink-0 focus:outline-none"
             />
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <h3 className="text-sm font-semibold text-gray-900 truncate">{exp.title}</h3>
+              <div className="flex items-center gap-s-2 mb-0.5">
+                <h3 className="text-body font-medium text-ink truncate">{exp.title}</h3>
                 {exp.isCurrent && (
-                  <span className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-medium">
-                    Current
-                  </span>
+                  <span className="font-mono text-meta text-live">current</span>
                 )}
                 {exp._sources.length > 1 && (
-                  <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-[10px] font-medium">
+                  <span className="font-mono text-meta text-ink-50">
                     {exp._sources.length} sources
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-600">
+              <p className="text-body text-ink-72">
                 {exp.company}
-                {exp.location && ` \u2022 ${exp.location}`}
+                {exp.location && ` / ${exp.location}`}
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="font-mono text-meta text-ink-50 mt-0.5">
                 {formatDate(exp.startDate)} &ndash; {exp.isCurrent ? "Present" : formatDate(exp.endDate)}
-                {exp.employmentType !== "full-time" && ` \u2022 ${exp.employmentType}`}
+                {exp.employmentType !== "full-time" && ` / ${exp.employmentType}`}
               </p>
 
-              {/* Source files */}
               {exp._sources.length > 1 && (
-                <p className="text-[10px] text-purple-500 mt-1">
+                <p className="font-mono text-meta text-ink-35 mt-s-1">
                   Found in: {exp._sources.join(", ")}
                 </p>
               )}
 
               {/* Skills */}
               {exp.skills && exp.skills.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {exp.skills.slice(0, 10).map((skill) => (
-                    <span key={skill} className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px]">
-                      {skill}
-                    </span>
-                  ))}
-                  {exp.skills.length > 10 && (
-                    <span className="px-1.5 py-0.5 text-gray-400 text-[10px]">
-                      +{exp.skills.length - 10} more
-                    </span>
-                  )}
-                </div>
+                <p className="font-mono text-meta text-ink-72 mt-s-1">
+                  {exp.skills.slice(0, 10).join(", ")}
+                  {exp.skills.length > 10 && ` +${exp.skills.length - 10} more`}
+                </p>
               )}
 
               {/* Highlights preview */}
               {exp.highlights && exp.highlights.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-[10px] text-gray-400 uppercase font-medium mb-1">
+                <div className="mt-s-1">
+                  <p className="font-mono text-meta uppercase text-ink-50">
                     {exp.highlights.length} highlight{exp.highlights.length !== 1 ? "s" : ""} (merged)
                   </p>
-                  <ul className="space-y-0.5">
+                  <ul className="space-y-0.5 mt-s-1">
                     {exp.highlights.slice(0, 5).map((h, j) => (
-                      <li key={j} className="text-xs text-gray-600 truncate">
-                        &bull; {h.text}
+                      <li key={j} className="text-body text-ink-72 truncate">
+                        {h.text}
                       </li>
                     ))}
                     {exp.highlights.length > 5 && (
-                      <li className="text-xs text-gray-400">
-                        &bull; ...and {exp.highlights.length - 5} more
+                      <li className="text-meta text-ink-50">
+                        ...and {exp.highlights.length - 5} more
                       </li>
                     )}
                   </ul>
@@ -599,23 +570,23 @@ export default function ResumeUpload({ onSaved }: ResumeUploadProps) {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-        <span className="text-sm text-gray-500">
+      <div className="flex items-center justify-between mt-s-3 pt-s-3 border-t border-rule">
+        <span className="font-mono text-meta text-ink-50">
           {selectedCount} of {extracted.length} selected
         </span>
-        <div className="flex gap-3">
+        <div className="flex gap-s-3">
           <button
             onClick={handleReset}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 cursor-pointer text-sm"
+            className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleSaveSelected}
             disabled={selectedCount === 0}
-            className="px-5 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm font-medium"
+            className="border-[1.5px] border-live text-live bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer disabled:opacity-50"
           >
-            Save {selectedCount} {selectedCount === 1 ? "Role" : "Roles"} (with all highlights)
+            Save {selectedCount} {selectedCount === 1 ? "role" : "roles"} (with all highlights)
           </button>
         </div>
       </div>
