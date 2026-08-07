@@ -185,7 +185,7 @@ export default function ResumeTab({ company }: ResumeTabProps) {
         <button
           onClick={handleGenerate}
           disabled={isGenerating || (mode === "targeted" && !selectedJobId)}
-          className="px-6 py-2.5 border-[1.5px] border-live text-live bg-transparent text-sm font-medium disabled:bg-gray-400 disabled:cursor-not-allowed cursor-pointer"
+          className="px-6 py-2.5 border-[1.5px] border-live text-live bg-transparent text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {isGenerating ? "Generating..." : "Generate Resume"}
         </button>
@@ -201,8 +201,7 @@ export default function ResumeTab({ company }: ResumeTabProps) {
       {/* Loading */}
       {isGenerating && (
         <div className="text-center py-12">
-          <div className="inline-block w-6 h-6 border-2 border-ink border-t-transparent animate-spin" role="status" aria-label="Generating resume" />
-          <p className="text-ink-50 mt-3 text-sm">Generating company-scoped resume...</p>
+          <p className="text-ink-50 text-sm font-mono" role="status" aria-label="Generating resume">Generating company-scoped resume...</p>
         </div>
       )}
 

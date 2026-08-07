@@ -187,7 +187,7 @@ function InlineEdit({
     return (
       <button
         onClick={() => setEditing(true)}
-        className="text-left w-full hover: rounded px-1 -mx-1"
+        className="text-left w-full px-1 -mx-1"
         aria-label={`Edit claim: ${claim.statement.slice(0, 50)}`}
         title="Click to edit"
       >

@@ -682,19 +682,18 @@ export default function ResumeBuildPage() {
         {/* ═══ STEP 2: Gap Analysis ═══ */}
         {step === 2 && (
           <div className="border-t border-rule pt-s-3">
-            <h2 className="text-lg font-semibold mb-2">2. Gap Analysis</h2>
+            <h2 className="text-lg font-medium mb-2">2. Gap Analysis</h2>
 
             {gapLoading ? (
               <div className="text-center py-8">
-                <div className="inline-block w-6 h-6 border-2 border-purple-600 border-t-transparent animate-spin" />
-                <p className="text-ink-50 mt-3 text-sm">Analyzing gaps between your experience and this job...</p>
+                <p className="text-ink-50 text-sm font-mono">Analyzing gaps between your experience and this job...</p>
               </div>
             ) : gapResult ? (
               <div className="space-y-4">
                 {/* Coverage */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-ink-72">Coverage: <strong>{gapResult.matched.length}</strong> of <strong>{gapResult.jdKeywordsFound}</strong> required skills</span>
-                  <span className={`text-xl font-bold ${gapResult.coverage >= 70 ? "text-ink-72" : gapResult.coverage >= 40 ? "text-yellow-600" : "text-ink-72"}`}>
+                  <span className="text-xl font-medium text-ink">
                     {gapResult.coverage}%
                   </span>
                 </div>
@@ -753,7 +752,7 @@ export default function ResumeBuildPage() {
         {/* ═══ STEP 3: Fill Gaps ═══ */}
         {step === 3 && (
           <div className="border-t border-rule pt-s-3">
-            <h2 className="text-lg font-semibold mb-2">3. Address Gaps</h2>
+            <h2 className="text-lg font-medium mb-2">3. Address Gaps</h2>
             <p className="text-sm text-ink-50 mb-4">
               For each gap, either add it to your experience (&quot;I have this&quot;) or mark it as a real gap.
             </p>
@@ -834,7 +833,7 @@ export default function ResumeBuildPage() {
         {step === 4 && (
           <div className="space-y-4">
             <div className="border-t border-rule pt-s-3">
-              <h2 className="text-lg font-semibold mb-2">4. Build Your Resume</h2>
+              <h2 className="text-lg font-medium mb-2">4. Build Your Resume</h2>
               <p className="text-sm text-ink-50 mb-4">
                 Select, edit, or improve highlights for each role. Click &quot;Improve&quot; for GPT-4o suggestions.
               </p>
@@ -842,15 +841,14 @@ export default function ResumeBuildPage() {
 
             {buildLoading ? (
               <div className="border-t border-rule pt-s-3 text-center">
-                <div className="inline-block w-6 h-6 border-2 border-purple-600 border-t-transparent animate-spin" />
-                <p className="text-ink-50 mt-3 text-sm">GPT-4o is selecting the best highlights for this job...</p>
+                <p className="text-ink-50 text-sm font-mono">GPT-4o is selecting the best highlights for this job...</p>
               </div>
             ) : (
               roleBuild.map((role, roleIdx) => (
                 <div key={role.id} className="border-t border-rule pt-s-3">
                   <div className="flex items-baseline justify-between mb-3">
                     <div>
-                      <h3 className="text-sm font-semibold text-ink">{role.title}</h3>
+                      <h3 className="text-sm font-medium text-ink">{role.title}</h3>
                       <p className="text-xs text-ink-50">{role.company} &middot; {formatDate(role.startDate)} &ndash; {role.isCurrent ? "Present" : formatDate(role.endDate)}</p>
                     </div>
                     <span className="text-xs text-ink-35">{role.recommendedHighlights.filter((h) => h.selected).length} selected</span>
@@ -983,7 +981,7 @@ export default function ResumeBuildPage() {
         {/* ═══ STEP 6: Export ═══ */}
         {step === 6 && (
           <div className="border-t border-rule pt-s-3">
-            <h2 className="text-lg font-semibold mb-2">6. Export</h2>
+            <h2 className="text-lg font-medium mb-2">6. Export</h2>
             <p className="text-sm text-ink-50 mb-4">Download your resume and cover letter as PDF files.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
