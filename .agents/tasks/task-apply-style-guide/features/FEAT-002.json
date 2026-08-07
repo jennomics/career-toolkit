@@ -1,0 +1,24 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Restyle the Nav component and DemoBanner to follow the style guide. Nav currently has 11 links (exceeds max 5 rule). Since this is a professional tool with many sections, implement a grouped nav: show 5 primary links visible, with remaining items accessible via a 'More' disclosure. Nav must not stick, use ink underline for current page, no dropdowns/mega menu. DemoBanner uses quiet ink styling.",
+  "status": "completed",
+  "steps": [
+    "Restyle src/components/Nav.tsx: Remove bg-white border-b border-gray-200 card styling. Apply bg-paper with a 1px border-b border-rule bottom edge. Use max-w-[720px] (the style guide's single-column width) centered with 24px side padding. Title uses text-h1 weight 300 in ink. Subtitle uses text-body in ink-50. Nav links: show first 5 (Jobs, Tracker, Experience, Resume, Profile) as visible inline links in text-body ink, with current page getting a 2px border-b border-ink underline. Group remaining 6 links (Skills, Phrases, Companies, Claims, Documents, Eval) behind a disclosure button labeled 'More' that expands a simple ruled list below. All touch targets minimum 44px. No hover color changes on links (just underline on active). Remove font-medium blue styling. Use sentence case.",
+    "Restyle src/components/DemoBanner.tsx: Remove bg-amber-100 border-amber-300 yellow styling. Apply border-b border-rule with text-meta font-mono uppercase tracking-wider in ink-50. No background fill (bg-paper). Remove font-medium. Ensure min-height 44px for touch target. No exclamation marks in the text."
+  ],
+  "acceptance_criteria": [
+    "Nav shows max 5 primary links visible at top level",
+    "Additional links accessible via More disclosure",
+    "Nav has border-b border-rule, no background fill other than paper",
+    "Active page would have ink underline (prepared via className pattern)",
+    "All nav targets at least 44px tall",
+    "DemoBanner uses mono meta style with rule border, no color fill",
+    "npx next build succeeds"
+  ],
+  "verification": [
+    "cd /projects/career-toolkit && npx next build"
+  ],
+  "blocked_reason": null,
+  "findings": "Nav converted from server component to client component (use client) to enable usePathname for current page detection. More disclosure uses useState toggle with absolute-positioned ruled list. Build passes cleanly. The component now uses Tailwind v4 theme tokens (border-rule, bg-paper, text-ink, text-ink-50, text-body, text-h1, px-s-3, py-s-3, gap-s-3, etc.) and the --target-min CSS custom property for 44px min heights."
+}

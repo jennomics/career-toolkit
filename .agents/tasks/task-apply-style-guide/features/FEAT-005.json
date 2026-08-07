@@ -1,0 +1,36 @@
+{
+  "id": "FEAT-005",
+  "type": "feat",
+  "description": "Restyle all tracker components and profile components to follow the 'One Filled Thing' style guide. This covers the pipeline board, list view, timeline, analytics, detail drawer, and all profile section editors.",
+  "status": "completed",
+  "steps": [
+    "Restyle src/components/tracker/PipelineBoard.tsx: Remove colored border-t-* stage headers. Each column gets a heading in font-mono text-meta uppercase with count in ink-50. Column background: bg-paper, no bg-gray-50. Drop target highlight: border-dashed border-rule (no blue ring). Cards within columns are ruled rows (see PipelineCard). Remove all STAGE_HEADER_COLORS colored mapping.",
+    "Restyle src/components/tracker/PipelineCard.tsx: Convert from card to ruled row. Remove bg-white rounded-lg shadow-sm. Use border-t border-rule. Title in text-body weight 500 ink. Company in text-list ink-72. Priority dot: keep as 6px dot but only use live color for high, ink-50 for medium, ink-35 for low (not red/yellow/green). Days count in font-mono text-meta ink-50. Remove hover:shadow-md. Active grab cursor is fine.",
+    "Restyle src/components/tracker/ListView.tsx: Table: remove rounded-lg border wrapper. Use border-t border-rule between rows. Header row: font-mono text-meta uppercase ink-50 with border-b border-rule. Remove bg-gray-50 header background. Remove rounded-full status badges - use plain font-mono text. Priority: plain font-mono text (high/medium/low) in ink, not colored pills. Checkboxes: keep functional but style with border-rule. Bulk action toolbar: remove bg-blue-50, use border-t border-rule with text in ink. Export button: secondary (1px border-ink). Remove all colored pill/badge patterns.",
+    "Restyle src/components/tracker/TimelineView.tsx: Remove card styling from events. Timeline line: 1px bg-rule. Dots: 6px bg-ink (or bg-live for active). Event content: no bg-white rounded-lg shadow-sm cards - just text rows with border-t border-rule. Remove emoji icons from EVENT_TYPE_ICONS - use plain text type labels in font-mono. Filters: underline select fields.",
+    "Restyle src/components/tracker/AnalyticsDashboard.tsx: Summary cards become ruled sections (border-t border-rule, no card). Numbers in font-mono text-h2. Labels in text-meta font-mono uppercase. Funnel bars: use bg-ink at varying opacity (or bg-live for active stage) instead of multi-colored bars. Remove all FUNNEL_COLORS colored mapping. Conversion rates: plain text rows, no bg-gray-50 pills. Progress bars: bg-rule track with bg-ink fill (no colors).",
+    "Restyle src/components/tracker/AttentionWidget.tsx: Remove colored section backgrounds (bg-red-50, bg-amber-50, bg-blue-50). Use border-t border-rule between sections. Section headers: font-mono text-meta uppercase ink (not colored). Items: plain ruled rows with font-mono date in ink-50. Only overdue items may use text-live for urgency indicator. Remove colored borders from items.",
+    "Restyle src/components/tracker/DetailDrawer.tsx: Drawer panel: remove shadow-xl. Use border-l border-rule left edge, bg-paper. Header: text-h2 weight 500 ink. Close button: ink-50, 44px target. Tabs: underline pattern (active: border-b-2 border-ink text-ink, inactive: text-ink-50). Remove border-blue-500 active indicator. Timeline events inside: ruled rows, no card styling.",
+    "Restyle src/components/tracker/DashboardTrackerCard.tsx: Remove card styling. Pipeline stage counts in font-mono, labels in text-meta. Ruled separators between sections.",
+    "Restyle src/components/tracker/ContactsTab.tsx, DocumentsTab.tsx, FollowUpsTab.tsx, InterviewsTab.tsx: Same ruled-row pattern. Form inputs as underlines. Buttons follow the 3-tier system. Remove all colored backgrounds/badges.",
+    "Restyle src/components/profile/ProfileHeader.tsx: Remove card-like patterns. Name in text-h2 weight 300. Title in text-body ink-72. Contact details in font-mono text-list. Edit trigger: tertiary underlined button. Form fields: underline inputs with mono caps labels.",
+    "Restyle src/components/profile/CareerRolesSection.tsx, MetricsSection.tsx, SignatureStoriesSection.tsx, StringListEditor.tsx, TextFieldEditor.tsx, UnresolvedItemsSection.tsx, WritingSamplesSection.tsx: All follow same pattern - remove card styling, use ruled sections with border-t border-rule. Form inputs as underlines. Buttons follow 3-tier system. Labels in font-mono uppercase. Remove any colored backgrounds or rounded elements."
+  ],
+  "acceptance_criteria": [
+    "Pipeline board columns have no colored headers - use mono text labels",
+    "Pipeline cards are ruled rows, not cards with shadows",
+    "List view table has no rounded container, uses ruled rows",
+    "Timeline has no emoji icons - uses plain text type labels",
+    "Analytics uses single-color (ink) bars, not multi-colored funnel",
+    "Detail drawer has border-l border-rule, no shadow",
+    "All profile editors use underline inputs and ruled sections",
+    "No colored status badges anywhere in tracker or profile",
+    "All buttons follow 3-tier system (primary/secondary/tertiary)",
+    "npx next build succeeds"
+  ],
+  "verification": [
+    "cd /projects/career-toolkit && npx next build"
+  ],
+  "blocked_reason": null,
+  "findings": "All 20 tracker and profile components restyled successfully. Build passes cleanly (exit 0). Pre-existing test failure in llm-parse-job.test.ts (mock configuration issue) is unrelated to style changes. Removed all bg-white, rounded-*, shadow-*, colored badge/pill patterns, emoji icons (EVENT_TYPE_ICONS), multi-color funnel bars (FUNNEL_COLORS), and colored stage headers (STAGE_HEADER_COLORS). Replaced with border-rule separators, font-mono labels, ink opacity hierarchy, ruled rows, 1.5px live outline primary buttons, underline form fields, and plain text status indicators. --target-min CSS variable was already defined in globals.css from FEAT-001."
+}

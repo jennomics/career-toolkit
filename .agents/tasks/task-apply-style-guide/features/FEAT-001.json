@@ -1,0 +1,24 @@
+{
+  "id": "FEAT-001",
+  "type": "chore",
+  "description": "Set up the 'One Filled Thing' design system foundation: globals.css with Tailwind v4 @theme tokens, fonts in layout.tsx, and base styles. This establishes the entire design token system so all subsequent component work can reference the correct classes.",
+  "status": "completed",
+  "steps": [
+    "Replace src/app/globals.css entirely. Use Tailwind v4 syntax: @import 'tailwindcss' at top, then @theme block with all custom tokens (colors: paper, rule, live, ink, ink-72, ink-50, ink-35, live-wash; spacing: s-1 through s-6; font families: zen and mono; font sizes: display, h1, h2, h3, body, list, meta; border-radius all 0; box-shadow all none). Add CSS custom properties for --dur-fast, --dur, --ease, --target-min. Add body base styles (bg-paper, text-ink, font-zen, antialiased). Add prefers-reduced-motion media query that zeros all durations. Reference partyswoop globals.css at /projects/partyswoop/src/app/globals.css for the CSS variable pattern. CRITICAL: In Tailwind v4, tokens go in @theme {} block using --color-*, --font-*, --spacing-*, --text-* naming. NOT in :root CSS variables for Tailwind consumption.",
+    "Replace src/app/layout.tsx: swap Geist/Geist_Mono fonts with Zen_Kaku_Gothic_New (weights 300, 500) and DM_Mono (weight 400) from next/font/google. Set CSS variables --font-zen and --font-mono. Apply font variables to html element and base body classes (min-h-screen bg-paper text-ink font-zen). Keep DemoBanner import and rendering. Reference partyswoop layout.tsx at /projects/partyswoop/src/app/layout.tsx for the exact font setup pattern.",
+    "Verify the build passes with: npx next build (this validates that Tailwind v4 correctly parses the @theme block and all font references resolve)"
+  ],
+  "acceptance_criteria": [
+    "globals.css uses @import 'tailwindcss' and @theme {} block with all design tokens from the style guide",
+    "Layout uses Zen Kaku Gothic New and DM Mono fonts from next/font/google",
+    "Body has bg-paper text-ink with font-zen as default",
+    "prefers-reduced-motion media query zeros durations",
+    "All border-radius defaults are 0, all box-shadow defaults are none",
+    "npx next build succeeds without errors"
+  ],
+  "verification": [
+    "cd /projects/career-toolkit && npx next build"
+  ],
+  "blocked_reason": null,
+  "findings": "Build passes cleanly. Font CSS variables use --font-zen-var and --font-mono-var for next/font/google variable names, while the @theme block maps --font-zen and --font-mono to reference those vars (this indirection is needed because Tailwind v4 @theme tokens cannot directly reference the dynamic next/font CSS variables at parse time). Pre-existing test failure in llm-parse-job.test.ts remains unchanged (4 failures, mock issue). All 20 other test files pass (342 tests)."
+}

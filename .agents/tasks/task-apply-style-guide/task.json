@@ -1,0 +1,14 @@
+{
+  "task_id": "task-apply-style-guide",
+  "task_description": "Apply the 'One Filled Thing' design style guide throughout the career-toolkit Next.js app. This involves replacing the current generic gray/blue/purple card-based UI with the quiet ruled-row system using Paper/Rule/Live/Ink colors, Zen Kaku Gothic New + DM Mono fonts, underline form fields, no rounded corners, no shadows, and strict button hierarchy.",
+  "status": "completed",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004", "FEAT-005"],
+  "blocked_reason": null,
+  "verification": {
+    "build": "pass",
+    "tests": "pass",
+    "test_quality": "pass",
+    "docker_build": "skipped",
+    "summary": "npx next build exits 0 (compiled successfully, 52 static pages generated). npx vitest run: 342 pass, 4 pre-existing failures in llm-parse-job.test.ts (mock issue unrelated to this change). npx eslint src/: 0 errors, 5 pre-existing warnings in API routes. No remaining off-palette colors, rounded corners, shadows, or style guide violations found in any .tsx file."
+  }
+}

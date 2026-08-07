@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Restyle all shared components (forms, cards, search, collapsible sections, decomposition panel, keywords, merge, resume upload) to follow the 'One Filled Thing' style guide. Forms use underline fields, cards become ruled rows, buttons follow the 3-tier system.",
+  "status": "completed",
+  "steps": [
+    "Restyle src/components/AddJobForm.tsx: The 'Add a Job Description' trigger button becomes a 1.5px border-live outline button (primary action) with text-live, 48px height, no fill, no rounded corners. Form container: remove bg-white rounded-lg shadow-sm, use border-t border-rule top edge only. Textarea: replace bordered box with border-b border-rule underline field, bg-transparent, font-mono for the input content. Labels: font-mono text-meta uppercase above fields. Primary 'Extract Details' button: 1.5px border-live text-live no fill 48px. Secondary 'Cancel': underlined text (tertiary). Review form: same underline inputs, labels in mono caps. Skill badges: replace bg-blue-100 pills with plain comma-separated text in font-mono text-ink-72. Responsibility categories (DO/NEED/NICE): use font-mono text-meta uppercase ink-50 instead of colored bg fills. Remove all rounded-full, bg-*-100, shadow-sm patterns.",
+    "Restyle src/components/JobCard.tsx: This is currently a card - convert to a ruled row. Remove bg-white border rounded-lg shadow-sm hover:shadow-md. Use border-t border-rule as top separator. Remove dream indicators (stars/sparkles emoji) - replace with a plain 6px state dot in live color if dreamJob/dreamCompany. Status select: remove colored bg pill styling, use font-mono text-meta plain text. Skills: plain comma-separated font-mono text instead of blue pill badges. Action buttons (Link, More, Archive, Delete): use underlined text (tertiary buttons) with min 44px target. Expanded section: separated by border-t border-rule, no bg tints. Remove all color-coded category badges (bg-green-100 etc) - use font-mono uppercase text labels in ink-50 instead. Remove emoji/unicode decorations.",
+    "Restyle src/components/ExperienceCard.tsx: Same ruled row pattern as JobCard. Remove card styling. Current badge: use font-mono text-meta 'current' label in live color (not green pill). Employment type, dates in font-mono. Skills and highlights: plain text, mono labels, no colored backgrounds. Actions as underlined tertiary buttons.",
+    "Restyle src/components/ExperienceForm.tsx: Underline fields (border-b border-rule bg-transparent). Labels in font-mono text-meta uppercase. Select dropdowns: border-b border-rule bg-transparent. Primary save: 1.5px border-live. Secondary cancel: underlined text. Remove all rounded-md, bg-white, shadow, focus:ring-blue patterns. Focus state: border-b-2 border-ink (not blue ring).",
+    "Restyle src/components/SearchFilter.tsx: Search input becomes underline style (border-b border-rule, no box border, bg-transparent). Remove search icon SVG or keep it minimal in ink-35. Filter selects: border-b border-rule bg-transparent font-mono. Remove rounded-lg container card. Result count in font-mono text-ink-50.",
+    "Restyle src/components/CollapsibleSection.tsx: Remove bg-white border rounded-lg shadow-sm card. Use a heading (h2 text-h3 weight 500) with border-t border-rule above it. Expand/collapse chevron in ink-50. Remove badge pill (use font-mono count in ink-50 after title). No hover:bg-gray-50.",
+    "Restyle src/components/DecompositionPanel.tsx: Same ruled pattern, remove any card/panel styling.",
+    "Restyle src/components/KeywordsSummary.tsx: Keywords as plain font-mono text, no pill/badge styling.",
+    "Restyle src/components/MergeExperience.tsx: Remove purple-themed styling. Use ink for selections, border-rule for containers, 1.5px border-live for primary merge action button.",
+    "Restyle src/components/ResumeUpload.tsx: Upload trigger uses 1px border-ink dashed outline (secondary). Remove blue hover colors. File drop zone: border-dashed border-rule. Labels in font-mono uppercase."
+  ],
+  "acceptance_criteria": [
+    "No component uses bg-white, rounded-lg, shadow-sm card pattern",
+    "All form inputs are underline style (border-b border-rule bg-transparent)",
+    "All labels are font-mono text-meta uppercase",
+    "Primary buttons: 1.5px border-live text-live h-[48px] no fill no rounded",
+    "Secondary buttons: 1px border-ink text-ink h-[48px] no fill no rounded",
+    "Tertiary buttons: underlined text, minimum 44px touch target",
+    "No colored badges/pills - replaced with font-mono plain text",
+    "Status indicators use font-mono text, not colored backgrounds",
+    "No emoji or unicode decorations in UI (stars, sparkles, etc)",
+    "npx next build succeeds"
+  ],
+  "verification": [
+    "cd /projects/career-toolkit && npx next build"
+  ],
+  "blocked_reason": null,
+  "findings": "All 10 shared components restyled successfully. Build passes cleanly. Pre-existing test failure in llm-parse-job.test.ts (mock configuration issue) unrelated to style changes. Removed all bg-white, rounded-*, shadow-*, colored badge patterns. Replaced with border-rule separators, font-mono labels, ink opacity hierarchy, 1.5px live outline primary buttons, and underline form fields."
+}
