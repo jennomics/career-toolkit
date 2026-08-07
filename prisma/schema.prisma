@@ -2,7 +2,7 @@ generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
-// Schema version: 8 (Claims Ledger + Posting Decomposition + Generation Pipeline + Packages + Eval + LlmBudget)
+// Schema version: 9 (Job Tracker + LLM Budget) (Claims Ledger + Posting Decomposition + Generation Pipeline + Packages + Eval + LlmBudget)
 
 datasource db {
   provider = "postgresql"
@@ -25,10 +25,24 @@ model Job {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // Job tracker additions
+  appliedAt       DateTime? // When the application was submitted
+  salary          String?   // Salary range / comp info
+  priority        String?   // "high", "medium", "low"
+  nextAction      String?   // Quick note: "Follow up with recruiter"
+  nextActionDate  DateTime? // When to do the next thing
+  rejectionReason String?   // Why (ghosted, too senior, too junior, etc.)
+
   skills           JobSkill[]
   responsibilities JobResponsibility[]
+  events           ApplicationEvent[]
+  interviews       Interview[]
+  jobContacts      JobContact[]
+  followUps        FollowUp[]
 
   @@index([companyId])
+  @@index([status])
+  @@index([priority])
 }
 
 model Company {
@@ -41,6 +55,7 @@ model Company {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   jobs           Job[]
+  contacts       Contact[]
 
   @@index([normalizedName])
 }
@@ -572,4 +587,93 @@ model LlmBudget {
   date      String   @unique // YYYY-MM-DD
   totalUsd  Float    @default(0)
   updatedAt DateTime @updatedAt
+}
+
+// ─── Job Tracker ─────────────────────────────────────────────────────────────
+
+model ApplicationEvent {
+  id         String   @id @default(cuid())
+  jobId      String
+  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  eventType  String
+  fromStatus String?
+  toStatus   String?
+  occurredAt DateTime @default(now())
+  notes      String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([jobId])
+  @@index([eventType])
+  @@index([occurredAt])
+}
+
+model Interview {
+  id              String   @id @default(cuid())
+  jobId           String
+  job             Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  round           Int      @default(1)
+  interviewType   String
+  scheduledAt     DateTime
+  durationMinutes Int?
+  interviewers    Json?
+  location        String?
+  meetingLink     String?
+  notes           String?
+  outcome         String   @default("pending")
+  feedback        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([jobId])
+  @@index([scheduledAt])
+  @@index([outcome])
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  role      String?
+  company   String?
+  email     String?
+  phone     String?
+  linkedIn  String?
+  notes     String?
+  companyId String?
+  companyRef Company? @relation(fields: [companyId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobContacts JobContact[]
+
+  @@index([companyId])
+  @@index([name])
+}
+
+model JobContact {
+  id           String  @id @default(cuid())
+  jobId        String
+  job          Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  contactId    String
+  contact      Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  relationship String
+
+  @@index([jobId])
+  @@index([contactId])
+}
+
+model FollowUp {
+  id          String    @id @default(cuid())
+  jobId       String
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  action      String
+  dueDate     DateTime
+  completedAt DateTime?
+  notes       String?
+  priority    String    @default("medium")
+  createdAt   DateTime  @default(now())
+
+  @@index([jobId])
+  @@index([dueDate])
+  @@index([completedAt])
 }

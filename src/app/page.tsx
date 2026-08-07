@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getTaxonomy, normalizeSkillName } from "@/lib/skill-taxonomy";
 import Nav from "@/components/Nav";
+import DashboardTrackerCard from "@/components/tracker/DashboardTrackerCard";
 
 interface DashboardStats {
   totalJobs: number;
@@ -172,12 +173,37 @@ export default async function DashboardPage() {
           </div>
         </section>
 
+        {/* Pipeline Tracker Stats */}
+        <section aria-labelledby="tracker-heading">
+          <h2 id="tracker-heading" className="text-lg font-semibold text-gray-900 mb-4">
+            Application Pipeline
+          </h2>
+          <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+            <DashboardTrackerCard />
+          </div>
+        </section>
+
         {/* Feature section cards */}
         <section aria-labelledby="features-heading">
           <h2 id="features-heading" className="text-lg font-semibold text-gray-900 mb-4">
             Features
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Link
+              href="/tracker"
+              className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group"
+            >
+              <h3 className="text-base font-semibold text-gray-900 group-hover:text-purple-600">
+                Application Tracker
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Pipeline board, analytics, and attention items
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
+                Track applications through stages with drag-and-drop pipeline
+              </p>
+            </Link>
+
             <Link
               href="/jobs"
               className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group"

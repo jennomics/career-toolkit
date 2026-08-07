@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { formatErrorResponse, generateRequestId, notFoundError } from "@/lib/api-error";
+import { PIPELINE_STAGES } from "@/lib/tracker-helpers";
 
 // GET /api/jobs/:id - Get a single job
 export async function GET(
@@ -36,32 +37,87 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    const { title, company, location, url, description, status, source, notes, skills, dreamCompany, dreamJob } = body;
+    const {
+      title, company, location, url, description, status, source, notes,
+      skills, dreamCompany, dreamJob, appliedAt, salary, priority,
+      nextAction, nextActionDate, rejectionReason,
+    } = body;
 
-    // If skills are provided, delete existing and recreate
+    // Fetch current job to detect status changes
+    const currentJob = await prisma.job.findUnique({ where: { id } });
+    if (!currentJob) {
+      return notFoundError("Job not found");
+    }
+
+    // Validate status against known pipeline stages
+    if (status !== undefined && !(PIPELINE_STAGES as readonly string[]).includes(status)) {
+      return NextResponse.json(
+        { error: { code: "VALIDATION_ERROR", message: `Invalid status "${status}". Valid values: ${PIPELINE_STAGES.join(", ")}`, requestId: generateRequestId() } },
+        { status: 400 }
+      );
+    }
+
+    const updateData = {
+      ...(title !== undefined && { title }),
+      ...(company !== undefined && { company }),
+      ...(location !== undefined && { location }),
+      ...(url !== undefined && { url }),
+      ...(description !== undefined && { description }),
+      ...(status !== undefined && { status }),
+      ...(source !== undefined && { source }),
+      ...(notes !== undefined && { notes }),
+      ...(dreamCompany !== undefined && { dreamCompany }),
+      ...(dreamJob !== undefined && { dreamJob }),
+      ...(appliedAt !== undefined && { appliedAt: appliedAt ? new Date(appliedAt) : null }),
+      ...(salary !== undefined && { salary }),
+      ...(priority !== undefined && { priority }),
+      ...(nextAction !== undefined && { nextAction }),
+      ...(nextActionDate !== undefined && { nextActionDate: nextActionDate ? new Date(nextActionDate) : null }),
+      ...(rejectionReason !== undefined && { rejectionReason }),
+      ...(skills !== undefined && {
+        skills: {
+          create: skills.map((skill: string) => ({ name: skill })),
+        },
+      }),
+    };
+
+    // Wrap status change + event creation (and skill deletion if needed) in a
+    // transaction for atomicity. This ensures skills are not deleted if the
+    // status update or event creation fails.
+    if (status !== undefined && status !== currentJob.status) {
+      const ops = [
+        ...(skills !== undefined
+          ? [prisma.jobSkill.deleteMany({ where: { jobId: id } })]
+          : []),
+        prisma.job.update({
+          where: { id },
+          data: updateData,
+          include: { skills: true, responsibilities: true },
+        }),
+        prisma.applicationEvent.create({
+          data: {
+            jobId: id,
+            eventType: "status_change",
+            fromStatus: currentJob.status,
+            toStatus: status,
+            occurredAt: new Date(),
+          },
+        }),
+      ];
+      const results = await prisma.$transaction(ops);
+      // The job update result is after the optional deleteMany
+      const updatedJob = skills !== undefined ? results[1] : results[0];
+      return NextResponse.json(updatedJob);
+    }
+
+    // Non-status-change path: delete skills outside transaction (no event to keep consistent with)
     if (skills !== undefined) {
       await prisma.jobSkill.deleteMany({ where: { jobId: id } });
     }
 
     const job = await prisma.job.update({
       where: { id },
-      data: {
-        ...(title !== undefined && { title }),
-        ...(company !== undefined && { company }),
-        ...(location !== undefined && { location }),
-        ...(url !== undefined && { url }),
-        ...(description !== undefined && { description }),
-        ...(status !== undefined && { status }),
-        ...(source !== undefined && { source }),
-        ...(notes !== undefined && { notes }),
-        ...(dreamCompany !== undefined && { dreamCompany }),
-        ...(dreamJob !== undefined && { dreamJob }),
-        ...(skills !== undefined && {
-          skills: {
-            create: skills.map((skill: string) => ({ name: skill })),
-          },
-        }),
-      },
+      data: updateData,
       include: { skills: true, responsibilities: true },
     });
 
