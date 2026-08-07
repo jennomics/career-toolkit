@@ -263,7 +263,7 @@ export default function DedupPage() {
                   key={group.normalizedName}
                   className="border-t border-rule p-5"
                 >
-                  <h3 className="text-base font-semibold text-ink mb-3">
+                  <h3 className="text-base font-medium text-ink mb-3">
                     &ldquo;{group.normalizedName}&rdquo;
                   </h3>
                   <p className="text-sm text-ink-50 mb-4">
@@ -355,7 +355,7 @@ export default function DedupPage() {
                   key={groupIndex}
                   className="border-t border-rule p-5"
                 >
-                  <h3 className="text-base font-semibold text-ink mb-3">
+                  <h3 className="text-base font-medium text-ink mb-3">
                     {group.reason}
                   </h3>
                   <p className="text-sm text-ink-50 mb-4">

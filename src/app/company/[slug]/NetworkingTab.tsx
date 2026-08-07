@@ -19,7 +19,7 @@ export default function NetworkingTab() {
           />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-ink-72">Networking features coming soon</h3>
+      <h3 className="text-lg font-medium text-ink-72">Networking features coming soon</h3>
       <p className="text-sm text-ink-35 mt-2">
         Track contacts, outreach, and relationship building for this company.
       </p>

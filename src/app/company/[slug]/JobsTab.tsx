@@ -52,7 +52,7 @@ export default function JobsTab({ jobs, onUpdate }: JobsTabProps) {
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-ink truncate">
+                <h3 className="text-sm font-medium text-ink truncate">
                   {job.title}
                 </h3>
                 {job.dreamJob && (

@@ -106,7 +106,7 @@ export default function EvalDashboardPage() {
           Primary Metric: Edit Distance
         </h2>
         <div className="flex items-baseline gap-3">
-          <span className="text-4xl font-bold">
+          <span className="text-4xl font-mono font-medium">
             {(metrics.editDistance * 100).toFixed(1)}%
           </span>
           <TrendIndicator trend={trend} />
@@ -124,7 +124,7 @@ export default function EvalDashboardPage() {
             Fact Score
           </h2>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold">
+            <span className="text-3xl font-mono font-medium">
               {(metrics.factScore * 100).toFixed(0)}%
             </span>
             {metrics.regressionPassRate < 1.0 && (
@@ -149,7 +149,7 @@ export default function EvalDashboardPage() {
             Voice / Structure Score
           </h2>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold">
+            <span className="text-3xl font-mono font-medium">
               {(metrics.voiceScore * 100).toFixed(0)}%
             </span>
           </div>

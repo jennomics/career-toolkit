@@ -374,7 +374,7 @@ function DocumentDetail({
       >
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h2 className="text-xl font-semibold text-ink">{document.title}</h2>
+            <h2 className="text-xl font-medium text-ink">{document.title}</h2>
             <div className="flex gap-2 mt-2">
               <CategoryBadge category={document.category} />
               <AuthorshipBadge authorship={document.authorship} />
@@ -544,7 +544,7 @@ export default function DocumentsPage() {
 
       {showForm && (
         <div id="upload-form" className="mb-8 border-t border-rule pt-s-3">
-          <h2 className="text-lg font-semibold text-ink mb-4">Upload New Document</h2>
+          <h2 className="text-lg font-medium text-ink mb-4">Upload New Document</h2>
           <UploadForm onSuccess={handleUploadSuccess} />
         </div>
       )}
@@ -582,7 +582,7 @@ export default function DocumentsPage() {
         <div className="space-y-6" role="list" aria-label="Documents grouped by category">
           {CATEGORIES.filter((cat) => grouped[cat]?.length).map((cat) => (
             <section key={cat} aria-label={`${CATEGORY_LABELS[cat]} documents`}>
-              <h2 className="text-lg font-semibold text-ink mb-3 border-b pb-2">
+              <h2 className="text-lg font-medium text-ink mb-3 border-b pb-2">
                 {CATEGORY_LABELS[cat]}
                 <span className="text-sm font-normal text-ink-50 ml-2">
                   ({grouped[cat].length})

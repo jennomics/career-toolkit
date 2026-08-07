@@ -58,7 +58,7 @@ export default function PhrasesTab({ jobs }: PhrasesTabProps) {
     <div className="space-y-4">
       {grouped.map(([category, phrases]) => (
         <div key={category} className="border-t border-rule pt-s-3">
-          <h3 className="text-sm font-semibold text-ink mb-3 capitalize">
+          <h3 className="text-sm font-medium text-ink mb-3 capitalize">
             {category} <span className="text-ink-35 font-normal">({phrases.length})</span>
           </h3>
           <div className="space-y-3">

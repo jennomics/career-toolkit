@@ -38,7 +38,7 @@ export default function SkillsTab({ skillsBreakdown }: SkillsTabProps) {
     <div className="space-y-4">
       {grouped.map(([category, skills]) => (
         <div key={category} className="border-t border-rule pt-s-3">
-          <h3 className="text-sm font-semibold text-ink mb-3">{category}</h3>
+          <h3 className="text-sm font-medium text-ink mb-3">{category}</h3>
           <div className="flex flex-wrap gap-2">
             {skills.map((skill, idx) => (
               <span

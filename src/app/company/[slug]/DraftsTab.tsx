@@ -85,7 +85,7 @@ export default function DraftsTab({ companySlug, jobs }: DraftsTabProps) {
           className="border-t border-rule pt-s-3 flex items-center justify-between"
         >
           <div>
-            <h3 className="text-sm font-semibold text-ink">
+            <h3 className="text-sm font-medium text-ink">
               {getJobTitle(draft.jobId)}
             </h3>
             <p className="text-xs text-ink-50 mt-1">
