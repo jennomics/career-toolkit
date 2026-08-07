@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Zen_Kaku_Gothic_New, DM_Mono } from "next/font/google";
 import "./globals.css";
 import DemoBanner from "@/components/DemoBanner";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const zen = Zen_Kaku_Gothic_New({
   subsets: ["latin"],
+  weight: ["300", "500"],
+  variable: "--font-zen-var",
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const mono = DM_Mono({
   subsets: ["latin"],
+  weight: "400",
+  variable: "--font-mono-var",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -26,9 +30,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${zen.variable} ${mono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-screen bg-paper text-ink font-zen">
         <DemoBanner />
         {children}
       </body>
