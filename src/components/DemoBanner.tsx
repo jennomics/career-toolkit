@@ -6,7 +6,7 @@ export default function DemoBanner() {
   }
 
   return (
-    <div className="bg-amber-100 border-b border-amber-300 px-4 py-2 text-center text-sm font-medium text-amber-900">
+    <div className="flex min-h-[var(--target-min)] items-center justify-center border-b border-rule bg-paper px-s-3 py-s-1 text-center text-meta font-mono uppercase tracking-widest text-ink-50">
       This is a read-only demo with synthetic data. Mutations are disabled.
     </div>
   );
