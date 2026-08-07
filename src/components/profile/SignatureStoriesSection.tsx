@@ -23,16 +23,16 @@ export default function SignatureStoriesSection({
 
   if (stories.length === 0) {
     return (
-      <p className="text-sm text-gray-400 italic">No signature stories yet.</p>
+      <p className="text-body text-ink-35">No signature stories yet.</p>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-0">
       {stories.map((story) => (
         <div
           key={story.id}
-          className="border border-gray-200 rounded-lg p-4"
+          className="border-t border-rule py-s-2"
         >
           <button
             onClick={() =>
@@ -40,13 +40,13 @@ export default function SignatureStoriesSection({
             }
             aria-expanded={expanded === story.id}
             aria-label={`Toggle story: ${story.title}`}
-            className="w-full text-left flex items-center justify-between"
+            className="w-full text-left flex items-center justify-between min-h-[var(--target-min)] cursor-pointer"
           >
-            <h3 className="text-sm font-semibold text-gray-900">
+            <h3 className="text-body font-medium text-ink">
               {story.title}
             </h3>
             <svg
-              className={`w-4 h-4 text-gray-400 transition-transform ${
+              className={`w-4 h-4 text-ink-50 transition-transform duration-200 ${
                 expanded === story.id ? "rotate-180" : ""
               }`}
               fill="none"
@@ -63,28 +63,26 @@ export default function SignatureStoriesSection({
             </svg>
           </button>
           {expanded === story.id && (
-            <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+            <div className="mt-s-2 pt-s-2 border-t border-rule space-y-s-2">
               <div>
-                <p className="text-xs font-medium text-gray-500">Situation</p>
-                <p className="text-sm text-gray-700">{story.situation}</p>
+                <p className="font-mono text-meta uppercase tracking-widest text-ink-50">Situation</p>
+                <p className="text-body text-ink-72 mt-0.5">{story.situation}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500">Obstacle</p>
-                <p className="text-sm text-gray-700">{story.obstacle}</p>
+                <p className="font-mono text-meta uppercase tracking-widest text-ink-50">Obstacle</p>
+                <p className="text-body text-ink-72 mt-0.5">{story.obstacle}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500">Action</p>
-                <p className="text-sm text-gray-700">{story.action}</p>
+                <p className="font-mono text-meta uppercase tracking-widest text-ink-50">Action</p>
+                <p className="text-body text-ink-72 mt-0.5">{story.action}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500">Result</p>
-                <p className="text-sm text-gray-700">{story.result}</p>
+                <p className="font-mono text-meta uppercase tracking-widest text-ink-50">Result</p>
+                <p className="text-body text-ink-72 mt-0.5">{story.result}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500">
-                  Why It Matters
-                </p>
-                <p className="text-sm text-gray-700">{story.whyItMatters}</p>
+                <p className="font-mono text-meta uppercase tracking-widest text-ink-50">Why it matters</p>
+                <p className="text-body text-ink-72 mt-0.5">{story.whyItMatters}</p>
               </div>
             </div>
           )}

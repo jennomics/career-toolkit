@@ -45,10 +45,10 @@ function SortHeader({
   onSort: (key: SortKey) => void;
 }) {
   return (
-    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+    <th className="px-s-2 py-s-1 text-left font-mono text-meta uppercase tracking-widest text-ink-50">
       <button
         onClick={() => onSort(col)}
-        className="flex items-center gap-1 hover:text-gray-700 cursor-pointer"
+        className="flex items-center gap-1 cursor-pointer min-h-[var(--target-min)]"
         aria-label={`Sort by ${label} ${sortKey === col ? (sortDir === "asc" ? "descending" : "ascending") : "ascending"}`}
       >
         {label}
@@ -210,8 +210,8 @@ export default function ListView({ jobs, onJobClick, onJobUpdated }: ListViewPro
 
   if (jobs.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-400">No jobs to display in list view.</p>
+      <div className="text-center py-s-5">
+        <p className="text-body text-ink-35">No jobs to display in list view.</p>
       </div>
     );
   }
@@ -221,14 +221,14 @@ export default function ListView({ jobs, onJobClick, onJobUpdated }: ListViewPro
       {/* Bulk Actions Toolbar */}
       {selectedIds.size > 0 && (
         <div
-          className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 flex-wrap"
+          className="flex items-center gap-s-2 border-t border-rule px-s-3 py-s-1 flex-wrap"
           role="toolbar"
           aria-label="Bulk actions"
         >
-          <span className="text-sm text-blue-700 font-medium">
+          <span className="font-mono text-meta text-ink">
             {selectedIds.size} selected
           </span>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-s-2 flex-wrap">
             <select
               disabled={bulkLoading}
               onChange={(e) => {
@@ -237,7 +237,7 @@ export default function ListView({ jobs, onJobClick, onJobUpdated }: ListViewPro
                   e.target.value = "";
                 }
               }}
-              className="text-xs border border-blue-300 rounded-md px-2 py-1 bg-white text-gray-700 cursor-pointer disabled:opacity-50"
+              className="border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink font-mono text-meta focus:border-b-2 focus:border-ink focus:outline-none cursor-pointer disabled:opacity-50"
               aria-label="Bulk change status"
               defaultValue=""
             >
@@ -253,7 +253,7 @@ export default function ListView({ jobs, onJobClick, onJobUpdated }: ListViewPro
             <button
               onClick={() => handleBulkAction("archive")}
               disabled={bulkLoading}
-              className="text-xs px-3 py-1 bg-amber-100 text-amber-700 border border-amber-300 rounded-md hover:bg-amber-200 cursor-pointer disabled:opacity-50"
+              className="border border-ink text-ink bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer disabled:opacity-50"
               aria-label="Archive selected jobs"
             >
               Archive
@@ -265,7 +265,7 @@ export default function ListView({ jobs, onJobClick, onJobUpdated }: ListViewPro
                 }
               }}
               disabled={bulkLoading}
-              className="text-xs px-3 py-1 bg-red-100 text-red-700 border border-red-300 rounded-md hover:bg-red-200 cursor-pointer disabled:opacity-50"
+              className="border border-ink text-ink bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer disabled:opacity-50"
               aria-label="Delete selected jobs"
             >
               Delete
@@ -273,7 +273,7 @@ export default function ListView({ jobs, onJobClick, onJobUpdated }: ListViewPro
           </div>
           <button
             onClick={() => setSelectedIds(new Set())}
-            className="text-xs text-blue-600 hover:text-blue-800 cursor-pointer ml-auto"
+            className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer ml-auto font-mono text-meta"
           >
             Clear selection
           </button>
@@ -281,7 +281,7 @@ export default function ListView({ jobs, onJobClick, onJobUpdated }: ListViewPro
       )}
 
       {bulkError && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm" role="alert">
+        <div className="border-t border-rule p-s-2 text-live text-body" role="alert">
           {bulkError}
         </div>
       )}
@@ -290,7 +290,7 @@ export default function ListView({ jobs, onJobClick, onJobUpdated }: ListViewPro
       <div className="flex justify-end">
         <button
           onClick={handleExportCSV}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+          className="border border-ink text-ink bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer gap-s-1"
           aria-label="Export jobs as CSV"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -300,17 +300,17 @@ export default function ListView({ jobs, onJobClick, onJobUpdated }: ListViewPro
         </button>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
-        <table className="min-w-full divide-y divide-gray-200" role="grid" aria-label="Jobs list">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-3 py-2 w-10">
+      <div className="overflow-x-auto">
+        <table className="min-w-full" role="grid" aria-label="Jobs list">
+          <thead>
+            <tr className="border-b border-rule">
+              <th className="px-s-2 py-s-1 w-10">
                 <input
                   type="checkbox"
                   checked={selectedIds.size === jobs.length && jobs.length > 0}
                   onChange={toggleAll}
                   aria-label="Select all jobs"
-                  className="rounded border-gray-300"
+                  className="border-rule"
                 />
               </th>
               <SortHeader label="Company" col="company" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
@@ -322,11 +322,11 @@ export default function ListView({ jobs, onJobClick, onJobUpdated }: ListViewPro
               <SortHeader label="Priority" col="priority" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-100">
+          <tbody>
             {sorted.map((job) => (
               <tr
                 key={job.id}
-                className="hover:bg-gray-50 cursor-pointer"
+                className="border-t border-rule cursor-pointer"
                 onClick={() => onJobClick(job)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -337,23 +337,23 @@ export default function ListView({ jobs, onJobClick, onJobUpdated }: ListViewPro
                 tabIndex={0}
                 role="row"
               >
-                <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                <td className="px-s-2 py-s-1" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
                     checked={selectedIds.has(job.id)}
                     onChange={() => toggleSelect(job.id)}
                     aria-label={`Select ${job.title} at ${job.company}`}
-                    className="rounded border-gray-300"
+                    className="border-rule"
                   />
                 </td>
-                <td className="px-3 py-2 text-sm text-gray-900 font-medium">{job.company}</td>
-                <td className="px-3 py-2 text-sm text-gray-700">{job.title}</td>
-                <td className="px-3 py-2">
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 capitalize">
+                <td className="px-s-2 py-s-1 text-body text-ink font-medium">{job.company}</td>
+                <td className="px-s-2 py-s-1 text-body text-ink-72">{job.title}</td>
+                <td className="px-s-2 py-s-1">
+                  <span className="font-mono text-meta text-ink-50 capitalize">
                     {job.status}
                   </span>
                 </td>
-                <td className="px-3 py-2 text-xs text-gray-500">
+                <td className="px-s-2 py-s-1 font-mono text-meta text-ink-50">
                   {job.appliedAt
                     ? new Date(job.appliedAt).toLocaleDateString("en-US", {
                         month: "short",
@@ -361,26 +361,18 @@ export default function ListView({ jobs, onJobClick, onJobUpdated }: ListViewPro
                       })
                     : "-"}
                 </td>
-                <td className="px-3 py-2 text-xs text-gray-500">
+                <td className="px-s-2 py-s-1 font-mono text-meta text-ink-50">
                   {new Date(job.updatedAt).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
                   })}
                 </td>
-                <td className="px-3 py-2 text-xs text-gray-600 max-w-[150px] truncate">
+                <td className="px-s-2 py-s-1 text-list text-ink-72 max-w-[150px] truncate">
                   {job.nextAction || "-"}
                 </td>
-                <td className="px-3 py-2">
+                <td className="px-s-2 py-s-1">
                   {job.priority && (
-                    <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${
-                        job.priority === "high"
-                          ? "bg-red-100 text-red-700"
-                          : job.priority === "medium"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-green-100 text-green-700"
-                      }`}
-                    >
+                    <span className="font-mono text-meta text-ink capitalize">
                       {job.priority}
                     </span>
                   )}

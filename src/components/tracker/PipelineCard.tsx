@@ -24,9 +24,9 @@ interface PipelineCardProps {
 }
 
 const PRIORITY_COLORS: Record<string, string> = {
-  high: "bg-red-500",
-  medium: "bg-yellow-500",
-  low: "bg-green-500",
+  high: "bg-live",
+  medium: "bg-ink/50",
+  low: "bg-ink/35",
 };
 
 export default function PipelineCard({ job, onDragStart, onClick }: PipelineCardProps) {
@@ -50,27 +50,27 @@ export default function PipelineCard({ job, onDragStart, onClick }: PipelineCard
       role="button"
       tabIndex={0}
       aria-label={`${job.title} at ${job.company}. Priority: ${job.priority || "none"}. ${daysInStage} days in stage.`}
-      className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing select-none"
+      className="border-t border-rule py-s-2 px-s-1 cursor-grab active:cursor-grabbing select-none"
     >
       <div className="flex items-start justify-between gap-2">
-        <h4 className="text-sm font-semibold text-gray-900 truncate flex-1">
+        <h4 className="text-body font-medium text-ink truncate flex-1">
           {job.title}
         </h4>
         {job.priority && (
           <span
-            className={`w-2 h-2 rounded-full shrink-0 mt-1.5 ${PRIORITY_COLORS[job.priority] || "bg-gray-400"}`}
+            className={`w-1.5 h-1.5 rounded-full shrink-0 mt-2 ${PRIORITY_COLORS[job.priority] || "bg-ink/35"}`}
             title={`Priority: ${job.priority}`}
             aria-hidden="true"
           />
         )}
       </div>
-      <p className="text-xs text-gray-500 mt-0.5 truncate">{job.company}</p>
-      <div className="flex items-center justify-between mt-2">
-        <span className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">
+      <p className="text-list text-ink-72 mt-0.5 truncate">{job.company}</p>
+      <div className="flex items-center justify-between mt-1">
+        <span className="font-mono text-meta text-ink-50">
           {daysInStage}d
         </span>
         {job.nextAction && (
-          <span className="text-[10px] text-blue-600 truncate max-w-[120px]" title={job.nextAction}>
+          <span className="font-mono text-meta text-ink-50 truncate max-w-[120px]" title={job.nextAction}>
             {job.nextAction}
           </span>
         )}

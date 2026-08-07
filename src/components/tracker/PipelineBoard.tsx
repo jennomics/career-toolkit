@@ -26,21 +26,6 @@ const STAGE_LABELS: Record<string, string> = {
   closed: "Closed",
 };
 
-const STAGE_HEADER_COLORS: Record<string, string> = {
-  saved: "border-t-gray-400",
-  researching: "border-t-indigo-400",
-  applied: "border-t-blue-400",
-  screening: "border-t-cyan-400",
-  interviewing: "border-t-yellow-400",
-  "final-round": "border-t-orange-400",
-  offer: "border-t-green-400",
-  negotiating: "border-t-emerald-400",
-  accepted: "border-t-green-600",
-  rejected: "border-t-red-400",
-  withdrawn: "border-t-amber-400",
-  closed: "border-t-gray-300",
-};
-
 export default function PipelineBoard({ jobs, onJobUpdated, onJobClick }: PipelineBoardProps) {
   const [dragOverStage, setDragOverStage] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -106,7 +91,6 @@ export default function PipelineBoard({ jobs, onJobUpdated, onJobClick }: Pipeli
     e.dataTransfer.setData("text/plain", jobId);
     e.dataTransfer.effectAllowed = "move";
     setDraggingId(jobId);
-    // Set drag image with slight offset for ghost effect
     if (e.currentTarget instanceof HTMLElement) {
       e.dataTransfer.setDragImage(e.currentTarget, 20, 20);
     }
@@ -141,7 +125,6 @@ export default function PipelineBoard({ jobs, onJobUpdated, onJobClick }: Pipeli
 
   const handleCardKeyDown = useCallback(
     (e: React.KeyboardEvent, job: TrackerJob) => {
-      // Ctrl+ArrowLeft / Ctrl+ArrowRight to move between columns
       if (e.ctrlKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
         e.preventDefault();
         const currentIdx = visibleStages.indexOf(job.status as typeof visibleStages[number]);
@@ -171,31 +154,31 @@ export default function PipelineBoard({ jobs, onJobUpdated, onJobClick }: Pipeli
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm" role="alert">
+        <div className="border-t border-rule p-s-2 text-live text-body" role="alert">
           {error}
         </div>
       )}
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">
+        <p className="font-mono text-meta text-ink-50">
           {jobs.length} job{jobs.length !== 1 ? "s" : ""} across {visibleStages.length} stages
         </p>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-400">
-            Tip: Ctrl+Arrow Left/Right to move cards
+        <div className="flex items-center gap-s-3">
+          <span className="font-mono text-meta text-ink-35">
+            Ctrl+Arrow Left/Right to move cards
           </span>
           <button
             onClick={() => setShowArchived(!showArchived)}
-            className="text-sm text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+            className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer font-mono text-meta"
             aria-pressed={showArchived}
           >
-            {showArchived ? "Hide Archived" : "Show Archived"}
+            {showArchived ? "Hide archived" : "Show archived"}
           </button>
         </div>
       </div>
 
       <div
-        className="flex gap-3 overflow-x-auto pb-4"
+        className="flex gap-s-2 overflow-x-auto pb-4"
         role="region"
         aria-label="Pipeline board"
       >
@@ -207,29 +190,27 @@ export default function PipelineBoard({ jobs, onJobUpdated, onJobClick }: Pipeli
               onDragOver={(e) => handleDragOver(e, stage)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, stage)}
-              className={`flex-shrink-0 w-64 rounded-lg border-t-4 transition-all duration-200 ${
-                STAGE_HEADER_COLORS[stage] || "border-t-gray-300"
-              } ${
+              className={`flex-shrink-0 w-64 border-t border-rule ${
                 isDropTarget
-                  ? "ring-2 ring-blue-400 bg-blue-50 border-2 border-dashed border-blue-300"
-                  : "bg-gray-50"
+                  ? "border-2 border-dashed border-rule bg-paper"
+                  : "bg-paper"
               }`}
               role="group"
               aria-label={`${STAGE_LABELS[stage] || stage} stage, ${grouped[stage].length} jobs`}
             >
-              <div className="p-3 border-b border-gray-200">
+              <div className="p-s-2 border-b border-rule">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-700">
+                  <h3 className="font-mono text-meta uppercase tracking-widest text-ink-50">
                     {STAGE_LABELS[stage] || stage}
                   </h3>
-                  <span className="text-xs text-gray-400 bg-white px-1.5 py-0.5 rounded-full">
+                  <span className="font-mono text-meta text-ink-50">
                     {grouped[stage].length}
                   </span>
                 </div>
               </div>
-              <div className="p-2 space-y-2 min-h-[100px]">
+              <div className="p-s-1 space-y-0 min-h-[100px]">
                 {grouped[stage].length === 0 ? (
-                  <p className="text-xs text-gray-400 text-center py-4">
+                  <p className="text-meta text-ink-35 text-center py-s-4 font-mono">
                     {isDropTarget ? "Drop here" : "Drop jobs here"}
                   </p>
                 ) : (
@@ -238,8 +219,8 @@ export default function PipelineBoard({ jobs, onJobUpdated, onJobClick }: Pipeli
                       key={job.id}
                       onDragEnd={handleDragEnd}
                       onKeyDown={(e) => handleCardKeyDown(e, job)}
-                      className={`transition-all duration-200 ${
-                        draggingId === job.id ? "opacity-40 scale-95" : ""
+                      className={`transition-opacity duration-200 ${
+                        draggingId === job.id ? "opacity-40" : ""
                       }`}
                     >
                       <PipelineCard

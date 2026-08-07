@@ -26,23 +26,8 @@ const STAGE_LABELS: Record<string, string> = {
   closed: "Closed",
 };
 
-const FUNNEL_COLORS: Record<string, string> = {
-  saved: "bg-gray-400",
-  researching: "bg-indigo-400",
-  applied: "bg-blue-400",
-  screening: "bg-cyan-400",
-  interviewing: "bg-yellow-400",
-  "final-round": "bg-orange-400",
-  offer: "bg-green-400",
-  negotiating: "bg-emerald-400",
-  accepted: "bg-green-600",
-  rejected: "bg-red-400",
-  withdrawn: "bg-amber-400",
-  closed: "bg-gray-300",
-};
-
 function SkeletonBlock({ className }: { className?: string }) {
-  return <div className={`animate-pulse bg-gray-200 rounded ${className || ""}`} />;
+  return <div className={`bg-rule ${className || ""}`} />;
 }
 
 export default function AnalyticsDashboard() {
@@ -92,18 +77,18 @@ export default function AnalyticsDashboard() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm" role="alert">
-        <strong>Error:</strong> {error}
+      <div className="border-t border-rule p-s-3 text-live text-body" role="alert">
+        {error}
       </div>
     );
   }
 
   if (!data || data.totalJobs === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="bg-white border border-gray-200 rounded-lg p-8 max-w-md mx-auto shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900">No analytics yet</h3>
-          <p className="text-sm text-gray-500 mt-2">
+      <div className="text-center py-s-5">
+        <div className="border-t border-rule pt-s-4 max-w-md mx-auto">
+          <h3 className="text-h3 font-light text-ink">No analytics yet</h3>
+          <p className="text-body text-ink-50 mt-s-1">
             Add jobs to your pipeline to see conversion funnels, time-in-stage averages, and more.
           </p>
         </div>
@@ -118,48 +103,48 @@ export default function AnalyticsDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Total Applications</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">{data.totalJobs}</p>
+      {/* Summary Sections */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-0">
+        <div className="border-t border-rule py-s-3 px-s-2">
+          <p className="font-mono text-meta uppercase tracking-widest text-ink-50">Total applications</p>
+          <p className="font-mono text-h2 text-ink mt-s-1">{data.totalJobs}</p>
         </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Active Pipeline</p>
-          <p className="text-3xl font-bold text-blue-600 mt-1">
+        <div className="border-t border-rule py-s-3 px-s-2">
+          <p className="font-mono text-meta uppercase tracking-widest text-ink-50">Active pipeline</p>
+          <p className="font-mono text-h2 text-ink mt-s-1">
             {activeStages.reduce((sum, s) => sum + (data.stageCounts[s] || 0), 0)}
           </p>
-          <p className="text-xs text-gray-400 mt-1">in active stages</p>
+          <p className="font-mono text-meta text-ink-35 mt-0.5">in active stages</p>
         </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Overall Conversion</p>
-          <p className="text-3xl font-bold text-green-600 mt-1">
+        <div className="border-t border-rule py-s-3 px-s-2">
+          <p className="font-mono text-meta uppercase tracking-widest text-ink-50">Overall conversion</p>
+          <p className="font-mono text-h2 text-ink mt-s-1">
             {data.conversionRates.length > 0
               ? `${data.conversionRates[data.conversionRates.length - 1].rate}%`
               : "0%"}
           </p>
-          <p className="text-xs text-gray-400 mt-1">saved to accepted</p>
+          <p className="font-mono text-meta text-ink-35 mt-0.5">saved to accepted</p>
         </div>
       </div>
 
       {/* Conversion Funnel */}
       <section aria-labelledby="funnel-heading">
-        <h3 id="funnel-heading" className="text-base font-semibold text-gray-900 mb-4">
-          Conversion Funnel
+        <h3 id="funnel-heading" className="font-mono text-meta uppercase tracking-widest text-ink-50 mb-s-3">
+          Conversion funnel
         </h3>
-        <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+        <div className="border-t border-rule pt-s-3">
           <div className="space-y-3">
             {activeStages.map((stage) => {
               const count = data.stageCounts[stage] || 0;
               const widthPercent = maxStageCount > 0 ? Math.max((count / maxStageCount) * 100, 2) : 2;
               return (
                 <div key={stage} className="flex items-center gap-3">
-                  <span className="text-xs text-gray-600 w-24 text-right shrink-0">
+                  <span className="font-mono text-meta text-ink-50 w-24 text-right shrink-0">
                     {STAGE_LABELS[stage]}
                   </span>
-                  <div className="flex-1 h-7 bg-gray-100 rounded-md overflow-hidden relative">
+                  <div className="flex-1 h-7 bg-rule overflow-hidden relative">
                     <div
-                      className={`h-full rounded-md transition-all duration-500 ${FUNNEL_COLORS[stage] || "bg-gray-300"}`}
+                      className="h-full bg-ink transition-all duration-200"
                       style={{ width: `${widthPercent}%` }}
                       role="progressbar"
                       aria-valuenow={count}
@@ -167,7 +152,7 @@ export default function AnalyticsDashboard() {
                       aria-valuemax={maxStageCount}
                       aria-label={`${STAGE_LABELS[stage]}: ${count} jobs`}
                     />
-                    <span className="absolute inset-y-0 right-2 flex items-center text-xs font-medium text-gray-700">
+                    <span className="absolute inset-y-0 right-2 flex items-center font-mono text-meta text-ink-50">
                       {count}
                     </span>
                   </div>
@@ -181,24 +166,20 @@ export default function AnalyticsDashboard() {
       {/* Conversion Rates */}
       {data.conversionRates.length > 0 && (
         <section aria-labelledby="conversion-heading">
-          <h3 id="conversion-heading" className="text-base font-semibold text-gray-900 mb-4">
-            Stage-to-Stage Conversion
+          <h3 id="conversion-heading" className="font-mono text-meta uppercase tracking-widest text-ink-50 mb-s-3">
+            Stage-to-stage conversion
           </h3>
-          <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-            <div className="flex flex-wrap gap-2">
+          <div className="border-t border-rule pt-s-3">
+            <div className="space-y-1">
               {data.conversionRates.map(({ from, to, rate }) => (
                 <div
                   key={`${from}-${to}`}
-                  className="flex items-center gap-1.5 bg-gray-50 rounded-lg px-3 py-2 border border-gray-100"
+                  className="flex items-center gap-s-2 py-s-1 border-t border-rule first:border-t-0"
                 >
-                  <span className="text-xs text-gray-500">{STAGE_LABELS[from]}</span>
-                  <span className="text-gray-300" aria-hidden="true">&rarr;</span>
-                  <span className="text-xs text-gray-500">{STAGE_LABELS[to]}</span>
-                  <span
-                    className={`text-xs font-bold ml-1 ${
-                      rate >= 50 ? "text-green-600" : rate >= 25 ? "text-yellow-600" : "text-red-600"
-                    }`}
-                  >
+                  <span className="font-mono text-meta text-ink-50">{STAGE_LABELS[from]}</span>
+                  <span className="text-ink-35" aria-hidden="true">&rarr;</span>
+                  <span className="font-mono text-meta text-ink-50">{STAGE_LABELS[to]}</span>
+                  <span className="font-mono text-meta text-ink ml-auto">
                     {rate}%
                   </span>
                 </div>
@@ -211,10 +192,10 @@ export default function AnalyticsDashboard() {
       {/* Average Time in Stage */}
       {Object.keys(data.avgTimeInStageDays).length > 0 && (
         <section aria-labelledby="time-heading">
-          <h3 id="time-heading" className="text-base font-semibold text-gray-900 mb-4">
-            Average Time in Stage (Days)
+          <h3 id="time-heading" className="font-mono text-meta uppercase tracking-widest text-ink-50 mb-s-3">
+            Average time in stage (days)
           </h3>
-          <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+          <div className="border-t border-rule pt-s-3">
             <div className="space-y-2">
               {Object.entries(data.avgTimeInStageDays)
                 .filter(([, days]) => days > 0)
@@ -228,12 +209,12 @@ export default function AnalyticsDashboard() {
                   const widthPercent = Math.max((days / maxDays) * 100, 5);
                   return (
                     <div key={stage} className="flex items-center gap-3">
-                      <span className="text-xs text-gray-600 w-24 text-right shrink-0">
+                      <span className="font-mono text-meta text-ink-50 w-24 text-right shrink-0">
                         {STAGE_LABELS[stage] || stage}
                       </span>
-                      <div className="flex-1 h-6 bg-gray-100 rounded-md overflow-hidden relative">
+                      <div className="flex-1 h-6 bg-rule overflow-hidden relative">
                         <div
-                          className="h-full rounded-md bg-purple-400 transition-all duration-500"
+                          className="h-full bg-ink transition-all duration-200"
                           style={{ width: `${widthPercent}%` }}
                           role="progressbar"
                           aria-valuenow={days}
@@ -241,7 +222,7 @@ export default function AnalyticsDashboard() {
                           aria-valuemax={maxDays}
                           aria-label={`${STAGE_LABELS[stage] || stage}: ${days} days average`}
                         />
-                        <span className="absolute inset-y-0 right-2 flex items-center text-xs font-medium text-gray-700">
+                        <span className="absolute inset-y-0 right-2 flex items-center font-mono text-meta text-ink-50">
                           {days}d
                         </span>
                       </div>
@@ -250,7 +231,7 @@ export default function AnalyticsDashboard() {
                 })}
             </div>
             {Object.values(data.avgTimeInStageDays).every((d) => d === 0) && (
-              <p className="text-xs text-gray-400 text-center py-4">
+              <p className="text-meta text-ink-35 text-center py-s-3 font-mono">
                 Not enough stage transitions yet to calculate averages.
               </p>
             )}

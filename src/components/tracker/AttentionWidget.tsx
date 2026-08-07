@@ -31,7 +31,7 @@ interface AttentionWidgetProps {
 }
 
 function SkeletonLine({ className }: { className?: string }) {
-  return <div className={`animate-pulse bg-gray-200 rounded h-4 ${className || ""}`} />;
+  return <div className={`bg-rule h-4 ${className || ""}`} />;
 }
 
 export default function AttentionWidget({ onJobClick, compact = false }: AttentionWidgetProps) {
@@ -77,7 +77,7 @@ export default function AttentionWidget({ onJobClick, compact = false }: Attenti
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm" role="alert">
+      <div className="border-t border-rule p-s-2 text-live text-body" role="alert">
         {error}
       </div>
     );
@@ -85,8 +85,8 @@ export default function AttentionWidget({ onJobClick, compact = false }: Attenti
 
   if (!data || data.attentionCount === 0) {
     return (
-      <div className="text-center py-4">
-        <p className="text-sm text-gray-400">No items need attention right now.</p>
+      <div className="text-center py-s-3">
+        <p className="text-body text-ink-35">No items need attention right now.</p>
       </div>
     );
   }
@@ -98,24 +98,24 @@ export default function AttentionWidget({ onJobClick, compact = false }: Attenti
       {/* Overdue Follow-ups */}
       {data.overdueFollowUps.length > 0 && (
         <div>
-          <h4 className="text-xs font-semibold text-red-600 uppercase tracking-wider mb-2">
-            Overdue Follow-ups ({data.overdueFollowUps.length})
+          <h4 className="font-mono text-meta uppercase tracking-widest text-ink mb-s-1">
+            Overdue follow-ups ({data.overdueFollowUps.length})
           </h4>
-          <ul className="space-y-1.5">
+          <ul className="space-y-0">
             {data.overdueFollowUps.slice(0, maxItems).map((item) => (
-              <li key={item.id}>
+              <li key={item.id} className="border-t border-rule">
                 <button
                   onClick={() => onJobClick?.(item.job.id)}
-                  className="w-full text-left px-3 py-2 bg-red-50 border border-red-100 rounded-md hover:bg-red-100 transition-colors cursor-pointer"
+                  className="w-full text-left px-s-2 py-s-1 min-h-[var(--target-min)] cursor-pointer"
                   aria-label={`Overdue: ${item.action} for ${item.job.title} at ${item.job.company}`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-900 truncate">{item.action}</span>
-                    <span className="text-xs text-red-500 shrink-0 ml-2">
+                    <span className="text-body text-ink truncate">{item.action}</span>
+                    <span className="font-mono text-meta text-live shrink-0 ml-2">
                       {new Date(item.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5 truncate">
+                  <p className="text-list text-ink-50 mt-0.5 truncate">
                     {item.job.title} - {item.job.company}
                   </p>
                 </button>
@@ -128,24 +128,24 @@ export default function AttentionWidget({ onJobClick, compact = false }: Attenti
       {/* Stale Applications */}
       {data.staleApplications.length > 0 && (
         <div>
-          <h4 className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-2">
-            Stale Applications ({data.staleApplications.length})
+          <h4 className="font-mono text-meta uppercase tracking-widest text-ink mb-s-1">
+            Stale applications ({data.staleApplications.length})
           </h4>
-          <ul className="space-y-1.5">
+          <ul className="space-y-0">
             {data.staleApplications.slice(0, maxItems).map((item) => (
-              <li key={item.id}>
+              <li key={item.id} className="border-t border-rule">
                 <button
                   onClick={() => onJobClick?.(item.id)}
-                  className="w-full text-left px-3 py-2 bg-amber-50 border border-amber-100 rounded-md hover:bg-amber-100 transition-colors cursor-pointer"
+                  className="w-full text-left px-s-2 py-s-1 min-h-[var(--target-min)] cursor-pointer"
                   aria-label={`Stale: ${item.title} at ${item.company}, ${item.daysSinceUpdate} days without activity`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-900 truncate">{item.title}</span>
-                    <span className="text-xs text-amber-600 shrink-0 ml-2">
+                    <span className="text-body text-ink truncate">{item.title}</span>
+                    <span className="font-mono text-meta text-ink-50 shrink-0 ml-2">
                       {item.daysSinceUpdate}d idle
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5 truncate">
+                  <p className="text-list text-ink-50 mt-0.5 truncate">
                     {item.company} - {item.status}
                   </p>
                 </button>
@@ -158,24 +158,24 @@ export default function AttentionWidget({ onJobClick, compact = false }: Attenti
       {/* Upcoming Follow-ups */}
       {data.upcomingFollowUps.length > 0 && (
         <div>
-          <h4 className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-2">
-            Upcoming Follow-ups ({data.upcomingFollowUps.length})
+          <h4 className="font-mono text-meta uppercase tracking-widest text-ink mb-s-1">
+            Upcoming follow-ups ({data.upcomingFollowUps.length})
           </h4>
-          <ul className="space-y-1.5">
+          <ul className="space-y-0">
             {data.upcomingFollowUps.slice(0, maxItems).map((item) => (
-              <li key={item.id}>
+              <li key={item.id} className="border-t border-rule">
                 <button
                   onClick={() => onJobClick?.(item.job.id)}
-                  className="w-full text-left px-3 py-2 bg-blue-50 border border-blue-100 rounded-md hover:bg-blue-100 transition-colors cursor-pointer"
+                  className="w-full text-left px-s-2 py-s-1 min-h-[var(--target-min)] cursor-pointer"
                   aria-label={`Upcoming: ${item.action} for ${item.job.title} at ${item.job.company}`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-900 truncate">{item.action}</span>
-                    <span className="text-xs text-blue-500 shrink-0 ml-2">
+                    <span className="text-body text-ink truncate">{item.action}</span>
+                    <span className="font-mono text-meta text-ink-50 shrink-0 ml-2">
                       {new Date(item.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5 truncate">
+                  <p className="text-list text-ink-50 mt-0.5 truncate">
                     {item.job.title} - {item.job.company}
                   </p>
                 </button>

@@ -114,41 +114,41 @@ export default function InterviewsTab({ jobId }: InterviewsTabProps) {
   };
 
   if (loading) {
-    return <p className="text-center text-gray-400 py-8">Loading interviews...</p>;
+    return <p className="text-center text-ink-35 py-s-4 text-body">Loading interviews...</p>;
   }
 
   return (
     <div className="space-y-4">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm" role="alert">
+        <div className="border-t border-rule p-s-2 text-live text-body" role="alert">
           {error}
         </div>
       )}
 
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700">
+        <h3 className="font-mono text-meta uppercase tracking-widest text-ink-50">
           Interviews ({interviews.length})
         </h3>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="text-sm text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+          className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
         >
-          {showForm ? "Cancel" : "+ Add Interview"}
+          {showForm ? "Cancel" : "Add interview"}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-gray-50 rounded-lg p-4 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+        <form onSubmit={handleSubmit} className="border-t border-rule pt-s-2 space-y-3">
+          <div className="grid grid-cols-2 gap-s-3">
             <div>
-              <label htmlFor="interviewType" className="block text-xs font-medium text-gray-600 mb-1">
+              <label htmlFor="interviewType" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
                 Type
               </label>
               <select
                 id="interviewType"
                 value={formData.interviewType}
                 onChange={(e) => setFormData({ ...formData, interviewType: e.target.value })}
-                className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+                className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none"
               >
                 {INTERVIEW_TYPES.map((t) => (
                   <option key={t} value={t}>
@@ -158,7 +158,7 @@ export default function InterviewsTab({ jobId }: InterviewsTabProps) {
               </select>
             </div>
             <div>
-              <label htmlFor="round" className="block text-xs font-medium text-gray-600 mb-1">
+              <label htmlFor="round" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
                 Round
               </label>
               <input
@@ -167,13 +167,13 @@ export default function InterviewsTab({ jobId }: InterviewsTabProps) {
                 min="1"
                 value={formData.round}
                 onChange={(e) => setFormData({ ...formData, round: e.target.value })}
-                className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+                className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none"
               />
             </div>
           </div>
           <div>
-            <label htmlFor="scheduledAt" className="block text-xs font-medium text-gray-600 mb-1">
-              Scheduled At *
+            <label htmlFor="scheduledAt" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
+              Scheduled at
             </label>
             <input
               id="scheduledAt"
@@ -181,12 +181,12 @@ export default function InterviewsTab({ jobId }: InterviewsTabProps) {
               required
               value={formData.scheduledAt}
               onChange={(e) => setFormData({ ...formData, scheduledAt: e.target.value })}
-              className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-s-3">
             <div>
-              <label htmlFor="durationMinutes" className="block text-xs font-medium text-gray-600 mb-1">
+              <label htmlFor="durationMinutes" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
                 Duration (min)
               </label>
               <input
@@ -194,19 +194,19 @@ export default function InterviewsTab({ jobId }: InterviewsTabProps) {
                 type="number"
                 value={formData.durationMinutes}
                 onChange={(e) => setFormData({ ...formData, durationMinutes: e.target.value })}
-                className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+                className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
                 placeholder="60"
               />
             </div>
             <div>
-              <label htmlFor="outcome" className="block text-xs font-medium text-gray-600 mb-1">
+              <label htmlFor="outcome" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
                 Outcome
               </label>
               <select
                 id="outcome"
                 value={formData.outcome}
                 onChange={(e) => setFormData({ ...formData, outcome: e.target.value })}
-                className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+                className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none"
               >
                 {OUTCOMES.map((o) => (
                   <option key={o} value={o}>
@@ -217,67 +217,67 @@ export default function InterviewsTab({ jobId }: InterviewsTabProps) {
             </div>
           </div>
           <div>
-            <label htmlFor="interviewers" className="block text-xs font-medium text-gray-600 mb-1">
-              Interviewers
+            <label htmlFor="interviewers" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
+              Interviewers (optional)
             </label>
             <input
               id="interviewers"
               type="text"
               value={formData.interviewers}
               onChange={(e) => setFormData({ ...formData, interviewers: e.target.value })}
-              className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
               placeholder="John Doe, Jane Smith"
             />
           </div>
           <div>
-            <label htmlFor="meetingLink" className="block text-xs font-medium text-gray-600 mb-1">
-              Meeting Link / Location
+            <label htmlFor="meetingLink" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
+              Meeting link / location (optional)
             </label>
             <input
               id="meetingLink"
               type="text"
               value={formData.meetingLink}
               onChange={(e) => setFormData({ ...formData, meetingLink: e.target.value })}
-              className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
               placeholder="https://zoom.us/..."
             />
           </div>
           <div>
-            <label htmlFor="interviewNotes" className="block text-xs font-medium text-gray-600 mb-1">
-              Notes
+            <label htmlFor="interviewNotes" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
+              Notes (optional)
             </label>
             <textarea
               id="interviewNotes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full text-sm border border-gray-200 rounded px-2 py-1.5 resize-none"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none resize-none"
               rows={2}
             />
           </div>
           <button
             type="submit"
             disabled={submitting}
-            className="w-full text-sm font-medium bg-blue-600 text-white rounded-lg py-2 hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+            className="border-[1.5px] border-live text-live bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer disabled:opacity-50"
           >
-            {submitting ? "Adding..." : "Add Interview"}
+            {submitting ? "Adding..." : "Add interview"}
           </button>
         </form>
       )}
 
       {interviews.length === 0 && !showForm ? (
-        <div className="text-center py-8">
-          <p className="text-gray-400 text-sm">No interviews scheduled yet.</p>
+        <div className="text-center py-s-4">
+          <p className="text-body text-ink-35">No interviews scheduled yet.</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-0">
           {interviews.map((interview) => (
-            <div key={interview.id} className="bg-white border border-gray-200 rounded-lg p-3">
+            <div key={interview.id} className="border-t border-rule py-s-2">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-900 capitalize">
+                  <p className="text-body font-medium text-ink capitalize">
                     Round {interview.round}: {interview.interviewType}
                   </p>
-                  <time className="text-xs text-gray-500" dateTime={interview.scheduledAt}>
+                  <time className="font-mono text-meta text-ink-50" dateTime={interview.scheduledAt}>
                     {new Date(interview.scheduledAt).toLocaleDateString("en-US", {
                       weekday: "short",
                       month: "short",
@@ -287,40 +287,30 @@ export default function InterviewsTab({ jobId }: InterviewsTabProps) {
                     })}
                   </time>
                   {interview.durationMinutes && (
-                    <span className="text-xs text-gray-400 ml-2">
+                    <span className="font-mono text-meta text-ink-35 ml-2">
                       ({interview.durationMinutes} min)
                     </span>
                   )}
                 </div>
-                <span
-                  className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${
-                    interview.outcome === "passed"
-                      ? "bg-green-100 text-green-700"
-                      : interview.outcome === "failed"
-                      ? "bg-red-100 text-red-700"
-                      : interview.outcome === "cancelled"
-                      ? "bg-gray-100 text-gray-500"
-                      : "bg-blue-100 text-blue-700"
-                  }`}
-                >
+                <span className="font-mono text-meta text-ink-50 capitalize">
                   {interview.outcome}
                 </span>
               </div>
               {interview.interviewers && (
-                <p className="text-xs text-gray-500 mt-1">With: {interview.interviewers}</p>
+                <p className="text-list text-ink-72 mt-1">With: {interview.interviewers}</p>
               )}
               {interview.meetingLink && (
                 <a
                   href={interview.meetingLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-blue-500 hover:text-blue-700 mt-1 inline-block"
+                  className="text-ink underline text-list min-h-[var(--target-min)] inline-flex items-center mt-1"
                 >
-                  Meeting Link
+                  Meeting link
                 </a>
               )}
               {interview.notes && (
-                <p className="text-xs text-gray-600 mt-1.5 bg-gray-50 rounded p-2">
+                <p className="text-list text-ink-72 mt-1">
                   {interview.notes}
                 </p>
               )}

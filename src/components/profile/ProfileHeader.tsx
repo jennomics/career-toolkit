@@ -36,99 +36,99 @@ export default function ProfileHeader({ profile, onSave }: ProfileHeaderProps) {
 
   if (editing) {
     return (
-      <div className="space-y-3">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="space-y-s-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-s-3">
           <div>
-            <label htmlFor="profile-name" className="block text-xs font-medium text-gray-500 mb-1">Name</label>
+            <label htmlFor="profile-name" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">Name</label>
             <input
               id="profile-name"
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
             />
           </div>
           <div>
-            <label htmlFor="profile-title" className="block text-xs font-medium text-gray-500 mb-1">Current Title</label>
+            <label htmlFor="profile-title" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">Current title</label>
             <input
               id="profile-title"
               type="text"
               value={form.currentTitle}
               onChange={(e) => setForm({ ...form, currentTitle: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
             />
           </div>
           <div>
-            <label htmlFor="profile-location" className="block text-xs font-medium text-gray-500 mb-1">Location</label>
+            <label htmlFor="profile-location" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">Location</label>
             <input
               id="profile-location"
               type="text"
               value={form.location}
               onChange={(e) => setForm({ ...form, location: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
             />
           </div>
           <div>
-            <label htmlFor="profile-reports-to" className="block text-xs font-medium text-gray-500 mb-1">Reports To</label>
+            <label htmlFor="profile-reports-to" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">Reports to</label>
             <input
               id="profile-reports-to"
               type="text"
               value={form.reportsTo}
               onChange={(e) => setForm({ ...form, reportsTo: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
             />
           </div>
           <div>
-            <label htmlFor="profile-phone" className="block text-xs font-medium text-gray-500 mb-1">Phone</label>
+            <label htmlFor="profile-phone" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">Phone</label>
             <input
               id="profile-phone"
               type="text"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
             />
           </div>
           <div>
-            <label htmlFor="profile-email" className="block text-xs font-medium text-gray-500 mb-1">Email</label>
+            <label htmlFor="profile-email" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">Email</label>
             <input
               id="profile-email"
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
             />
           </div>
           <div>
-            <label htmlFor="profile-linkedin" className="block text-xs font-medium text-gray-500 mb-1">LinkedIn</label>
+            <label htmlFor="profile-linkedin" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">LinkedIn</label>
             <input
               id="profile-linkedin"
               type="text"
               value={form.linkedin}
               onChange={(e) => setForm({ ...form, linkedin: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
             />
           </div>
           <div>
-            <label htmlFor="profile-github" className="block text-xs font-medium text-gray-500 mb-1">GitHub</label>
+            <label htmlFor="profile-github" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">GitHub</label>
             <input
               id="profile-github"
               type="text"
               value={form.github}
               onChange={(e) => setForm({ ...form, github: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
             />
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-s-2">
           <button
             onClick={handleSave}
-            className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            className="border-[1.5px] border-live text-live bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer"
           >
             Save
           </button>
           <button
             onClick={() => setEditing(false)}
-            className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+            className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
           >
             Cancel
           </button>
@@ -140,11 +140,11 @@ export default function ProfileHeader({ profile, onSave }: ProfileHeaderProps) {
   return (
     <div className="flex items-start justify-between">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">{profile.name}</h2>
+        <h2 className="text-h2 font-light text-ink">{profile.name}</h2>
         {profile.currentTitle && (
-          <p className="text-sm text-gray-600 mt-0.5">{profile.currentTitle}</p>
+          <p className="text-body text-ink-72 mt-0.5">{profile.currentTitle}</p>
         )}
-        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-gray-500">
+        <div className="flex flex-wrap gap-x-s-3 gap-y-1 mt-s-1 font-mono text-list text-ink-50">
           {profile.location && <span>{profile.location}</span>}
           {profile.phone && <span>{profile.phone}</span>}
           {profile.email && <span>{profile.email}</span>}
@@ -156,7 +156,7 @@ export default function ProfileHeader({ profile, onSave }: ProfileHeaderProps) {
       <button
         onClick={() => setEditing(true)}
         aria-label="Edit profile header"
-        className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+        className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
       >
         Edit
       </button>

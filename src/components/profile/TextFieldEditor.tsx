@@ -27,27 +27,27 @@ export default function TextFieldEditor({
 
   if (editing) {
     return (
-      <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-500">{label}</label>
+      <div className="space-y-s-2">
+        <label className="text-meta font-mono uppercase tracking-widest text-ink-50 block">{label}</label>
         {multiline ? (
           <textarea
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none resize-none"
           />
         ) : (
           <input
             type="text"
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
           />
         )}
-        <div className="flex gap-2">
+        <div className="flex gap-s-2">
           <button
             onClick={handleSave}
-            className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            className="border-[1.5px] border-live text-live bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer"
           >
             Save
           </button>
@@ -56,7 +56,7 @@ export default function TextFieldEditor({
               setEditValue(value || "");
               setEditing(false);
             }}
-            className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+            className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
           >
             Cancel
           </button>
@@ -66,19 +66,19 @@ export default function TextFieldEditor({
   }
 
   return (
-    <div className="flex items-start justify-between gap-4">
+    <div className="flex items-start justify-between gap-s-3">
       <div>
-        <p className="text-xs font-medium text-gray-500 mb-0.5">{label}</p>
+        <p className="font-mono text-meta uppercase tracking-widest text-ink-50 mb-0.5">{label}</p>
         {value ? (
-          <p className="text-sm text-gray-700 whitespace-pre-wrap">{value}</p>
+          <p className="text-body text-ink-72 whitespace-pre-wrap">{value}</p>
         ) : (
-          <p className="text-sm text-gray-400 italic">{emptyMessage}</p>
+          <p className="text-body text-ink-35">{emptyMessage}</p>
         )}
       </div>
       <button
         onClick={() => setEditing(true)}
         aria-label={`Edit ${label}`}
-        className="shrink-0 px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+        className="shrink-0 text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
       >
         Edit
       </button>

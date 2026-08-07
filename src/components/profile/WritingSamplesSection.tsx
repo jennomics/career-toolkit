@@ -117,11 +117,11 @@ export default function WritingSamplesSection({
     (inputMode === "upload" && !selectedFile);
 
   const renderSampleList = (sampleList: WritingSample[]) => (
-    <div className="space-y-3">
+    <div className="space-y-0">
       {sampleList.map((sample) => (
         <div
           key={sample.id}
-          className="border border-gray-200 rounded-lg p-4"
+          className="border-t border-rule py-s-2"
         >
           <div className="flex items-start justify-between">
             <div className="flex-1">
@@ -129,14 +129,14 @@ export default function WritingSamplesSection({
                 onClick={() =>
                   setExpanded(expanded === sample.id ? null : sample.id)
                 }
-                className="text-sm font-medium text-gray-900 hover:text-blue-600 text-left"
+                className="text-body font-medium text-ink text-left min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
                 aria-expanded={expanded === sample.id}
                 aria-label={`Toggle ${sample.title}`}
               >
                 {sample.title}
               </button>
               {sample.context && (
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-list text-ink-50 mt-0.5">
                   {sample.context}
                 </p>
               )}
@@ -144,14 +144,14 @@ export default function WritingSamplesSection({
             <button
               onClick={() => onDelete(sample.id)}
               aria-label={`Delete ${sample.title}`}
-              className="px-2 py-1 text-xs text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
+              className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer text-list"
             >
               Delete
             </button>
           </div>
           {expanded === sample.id && (
-            <div className="mt-3 pt-3 border-t border-gray-100">
-              <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">
+            <div className="mt-s-2 pt-s-2 border-t border-rule">
+              <pre className="text-body text-ink-72 whitespace-pre-wrap font-zen">
                 {sample.content}
               </pre>
             </div>
@@ -164,33 +164,33 @@ export default function WritingSamplesSection({
   return (
     <div className="space-y-6">
       {/* Informal Register */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-gray-700">
-          Informal Register ({informalCount}/{MAX_SAMPLES_PER_REGISTER})
+      <div className="space-y-0">
+        <h4 className="font-mono text-meta uppercase tracking-widest text-ink-50 mb-s-1">
+          Informal register ({informalCount}/{MAX_SAMPLES_PER_REGISTER})
         </h4>
         {informalSamples.length > 0 ? (
           renderSampleList(informalSamples)
         ) : (
-          <p className="text-sm text-gray-400 italic">No informal writing samples yet.</p>
+          <p className="text-body text-ink-35">No informal writing samples yet.</p>
         )}
       </div>
 
       {/* Formal Register */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-gray-700">
-          Formal Register ({formalCount}/{MAX_SAMPLES_PER_REGISTER})
+      <div className="space-y-0">
+        <h4 className="font-mono text-meta uppercase tracking-widest text-ink-50 mb-s-1">
+          Formal register ({formalCount}/{MAX_SAMPLES_PER_REGISTER})
         </h4>
         {formalSamples.length > 0 ? (
           renderSampleList(formalSamples)
         ) : (
-          <p className="text-sm text-gray-400 italic">No formal writing samples yet.</p>
+          <p className="text-body text-ink-35">No formal writing samples yet.</p>
         )}
       </div>
 
       {adding ? (
-        <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+        <div className="border-t border-rule pt-s-3 space-y-s-2">
           <div>
-            <label htmlFor="sample-title" className="block text-xs font-medium text-gray-500 mb-1">
+            <label htmlFor="sample-title" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
               Title
             </label>
             <input
@@ -199,11 +199,11 @@ export default function WritingSamplesSection({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Cover letter for Anthropic"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
             />
           </div>
           <div>
-            <label htmlFor="sample-register" className="block text-xs font-medium text-gray-500 mb-1">
+            <label htmlFor="sample-register" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
               Register
             </label>
             <select
@@ -211,7 +211,7 @@ export default function WritingSamplesSection({
               value={register}
               onChange={(e) => setRegister(e.target.value)}
               aria-label="Writing register"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none"
             >
               <option value="informal" disabled={!canAddInformal}>
                 Informal{!canAddInformal ? " (full)" : ""}
@@ -222,7 +222,7 @@ export default function WritingSamplesSection({
             </select>
           </div>
           <div>
-            <label htmlFor="sample-context" className="block text-xs font-medium text-gray-500 mb-1">
+            <label htmlFor="sample-context" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
               Context (optional)
             </label>
             <input
@@ -231,22 +231,20 @@ export default function WritingSamplesSection({
               value={context}
               onChange={(e) => setContext(e.target.value)}
               placeholder="e.g., Written for Principal PM role, April 2025"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
             />
           </div>
 
           {/* Input mode toggle */}
           <div>
-            <span className="block text-xs font-medium text-gray-500 mb-1">Content Source</span>
-            <div className="flex gap-1 bg-gray-100 rounded-md p-0.5 w-fit" role="tablist" aria-label="Content input mode">
+            <span className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">Content source</span>
+            <div className="flex gap-s-2" role="tablist" aria-label="Content input mode">
               <button
                 role="tab"
                 aria-selected={inputMode === "paste"}
                 onClick={() => setInputMode("paste")}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  inputMode === "paste"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
+                className={`font-mono text-meta cursor-pointer min-h-[var(--target-min)] inline-flex items-center px-s-2 ${
+                  inputMode === "paste" ? "border-b-2 border-ink text-ink" : "text-ink-50"
                 }`}
               >
                 Paste text
@@ -255,10 +253,8 @@ export default function WritingSamplesSection({
                 role="tab"
                 aria-selected={inputMode === "upload"}
                 onClick={() => setInputMode("upload")}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  inputMode === "upload"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
+                className={`font-mono text-meta cursor-pointer min-h-[var(--target-min)] inline-flex items-center px-s-2 ${
+                  inputMode === "upload" ? "border-b-2 border-ink text-ink" : "text-ink-50"
                 }`}
               >
                 Upload file
@@ -268,7 +264,7 @@ export default function WritingSamplesSection({
 
           {inputMode === "paste" ? (
             <div>
-              <label htmlFor="sample-content" className="block text-xs font-medium text-gray-500 mb-1">
+              <label htmlFor="sample-content" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
                 Content
               </label>
               <textarea
@@ -277,12 +273,12 @@ export default function WritingSamplesSection({
                 onChange={(e) => setContent(e.target.value)}
                 rows={8}
                 placeholder="Paste the writing sample here..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none resize-none"
               />
             </div>
           ) : (
             <div>
-              <label htmlFor="sample-file" className="block text-xs font-medium text-gray-500 mb-1">
+              <label htmlFor="sample-file" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
                 Upload file (.txt or .md)
               </label>
               <input
@@ -292,32 +288,32 @@ export default function WritingSamplesSection({
                 accept=".txt,.md"
                 onChange={handleFileChange}
                 aria-label="Upload writing sample file"
-                className="w-full text-sm text-gray-700 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                className="w-full text-body text-ink"
               />
               {fileError && (
-                <p className="text-xs text-red-600 mt-1" role="alert">
+                <p className="text-meta text-live mt-1 font-mono" role="alert">
                   {fileError}
                 </p>
               )}
               {selectedFile && !fileError && (
-                <p className="text-xs text-green-700 mt-1">
+                <p className="font-mono text-meta text-ink-50 mt-1">
                   Selected: {selectedFile.name}
                 </p>
               )}
             </div>
           )}
 
-          <div className="flex gap-2">
+          <div className="flex gap-s-2">
             <button
               onClick={handleAdd}
               disabled={isAddDisabled}
-              className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="border-[1.5px] border-live text-live bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Add Sample
+              Add sample
             </button>
             <button
               onClick={resetForm}
-              className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+              className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
             >
               Cancel
             </button>
@@ -327,15 +323,15 @@ export default function WritingSamplesSection({
         canAddAny && (
           <button
             onClick={() => setAdding(true)}
-            className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+            className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
           >
-            + Add Writing Sample
+            Add writing sample
           </button>
         )
       )}
 
       {!canAddAny && !adding && (
-        <p className="text-xs text-gray-500">
+        <p className="font-mono text-meta text-ink-50">
           Maximum of {MAX_SAMPLES_PER_REGISTER} writing samples per register reached. Delete one to add another.
         </p>
       )}

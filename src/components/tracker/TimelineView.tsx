@@ -17,15 +17,15 @@ interface TimelineViewProps {
   jobs: { id: string; title: string; company: string }[];
 }
 
-const EVENT_TYPE_ICONS: Record<string, string> = {
-  status_change: "\u{1F504}",
-  note_added: "\u{1F4DD}",
-  interview_scheduled: "\u{1F4C5}",
-  offer_received: "\u{1F389}",
-  follow_up: "\u{1F4E8}",
-  application_submitted: "\u{1F4E4}",
-  rejection: "\u274C",
-  contact_added: "\u{1F465}",
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  status_change: "Status change",
+  note_added: "Note added",
+  interview_scheduled: "Interview scheduled",
+  offer_received: "Offer received",
+  follow_up: "Follow up",
+  application_submitted: "Application submitted",
+  rejection: "Rejection",
+  contact_added: "Contact added",
 };
 
 const EVENT_TYPE_OPTIONS = [
@@ -86,23 +86,23 @@ export default function TimelineView({ jobs }: TimelineViewProps) {
   };
 
   if (loading) {
-    return <p className="text-center text-gray-400 py-12">Loading timeline...</p>;
+    return <p className="text-center text-ink-35 py-s-5 text-body">Loading timeline...</p>;
   }
 
   return (
     <div className="space-y-4">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm" role="alert">
+        <div className="border-t border-rule p-s-2 text-live text-body" role="alert">
           {error}
         </div>
       )}
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3" role="group" aria-label="Timeline filters">
+      <div className="flex flex-wrap gap-s-3" role="group" aria-label="Timeline filters">
         <select
           value={filterJob}
           onChange={(e) => setFilterJob(e.target.value)}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white"
+          className="border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none"
           aria-label="Filter by job"
         >
           <option value="">All Jobs</option>
@@ -115,7 +115,7 @@ export default function TimelineView({ jobs }: TimelineViewProps) {
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white"
+          className="border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none"
           aria-label="Filter by event type"
         >
           {EVENT_TYPE_OPTIONS.map((opt) => (
@@ -128,34 +128,29 @@ export default function TimelineView({ jobs }: TimelineViewProps) {
 
       {/* Timeline */}
       {events.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-400">No events recorded yet.</p>
-          <p className="text-xs text-gray-300 mt-1">Events are created automatically when you move jobs between stages.</p>
+        <div className="text-center py-s-5">
+          <p className="text-body text-ink-35">No events recorded yet.</p>
+          <p className="text-meta text-ink-35 mt-1 font-mono">Events are created automatically when you move jobs between stages.</p>
         </div>
       ) : (
-        <div className="relative pl-6 space-y-4" role="list" aria-label="Application events timeline">
+        <div className="relative pl-6 space-y-0" role="list" aria-label="Application events timeline">
           {/* Vertical line */}
-          <div className="absolute left-2.5 top-0 bottom-0 w-px bg-gray-200" aria-hidden="true" />
+          <div className="absolute left-[7px] top-0 bottom-0 w-px bg-rule" aria-hidden="true" />
 
           {events.map((event) => (
-            <div key={event.id} className="relative" role="listitem">
+            <div key={event.id} className="relative border-t border-rule py-s-2" role="listitem">
               {/* Dot */}
-              <div className="absolute -left-3.5 top-1 w-3 h-3 rounded-full bg-white border-2 border-blue-400" aria-hidden="true" />
+              <div className="absolute -left-[17px] top-4 w-1.5 h-1.5 rounded-full bg-ink" aria-hidden="true" />
 
-              <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm ml-2">
+              <div className="ml-2">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span aria-hidden="true">
-                      {EVENT_TYPE_ICONS[event.eventType] || "\u{1F4CC}"}
-                    </span>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 capitalize">
-                        {event.eventType.replace(/_/g, " ")}
-                      </p>
-                      <p className="text-xs text-gray-500">{getJobLabel(event.jobId)}</p>
-                    </div>
+                  <div>
+                    <p className="font-mono text-meta uppercase tracking-widest text-ink-50">
+                      {EVENT_TYPE_LABELS[event.eventType] || event.eventType.replace(/_/g, " ")}
+                    </p>
+                    <p className="text-list text-ink-72 mt-0.5">{getJobLabel(event.jobId)}</p>
                   </div>
-                  <time className="text-xs text-gray-400 shrink-0" dateTime={event.occurredAt}>
+                  <time className="font-mono text-meta text-ink-50 shrink-0" dateTime={event.occurredAt}>
                     {new Date(event.occurredAt).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
@@ -165,14 +160,14 @@ export default function TimelineView({ jobs }: TimelineViewProps) {
                   </time>
                 </div>
                 {event.fromStatus && event.toStatus && (
-                  <p className="text-xs text-gray-500 mt-1.5">
+                  <p className="font-mono text-meta text-ink-50 mt-1">
                     <span className="capitalize">{event.fromStatus}</span>
                     {" \u2192 "}
                     <span className="capitalize">{event.toStatus}</span>
                   </p>
                 )}
                 {event.notes && (
-                  <p className="text-xs text-gray-600 mt-1.5 bg-gray-50 rounded p-2">
+                  <p className="text-list text-ink-72 mt-1">
                     {event.notes}
                   </p>
                 )}

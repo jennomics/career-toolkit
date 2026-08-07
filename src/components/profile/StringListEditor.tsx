@@ -37,10 +37,10 @@ export default function StringListEditor({
 
   if (editing) {
     return (
-      <div className="space-y-3">
-        <ul className="space-y-2">
+      <div className="space-y-s-2">
+        <ul className="space-y-s-1">
           {editItems.map((item, index) => (
-            <li key={index} className="flex items-start gap-2">
+            <li key={index} className="flex items-start gap-s-2 border-t border-rule pt-s-1">
               <textarea
                 value={item}
                 onChange={(e) => {
@@ -49,19 +49,19 @@ export default function StringListEditor({
                   setEditItems(updated);
                 }}
                 rows={2}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="flex-1 border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none resize-none"
               />
               <button
                 onClick={() => removeItem(index)}
                 aria-label={`Remove item ${index + 1}`}
-                className="px-2 py-1 text-red-600 hover:text-red-800 text-sm"
+                className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer text-list"
               >
                 Remove
               </button>
             </li>
           ))}
         </ul>
-        <div className="flex gap-2">
+        <div className="flex gap-s-2">
           <input
             type="text"
             value={newItem}
@@ -73,19 +73,19 @@ export default function StringListEditor({
               }
             }}
             placeholder={placeholder}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="flex-1 border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
           />
           <button
             onClick={addItem}
-            className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 border border-gray-200"
+            className="border border-ink text-ink bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer"
           >
             Add
           </button>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-s-2">
           <button
             onClick={handleSave}
-            className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            className="border-[1.5px] border-live text-live bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer"
           >
             Save
           </button>
@@ -94,7 +94,7 @@ export default function StringListEditor({
               setEditItems(items);
               setEditing(false);
             }}
-            className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+            className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
           >
             Cancel
           </button>
@@ -106,11 +106,11 @@ export default function StringListEditor({
   if (items.length === 0) {
     return (
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-400 italic">{emptyMessage}</p>
+        <p className="text-body text-ink-35">{emptyMessage}</p>
         <button
           onClick={() => setEditing(true)}
           aria-label="Edit items"
-          className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+          className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
         >
           Edit
         </button>
@@ -119,21 +119,21 @@ export default function StringListEditor({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-s-1">
       <div className="flex justify-end">
         <button
           onClick={() => setEditing(true)}
           aria-label="Edit items"
-          className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+          className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
         >
           Edit
         </button>
       </div>
-      <ul className="space-y-2">
+      <ul className="space-y-0">
         {items.map((item, index) => (
           <li
             key={index}
-            className="text-sm text-gray-700 pl-4 border-l-2 border-gray-200"
+            className="text-list text-ink-72 pl-s-2 border-l border-rule py-s-1"
           >
             {item}
           </li>

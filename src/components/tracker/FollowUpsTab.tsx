@@ -114,34 +114,34 @@ export default function FollowUpsTab({ jobId, onUpdated }: FollowUpsTabProps) {
   };
 
   if (loading) {
-    return <p className="text-center text-gray-400 py-8">Loading follow-ups...</p>;
+    return <p className="text-center text-ink-35 py-s-4 text-body">Loading follow-ups...</p>;
   }
 
   return (
     <div className="space-y-4">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm" role="alert">
+        <div className="border-t border-rule p-s-2 text-live text-body" role="alert">
           {error}
         </div>
       )}
 
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700">
+        <h3 className="font-mono text-meta uppercase tracking-widest text-ink-50">
           Follow-ups ({followUps.length})
         </h3>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="text-sm text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+          className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
         >
-          {showForm ? "Cancel" : "+ Add Follow-up"}
+          {showForm ? "Cancel" : "Add follow-up"}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-gray-50 rounded-lg p-4 space-y-3">
+        <form onSubmit={handleSubmit} className="border-t border-rule pt-s-2 space-y-3">
           <div>
-            <label htmlFor="followUpAction" className="block text-xs font-medium text-gray-600 mb-1">
-              Action *
+            <label htmlFor="followUpAction" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
+              Action
             </label>
             <input
               id="followUpAction"
@@ -149,14 +149,14 @@ export default function FollowUpsTab({ jobId, onUpdated }: FollowUpsTabProps) {
               required
               value={formData.action}
               onChange={(e) => setFormData({ ...formData, action: e.target.value })}
-              className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
               placeholder="Send thank-you email to recruiter"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-s-3">
             <div>
-              <label htmlFor="followUpDueDate" className="block text-xs font-medium text-gray-600 mb-1">
-                Due Date *
+              <label htmlFor="followUpDueDate" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
+                Due date
               </label>
               <input
                 id="followUpDueDate"
@@ -164,18 +164,18 @@ export default function FollowUpsTab({ jobId, onUpdated }: FollowUpsTabProps) {
                 required
                 value={formData.dueDate}
                 onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+                className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none"
               />
             </div>
             <div>
-              <label htmlFor="followUpPriority" className="block text-xs font-medium text-gray-600 mb-1">
+              <label htmlFor="followUpPriority" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
                 Priority
               </label>
               <select
                 id="followUpPriority"
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+                className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none"
               >
                 <option value="high">High</option>
                 <option value="medium">Medium</option>
@@ -184,51 +184,47 @@ export default function FollowUpsTab({ jobId, onUpdated }: FollowUpsTabProps) {
             </div>
           </div>
           <div>
-            <label htmlFor="followUpNotes" className="block text-xs font-medium text-gray-600 mb-1">
-              Notes
+            <label htmlFor="followUpNotes" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
+              Notes (optional)
             </label>
             <textarea
               id="followUpNotes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full text-sm border border-gray-200 rounded px-2 py-1.5 resize-none"
+              className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none resize-none"
               rows={2}
             />
           </div>
           <button
             type="submit"
             disabled={submitting}
-            className="w-full text-sm font-medium bg-blue-600 text-white rounded-lg py-2 hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+            className="border-[1.5px] border-live text-live bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer disabled:opacity-50"
           >
-            {submitting ? "Adding..." : "Add Follow-up"}
+            {submitting ? "Adding..." : "Add follow-up"}
           </button>
         </form>
       )}
 
       {followUps.length === 0 && !showForm ? (
-        <div className="text-center py-8">
-          <p className="text-gray-400 text-sm">No follow-ups for this job yet.</p>
+        <div className="text-center py-s-4">
+          <p className="text-body text-ink-35">No follow-ups for this job yet.</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-0">
           {followUps.map((fu) => (
             <div
               key={fu.id}
-              className={`bg-white border rounded-lg p-3 ${
-                isOverdue(fu.dueDate, fu.completedAt)
-                  ? "border-red-200 bg-red-50/50"
-                  : fu.completedAt
-                  ? "border-gray-200 opacity-60"
-                  : "border-gray-200"
+              className={`border-t border-rule py-s-2 ${
+                fu.completedAt ? "opacity-60" : ""
               }`}
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-s-2">
                 <button
                   onClick={() => toggleComplete(fu)}
-                  className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 cursor-pointer ${
+                  className={`mt-0.5 w-5 h-5 border-2 flex items-center justify-center shrink-0 cursor-pointer min-h-[var(--target-min)] min-w-[var(--target-min)] ${
                     fu.completedAt
-                      ? "bg-green-500 border-green-500 text-white"
-                      : "border-gray-300 hover:border-blue-400"
+                      ? "bg-ink border-ink text-paper"
+                      : "border-rule"
                   }`}
                   aria-label={fu.completedAt ? "Mark as incomplete" : "Mark as complete"}
                 >
@@ -239,30 +235,22 @@ export default function FollowUpsTab({ jobId, onUpdated }: FollowUpsTabProps) {
                   )}
                 </button>
                 <div className="flex-1">
-                  <p className={`text-sm font-medium ${fu.completedAt ? "line-through text-gray-400" : "text-gray-900"}`}>
+                  <p className={`text-body ${fu.completedAt ? "line-through text-ink-35" : "text-ink"}`}>
                     {fu.action}
                   </p>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-s-2 mt-1">
                     <time
-                      className={`text-xs ${isOverdue(fu.dueDate, fu.completedAt) ? "text-red-500 font-medium" : "text-gray-500"}`}
+                      className={`font-mono text-meta ${isOverdue(fu.dueDate, fu.completedAt) ? "text-live" : "text-ink-50"}`}
                       dateTime={fu.dueDate}
                     >
                       Due: {new Date(fu.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     </time>
-                    <span
-                      className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full capitalize ${
-                        fu.priority === "high"
-                          ? "bg-red-100 text-red-700"
-                          : fu.priority === "medium"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-green-100 text-green-700"
-                      }`}
-                    >
+                    <span className="font-mono text-meta text-ink-50 capitalize">
                       {fu.priority}
                     </span>
                   </div>
                   {fu.notes && (
-                    <p className="text-xs text-gray-500 mt-1">{fu.notes}</p>
+                    <p className="text-list text-ink-72 mt-1">{fu.notes}</p>
                   )}
                 </div>
               </div>

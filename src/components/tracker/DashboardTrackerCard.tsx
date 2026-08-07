@@ -28,7 +28,7 @@ const STAGE_LABELS: Record<string, string> = {
 const ACTIVE_STAGES = ["saved", "researching", "applied", "screening", "interviewing", "final-round", "offer", "negotiating"];
 
 function SkeletonBlock({ className }: { className?: string }) {
-  return <div className={`animate-pulse bg-gray-200 rounded ${className || ""}`} />;
+  return <div className={`bg-rule ${className || ""}`} />;
 }
 
 export default function DashboardTrackerCard() {
@@ -77,7 +77,7 @@ export default function DashboardTrackerCard() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm" role="alert">
+      <div className="border-t border-rule p-s-2 text-live text-body" role="alert">
         {error}
       </div>
     );
@@ -85,8 +85,8 @@ export default function DashboardTrackerCard() {
 
   if (!pipelineData || pipelineData.totalJobs === 0) {
     return (
-      <div className="text-center py-4">
-        <p className="text-sm text-gray-400">
+      <div className="text-center py-s-3">
+        <p className="text-body text-ink-35">
           No pipeline data yet. Add jobs to your tracker to see stats here.
         </p>
       </div>
@@ -102,25 +102,25 @@ export default function DashboardTrackerCard() {
     <div className="space-y-6">
       {/* Pipeline Stats */}
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-gray-700">
-            Active Pipeline ({activeCount})
+        <div className="flex items-center justify-between mb-s-2">
+          <h3 className="font-mono text-meta uppercase tracking-widest text-ink-50">
+            Active pipeline ({activeCount})
           </h3>
           <a
             href="/tracker"
-            className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+            className="text-ink underline min-h-[var(--target-min)] inline-flex items-center font-mono text-meta"
           >
-            View Tracker
+            View tracker
           </a>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-0">
           {ACTIVE_STAGES.filter((s) => (pipelineData.pipeline[s]?.count || 0) > 0).map((stage) => (
             <div
               key={stage}
-              className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100"
+              className="border-t border-rule py-s-2 px-s-1"
             >
-              <p className="text-xs text-gray-500">{STAGE_LABELS[stage]}</p>
-              <p className="text-lg font-bold text-gray-900">
+              <p className="font-mono text-meta text-ink-50">{STAGE_LABELS[stage]}</p>
+              <p className="font-mono text-h3 text-ink">
                 {pipelineData.pipeline[stage]?.count || 0}
               </p>
             </div>
@@ -130,7 +130,7 @@ export default function DashboardTrackerCard() {
 
       {/* Attention Widget */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Needs Attention</h3>
+        <h3 className="font-mono text-meta uppercase tracking-widest text-ink-50 mb-s-2">Needs attention</h3>
         <AttentionWidget compact />
       </div>
     </div>

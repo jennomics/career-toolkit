@@ -88,7 +88,6 @@ export default function ContactsTab({ jobId }: ContactsTabProps) {
     e.preventDefault();
     setSubmitting(true);
     try {
-      // Create contact first
       const contactRes = await fetch("/api/tracker/contacts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -109,7 +108,6 @@ export default function ContactsTab({ jobId }: ContactsTabProps) {
       }
       const newContact = await contactRes.json();
 
-      // Link to job
       const linkRes = await fetch("/api/tracker/job-contacts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -178,64 +176,63 @@ export default function ContactsTab({ jobId }: ContactsTabProps) {
   };
 
   if (loading) {
-    return <p className="text-center text-gray-400 py-8">Loading contacts...</p>;
+    return <p className="text-center text-ink-35 py-s-4 text-body">Loading contacts...</p>;
   }
 
-  // Filter out already-linked contacts
   const linkedIds = new Set(jobContacts.map((jc) => jc.contact.id));
   const availableContacts = allContacts.filter((c) => !linkedIds.has(c.id));
 
   return (
     <div className="space-y-4">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm" role="alert">
+        <div className="border-t border-rule p-s-2 text-live text-body" role="alert">
           {error}
         </div>
       )}
 
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700">
+        <h3 className="font-mono text-meta uppercase tracking-widest text-ink-50">
           Contacts ({jobContacts.length})
         </h3>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="text-sm text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+          className="text-ink underline min-h-[var(--target-min)] inline-flex items-center cursor-pointer"
         >
-          {showForm ? "Cancel" : "+ Add Contact"}
+          {showForm ? "Cancel" : "Add contact"}
         </button>
       </div>
 
       {showForm && (
-        <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+        <div className="border-t border-rule pt-s-2 space-y-3">
           {/* Toggle new vs link */}
-          <div className="flex gap-2 mb-3" role="tablist" aria-label="Add contact mode">
+          <div className="flex gap-s-2 mb-s-2" role="tablist" aria-label="Add contact mode">
             <button
               role="tab"
               aria-selected={formMode === "new"}
               onClick={() => setFormMode("new")}
-              className={`text-xs font-medium px-3 py-1 rounded cursor-pointer ${
-                formMode === "new" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"
+              className={`font-mono text-meta cursor-pointer min-h-[var(--target-min)] inline-flex items-center px-s-2 ${
+                formMode === "new" ? "border-b-2 border-ink text-ink" : "text-ink-50"
               }`}
             >
-              New Contact
+              New contact
             </button>
             <button
               role="tab"
               aria-selected={formMode === "link"}
               onClick={() => setFormMode("link")}
-              className={`text-xs font-medium px-3 py-1 rounded cursor-pointer ${
-                formMode === "link" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"
+              className={`font-mono text-meta cursor-pointer min-h-[var(--target-min)] inline-flex items-center px-s-2 ${
+                formMode === "link" ? "border-b-2 border-ink text-ink" : "text-ink-50"
               }`}
             >
-              Link Existing
+              Link existing
             </button>
           </div>
 
           {formMode === "new" ? (
             <form onSubmit={handleSubmitNew} className="space-y-3">
               <div>
-                <label htmlFor="contactName" className="block text-xs font-medium text-gray-600 mb-1">
-                  Name *
+                <label htmlFor="contactName" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
+                  Name
                 </label>
                 <input
                   id="contactName"
@@ -243,12 +240,12 @@ export default function ContactsTab({ jobId }: ContactsTabProps) {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+                  className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-s-3">
                 <div>
-                  <label htmlFor="contactRole" className="block text-xs font-medium text-gray-600 mb-1">
+                  <label htmlFor="contactRole" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
                     Role
                   </label>
                   <input
@@ -256,11 +253,11 @@ export default function ContactsTab({ jobId }: ContactsTabProps) {
                     type="text"
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+                    className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label htmlFor="contactCompany" className="block text-xs font-medium text-gray-600 mb-1">
+                  <label htmlFor="contactCompany" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
                     Company
                   </label>
                   <input
@@ -268,12 +265,12 @@ export default function ContactsTab({ jobId }: ContactsTabProps) {
                     type="text"
                     value={formData.company}
                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+                    className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
                   />
                 </div>
               </div>
               <div>
-                <label htmlFor="contactEmail" className="block text-xs font-medium text-gray-600 mb-1">
+                <label htmlFor="contactEmail" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
                   Email
                 </label>
                 <input
@@ -281,18 +278,18 @@ export default function ContactsTab({ jobId }: ContactsTabProps) {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+                  className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink placeholder:text-ink-35 focus:border-b-2 focus:border-ink focus:outline-none"
                 />
               </div>
               <div>
-                <label htmlFor="contactRelationship" className="block text-xs font-medium text-gray-600 mb-1">
-                  Relationship *
+                <label htmlFor="contactRelationship" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
+                  Relationship
                 </label>
                 <select
                   id="contactRelationship"
                   value={formData.relationship}
                   onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
-                  className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+                  className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none"
                 >
                   {RELATIONSHIPS.map((r) => (
                     <option key={r} value={r}>
@@ -304,23 +301,23 @@ export default function ContactsTab({ jobId }: ContactsTabProps) {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full text-sm font-medium bg-blue-600 text-white rounded-lg py-2 hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+                className="border-[1.5px] border-live text-live bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer disabled:opacity-50"
               >
-                {submitting ? "Adding..." : "Add Contact"}
+                {submitting ? "Adding..." : "Add contact"}
               </button>
             </form>
           ) : (
             <form onSubmit={handleLinkExisting} className="space-y-3">
               <div>
-                <label htmlFor="existingContact" className="block text-xs font-medium text-gray-600 mb-1">
-                  Select Contact
+                <label htmlFor="existingContact" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
+                  Select contact
                 </label>
                 <select
                   id="existingContact"
                   required
                   value={formData.contactId}
                   onChange={(e) => setFormData({ ...formData, contactId: e.target.value })}
-                  className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+                  className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none"
                 >
                   <option value="">Choose...</option>
                   {availableContacts.map((c) => (
@@ -331,14 +328,14 @@ export default function ContactsTab({ jobId }: ContactsTabProps) {
                 </select>
               </div>
               <div>
-                <label htmlFor="linkRelationship" className="block text-xs font-medium text-gray-600 mb-1">
+                <label htmlFor="linkRelationship" className="text-meta font-mono uppercase tracking-widest text-ink-50 mb-s-1 block">
                   Relationship
                 </label>
                 <select
                   id="linkRelationship"
                   value={formData.relationship}
                   onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
-                  className="w-full text-sm border border-gray-200 rounded px-2 py-1.5"
+                  className="w-full border-0 border-b border-rule bg-transparent py-s-1 text-body text-ink focus:border-b-2 focus:border-ink focus:outline-none"
                 >
                   {RELATIONSHIPS.map((r) => (
                     <option key={r} value={r}>
@@ -350,9 +347,9 @@ export default function ContactsTab({ jobId }: ContactsTabProps) {
               <button
                 type="submit"
                 disabled={submitting || !formData.contactId}
-                className="w-full text-sm font-medium bg-blue-600 text-white rounded-lg py-2 hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+                className="border-[1.5px] border-live text-live bg-transparent h-[48px] px-s-3 font-medium inline-flex items-center cursor-pointer disabled:opacity-50"
               >
-                {submitting ? "Linking..." : "Link Contact"}
+                {submitting ? "Linking..." : "Link contact"}
               </button>
             </form>
           )}
@@ -360,32 +357,32 @@ export default function ContactsTab({ jobId }: ContactsTabProps) {
       )}
 
       {jobContacts.length === 0 && !showForm ? (
-        <div className="text-center py-8">
-          <p className="text-gray-400 text-sm">No contacts linked to this job yet.</p>
+        <div className="text-center py-s-4">
+          <p className="text-body text-ink-35">No contacts linked to this job yet.</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-0">
           {jobContacts.map((jc) => (
-            <div key={jc.id} className="bg-white border border-gray-200 rounded-lg p-3">
+            <div key={jc.id} className="border-t border-rule py-s-2">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{jc.contact.name}</p>
+                  <p className="text-body font-medium text-ink">{jc.contact.name}</p>
                   {jc.contact.role && (
-                    <p className="text-xs text-gray-500">{jc.contact.role}</p>
+                    <p className="text-list text-ink-72">{jc.contact.role}</p>
                   )}
                   {jc.contact.company && (
-                    <p className="text-xs text-gray-400">{jc.contact.company}</p>
+                    <p className="text-list text-ink-50">{jc.contact.company}</p>
                   )}
                 </div>
-                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 capitalize">
+                <span className="font-mono text-meta text-ink-50 capitalize">
                   {jc.relationship.replace("-", " ")}
                 </span>
               </div>
-              <div className="flex gap-3 mt-2">
+              <div className="flex gap-s-3 mt-1">
                 {jc.contact.email && (
                   <a
                     href={`mailto:${jc.contact.email}`}
-                    className="text-xs text-blue-500 hover:text-blue-700"
+                    className="text-ink underline text-list min-h-[var(--target-min)] inline-flex items-center"
                   >
                     Email
                   </a>
@@ -395,7 +392,7 @@ export default function ContactsTab({ jobId }: ContactsTabProps) {
                     href={jc.contact.linkedIn}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-blue-500 hover:text-blue-700"
+                    className="text-ink underline text-list min-h-[var(--target-min)] inline-flex items-center"
                   >
                     LinkedIn
                   </a>

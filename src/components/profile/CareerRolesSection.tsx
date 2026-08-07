@@ -17,36 +17,37 @@ interface CareerRolesSectionProps {
 export default function CareerRolesSection({ roles }: CareerRolesSectionProps) {
   if (roles.length === 0) {
     return (
-      <p className="text-sm text-gray-400 italic">No career roles yet.</p>
+      <p className="text-body text-ink-35">No career roles yet.</p>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-0">
       {roles.map((role) => (
         <div
           key={role.id}
-          className="border border-gray-200 rounded-lg p-4 space-y-2"
+          className="border-t border-rule py-s-3 space-y-1"
         >
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">
+              <h3 className="text-body font-medium text-ink">
                 {role.title}
               </h3>
-              <p className="text-sm text-gray-600">
-                {role.organization} | {role.period}
+              <p className="text-list text-ink-72">
+                {role.organization}
               </p>
             </div>
+            <span className="font-mono text-meta text-ink-50">{role.period}</span>
           </div>
           {role.scope && (
-            <p className="text-sm text-gray-600 italic">{role.scope}</p>
+            <p className="text-list text-ink-72">{role.scope}</p>
           )}
           {role.highlights.length > 0 && (
-            <ul className="space-y-1 mt-2">
+            <ul className="space-y-1 mt-s-1">
               {role.highlights.map((highlight, idx) => (
                 <li
                   key={idx}
-                  className="text-sm text-gray-700 pl-4 border-l-2 border-gray-200"
+                  className="text-list text-ink-72 pl-s-2 border-l border-rule"
                 >
                   {highlight}
                 </li>
