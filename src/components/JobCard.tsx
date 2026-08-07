@@ -56,7 +56,6 @@ export default function JobCard({ job, onUpdate, onDelete, onKeywordClick }: Job
   const [togglingDreamCompany, setTogglingDreamCompany] = useState(false);
   const [togglingDreamJob, setTogglingDreamJob] = useState(false);
 
-  const statusConfig = STATUS_OPTIONS.find((s) => s.value === job.status) || STATUS_OPTIONS[0];
   const isArchived = ARCHIVED_STATUSES.includes(job.status);
   const isDream = job.dreamCompany || job.dreamJob;
 
